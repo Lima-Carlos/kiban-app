@@ -11,6 +11,7 @@
 | `TenancyTest` | Uma empresa nunca vê nem altera dados de outra (inclusive no próprio banco) |
 | `LicenseTest` | Licença falsa recusada, menu pela licença, somente consulta, limite, Core fora do ar |
 | `SingleSignOnTest` | Login pelo Core, PKCE, links de uso único, removido da equipe perde acesso |
+| `BrowserFlowTest` | Os botões das telas funcionam como num navegador (pedidos "por trás" sabem a empresa) |
 | `FirstStepsTest` | Passos em ordem, dependências, envio ao Core só quando muda |
 
 Fábricas de dados de teste: `database/factories/` (`TenantFactory`, `UserFactory`).

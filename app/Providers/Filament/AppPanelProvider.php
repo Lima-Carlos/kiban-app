@@ -73,6 +73,14 @@ class AppPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            // Also on the screens' background requests (Livewire: buttons, forms, tables). Without these,
+            // the company is unknown there and every action is refused (403).
+            ->persistentMiddleware([
+                IdentifyTenant::class,
+                EnsureLicense::class,
+                SetLocale::class,
+                RevalidateMembership::class,
+            ])
             ->authMiddleware([
                 Authenticate::class,
             ]);

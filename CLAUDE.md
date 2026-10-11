@@ -33,6 +33,7 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Em tarefas agendadas ou filas, use `TenantContext::run($tenant, fn () => ...)`.
 - Ligações entre tabelas de empresa usam chave composta (`tenant_id` + id), assim o próprio banco impede misturar empresas. Veja `tasks` → `task_lists` em `database/migrations/2026_10_11_100100_create_demo_tables.php`.
 - Todo módulo novo precisa de teste de isolamento (veja `tests/Feature/TenancyTest.php`).
+- Os botões e formulários das telas mandam pedidos "por trás" (Livewire). Todo porteiro (middleware) que a tela precisa (empresa, licença, idioma, equipe) também fica em `persistentMiddleware` no `AppPanelProvider`, senão esses pedidos dão 403. O teste `tests/Feature/BrowserFlowTest.php` faz esses pedidos como um navegador.
 
 ## Login (sem senhas aqui)
 - Todo login passa pelo Core (OAuth2 + PKCE), em `App\Http\Controllers\Auth\SingleSignOnController`. O retorno é sempre no endereço central (`/auth/callback`), e um bilhete de uso único leva a pessoa para o endereço da empresa.
