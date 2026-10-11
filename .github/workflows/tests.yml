@@ -1,0 +1,69 @@
+# Runs every automated test on each push and pull request.
+# A red result on GitHub means the change broke something and must not go to production.
+name: Testes
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Testes automáticos
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: kiban_app_test
+          POSTGRES_USER: kiban
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kiban -d kiban_app_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: kiban
+      DB_PASSWORD: secret
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar o PHP 8.4 (mesmas extensões do Docker)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pgsql, intl, bcmath, gd, zip, pcntl, exif
+          coverage: none
+
+      - name: Reaproveitar bibliotecas já baixadas
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Configuração do ambiente de teste
+        run: cp .env.example .env
+
+      - name: Instalar bibliotecas (Composer)
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Gerar chave do sistema
+        run: php artisan key:generate --ansi
+
+      - name: Rodar os testes
+        run: php artisan test
