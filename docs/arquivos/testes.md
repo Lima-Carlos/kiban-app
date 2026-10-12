@@ -12,6 +12,7 @@
 | `LicenseTest` | Licença falsa recusada, menu pela licença, somente consulta, limite, Core fora do ar |
 | `SingleSignOnTest` | Login pelo Core, PKCE, links de uso único, removido da equipe perde acesso |
 | `BrowserFlowTest` | Os botões das telas funcionam como num navegador (pedidos "por trás" sabem a empresa) |
+| `FleetVehiclesTest` | Frota: km nunca volta, travas de placa, limite de veículos, motorista vê só os dele |
 | `FirstStepsTest` | Passos em ordem, dependências, envio ao Core só quando muda |
 
 Fábricas de dados de teste: `database/factories/` (`TenantFactory`, `UserFactory`).

@@ -31,7 +31,7 @@ As portas são diferentes das do Core (8080, 5432, 6379), então os dois rodam j
 - Docker:
   - `docker-compose.yml`;
   - `docker/php/Dockerfile` e `docker/php/php.ini`;
-  - `docker/nginx/default.conf`;
+  - `docker/nginx/default.conf` (os arquivos em `/storage/` são entregues pelo Laravel, só com links assinados);
   - `docker/postgres/create-test-database.sql` (cria o banco de testes `kiban_app_test`).
 - `.env.example` (modelo da configuração) e `config/kiban.php` (configurações da Kiban: Core, domínio, módulos, idiomas, marca).
 - `.github/workflows/tests.yml`: testes automáticos no GitHub a cada envio.

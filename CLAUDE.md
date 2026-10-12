@@ -50,3 +50,10 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - As telas estendem `App\Filament\Support\ModuleResource`, e as páginas de lista estendem `ModuleRecordsPage` (que explica por que não dá para cadastrar).
 - **Primeiros passos:** cada `Step` diz se está feito olhando os dados reais, e de quais passos depende. Os modelos usam `ReportsFirstSteps` para avisar o Core depois de cada mudança.
 - O módulo `demo` (Tarefas) é o modelo a copiar.
+
+## Frota (`app/Modules/Fleet`, chave `frota`)
+- Todo registro com km passa por `OdometerService::record()` (nunca alterar `odometer` direto). O km nunca volta; só o gestor corrige com `correct()`.
+- Cadastro, placa/chassi e situação passam por `VehicleService` (travas contra reaproveitar vaga do plano, limite `vehicles`, histórico em `fleet_vehicle_events`).
+- Quem é gestor, motorista ou visitante: `FleetAccess`. Motorista só vê os veículos ligados a ele (`visibleVehicleIds`).
+- Arquivos e fotos: `FleetFields::photo()` / `file()` (disco privado, pasta da empresa, foto reduzida no navegador).
+- Explicação para o dono: `docs/arquivos/frota.md`.

@@ -41,6 +41,16 @@ abstract class Module
     }
 
     /**
+     * Extra Filament pages of the module (e.g. its settings).
+     *
+     * @return array<int, class-string>
+     */
+    public function pages(): array
+    {
+        return [];
+    }
+
+    /**
      * Access rules per model (usually subclasses of ModulePolicy).
      *
      * @return array<class-string, class-string>

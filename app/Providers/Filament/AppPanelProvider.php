@@ -47,6 +47,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->pages([
                 Home::class,
+                ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())
             ->userMenuItems([
@@ -84,6 +85,16 @@ class AppPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    /**
+     * @return array<int, class-string>
+     */
+    protected function modulePages(): array
+    {
+        return collect(config('kiban.modules'))
+            ->flatMap(fn (string $module): array => app($module)->pages())
+            ->all();
     }
 
     /**

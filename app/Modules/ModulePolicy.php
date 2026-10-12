@@ -63,12 +63,18 @@ abstract class ModulePolicy
         if ($this->limit !== null && $this->model !== null) {
             $max = $this->license()->limitWithTolerance($this->module, $this->limit);
 
-            if ($max !== null && ($this->model)::query()->count() >= $max) {
+            if ($max !== null && $this->countForLimit() >= $max) {
                 return Response::deny(__('app.denied.limit', ['limit' => $this->license()->limit($this->module, $this->limit)]));
             }
         }
 
         return Response::allow();
+    }
+
+    /** How many records count in the plan limit (override to leave some out, e.g. inactive vehicles). */
+    protected function countForLimit(): int
+    {
+        return ($this->model)::query()->count();
     }
 
     public function update(User $user, Model $record): Response

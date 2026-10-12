@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Demo\DemoModule;
+use App\Modules\Fleet\FleetModule;
 
 return [
 
@@ -51,6 +52,7 @@ return [
     // Modules this app knows. The license decides which ones each company sees.
     'modules' => [
         DemoModule::class,
+        FleetModule::class,
     ],
 
     'locales' => [
