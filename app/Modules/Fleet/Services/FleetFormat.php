@@ -44,4 +44,16 @@ class FleetFormat
 
         return (string) Number::currency($cents / 100, ($settings ?? FleetSetting::current())->currency, str_replace('_', '-', app()->getLocale()));
     }
+
+    /** "12,4 km/l". */
+    public static function consumption(?float $value, ?FleetSetting $settings = null): string
+    {
+        if ($value === null) {
+            return '—';
+        }
+
+        $settings ??= FleetSetting::current();
+
+        return static::number($value, 2).' '.$settings->distance_unit.'/'.$settings->volume_unit;
+    }
 }

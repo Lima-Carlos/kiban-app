@@ -90,6 +90,14 @@ class Vehicle extends Model
     }
 
     /**
+     * @return HasMany<FuelUp, $this>
+     */
+    public function fuelUps(): HasMany
+    {
+        return $this->hasMany(FuelUp::class);
+    }
+
+    /**
      * @return HasMany<VehicleEvent, $this>
      */
     public function events(): HasMany

@@ -2,7 +2,6 @@
 
 return [
     'module' => 'Frota',
-
     'steps' => [
         'vehicle' => 'Cadastre o primeiro veículo',
         'vehicle_help' => 'Com o km atual, a próxima troca de óleo e a próxima revisão.',
@@ -11,7 +10,6 @@ return [
         'station' => 'Cadastre os postos de combustível',
         'station_help' => 'Os motoristas escolhem o posto na hora de abastecer.',
     ],
-
     'vehicles' => [
         'singular' => 'veículo',
         'plural' => 'veículos',
@@ -25,36 +23,32 @@ return [
             'situation' => 'Situação',
         ],
     ],
-
     'drivers' => [
         'singular' => 'motorista',
         'plural' => 'motoristas',
         'empty' => 'Nenhum motorista cadastrado',
+        'singular_title' => 'Motorista',
     ],
-
     'stations' => [
         'singular' => 'posto',
         'plural' => 'postos',
         'empty' => 'Nenhum posto cadastrado',
+        'singular_title' => 'Posto',
     ],
-
     'odometer' => [
         'title' => 'Histórico de km',
         'empty' => 'Nenhuma leitura de km',
     ],
-
     'documents' => [
         'title' => 'Documentos',
         'empty' => 'Nenhum documento',
     ],
-
     'events' => [
         'title' => 'Alterações importantes',
         'empty' => 'Nenhuma alteração',
         'identity' => 'Placa: :from → :to',
         'odometer' => 'Km: :from → :to',
     ],
-
     'fields' => [
         'vehicles' => 'Veículos',
         'drivers' => 'Motoristas',
@@ -103,8 +97,15 @@ return [
         'station_document' => 'CNPJ / documento',
         'address' => 'Endereço',
         'city' => 'Cidade',
+        'vehicle' => 'Veículo',
+        'fuel' => 'Combustível',
+        'volume' => 'Litros',
+        'total' => 'Valor total',
+        'unit_price' => 'Preço por litro',
+        'full_tank' => 'Tanque cheio',
+        'consumption' => 'Média',
+        'any_vehicle' => 'Pode usar qualquer veículo',
     ],
-
     'helpers' => [
         'identity_locked' => 'Travada depois do primeiro registro. Para alterar, use "Alterar placa/chassi" na página do veículo.',
         'tank_capacity' => 'Usada para conferir os abastecimentos.',
@@ -125,15 +126,14 @@ return [
         'driver_vehicles' => 'O motorista vê e registra apenas estes veículos.',
         'access_linked' => 'Já entrou no sistema pelo menos uma vez.',
         'access_pending' => 'Ainda não entrou. Convide pela Área do cliente da Kiban com este e-mail.',
+        'any_vehicle' => 'Motorista reserva: vê e abastece todos os veículos ativos.',
     ],
-
     'filters' => [
         'inactive' => 'Inativos',
         'without_inactive' => 'Sem os inativos',
         'with_inactive' => 'Com os inativos',
         'only_inactive' => 'Só os inativos',
     ],
-
     'actions' => [
         'inform_odometer' => 'Informar km',
         'confirm_jump' => 'Confirmo que o km está certo (diferença muito grande)',
@@ -142,11 +142,9 @@ return [
         'correct_odometer' => 'Corrigir km',
         'open_file' => 'Abrir',
     ],
-
     'notifications' => [
         'saved' => 'Salvo.',
     ],
-
     'errors' => [
         'vehicle_inactive' => 'Este veículo está inativo e não recebe novos registros.',
         'odometer_negative' => 'O km não pode ser negativo.',
@@ -155,14 +153,23 @@ return [
         'reason_required' => 'Informe o motivo.',
         'identity_locked' => 'A placa e o chassi estão travados. Use "Alterar placa/chassi".',
         'plate_taken' => 'Já existe um veículo com esta placa.',
+        'odometer_out_of_order' => 'Para esta data, o km precisa estar entre :from e :to (as leituras de antes e de depois).',
+        'station_inactive' => 'Este posto está desativado.',
+        'other_vehicle_reason' => 'Informe o motivo para abastecer um veículo que não é seu.',
+        'open_fuel_up' => 'Este veículo já tem um abastecimento em aberto. Finalize ou cancele antes de gerar outro código.',
+        'fuel_up_closed' => 'Este abastecimento já foi encerrado.',
+        'volume_invalid' => 'Quantidade de combustível inválida.',
+        'amount_invalid' => 'Valor inválido.',
+        'code_unavailable' => 'Não foi possível gerar um código agora. Tente de novo.',
     ],
-
     'denied' => [
         'manager' => 'Apenas o dono ou um administrador da empresa pode fazer isso.',
         'not_your_vehicle' => 'Este veículo não está ligado a você.',
         'vehicle_has_history' => 'Veículo com histórico não pode ser apagado. Altere a situação para "Inativo".',
+        'fuel' => 'Você não tem permissão para abastecer. Fale com o gestor da frota.',
+        'has_history' => 'Tem abastecimentos registrados e não pode ser apagado. Desative em vez de apagar.',
+        'fuel_up_locked' => 'Abastecimentos não são alterados nem apagados. Um abastecimento em aberto pode ser cancelado.',
     ],
-
     'settings' => [
         'title' => 'Configurações da frota',
         'units' => 'Unidades e moeda',
@@ -177,15 +184,16 @@ return [
         'alert_days' => 'Antes (dias)',
         'days' => 'dias',
         'save' => 'Salvar',
+        'fuel' => 'Abastecimento',
+        'allow_other_vehicle' => 'Motoristas podem abastecer veículos que não são deles',
+        'allow_other_vehicle_help' => 'Útil quando alguém sai com outro carro. O motorista informa o motivo e o abastecimento fica marcado para o gestor conferir.',
     ],
-
     'units' => [
         'km' => 'Quilômetros (km)',
         'mi' => 'Milhas (mi)',
         'l' => 'Litros (l)',
         'gal' => 'Galões (gal)',
     ],
-
     'enums' => [
         'vehicle_type' => [
             'car' => 'Carro',
@@ -241,5 +249,117 @@ return [
             'soon' => 'Em breve',
             'overdue' => 'Vencida',
         ],
+        'role' => [
+            'manager' => 'Gestor',
+            'mechanic' => 'Mecânico',
+            'driver' => 'Motorista',
+            'viewer' => 'Consulta',
+        ],
+        'fuel_status' => [
+            'authorized' => 'Código gerado',
+            'completed' => 'Finalizado',
+            'expired' => 'Expirado',
+            'canceled' => 'Cancelado',
+        ],
+        'fuel_flag' => [
+            'over_capacity' => 'Mais que o tanque',
+            'wrong_fuel' => 'Combustível diferente do veículo',
+            'high_consumption' => 'Consumo acima do normal',
+            'other_vehicle' => 'Veículo de outro motorista',
+            'late' => 'Finalizado depois do prazo',
+        ],
+    ],
+    'yes' => 'Sim',
+    'no' => 'Não',
+    'fuel' => [
+        'singular' => 'abastecimento',
+        'plural' => 'abastecimentos',
+        'empty' => 'Nenhum abastecimento',
+        'request_code' => 'Abastecer (gerar código)',
+        'register' => 'Lançar abastecimento',
+        'generate' => 'Gerar código',
+        'sections' => [
+            'code' => 'Código para o posto',
+            'fuel_up' => 'Abastecimento',
+            'photos' => 'Fotos',
+        ],
+        'code_valid_until' => 'Válido até :time. Informe ao frentista.',
+        'code_expired' => 'O código expirou no posto. Ainda dá para finalizar com a nota.',
+        'station_checked' => 'Conferido pelo posto às',
+        'not_checked_yet' => 'Ainda não conferido',
+        'station_page' => 'Página do posto',
+        'station_page_help' => 'O frentista digita o código nesta página para conferir.',
+        'who' => 'Quem abasteceu',
+        'consumption_pending' => 'Calculada no próximo tanque cheio',
+        'warnings' => 'Avisos',
+        'no_warnings' => 'Nenhum',
+        'other_vehicle_reason' => 'Motivo (veículo de outro motorista)',
+        'other_vehicle_help' => 'Este veículo não está ligado a você. Explique por que vai abastecê-lo; o gestor recebe o aviso.',
+        'odometer_photo' => 'Foto do painel (km)',
+        'odometer_photo_help' => 'Tire uma foto do painel mostrando o km.',
+        'receipt_photo' => 'Foto da nota',
+        'only_warnings' => 'Só com avisos',
+        'odometer_now' => 'Km agora (no painel)',
+        'last_odometer' => 'Último km registrado: :value',
+        'not_yours' => 'não é seu',
+        'title_for' => 'Abastecimento · :plate',
+        'finish' => 'Finalizar abastecimento',
+        'finish_help' => 'Copie da nota do posto os litros e o valor, e tire a foto da nota.',
+        'full_tank_help' => 'Encheu o tanque? A média de consumo é calculada de tanque cheio a tanque cheio.',
+        'finished' => 'Abastecimento finalizado.',
+        'cancel' => 'Cancelar',
+    ],
+    'station' => [
+        'title' => 'Conferir código de abastecimento',
+        'valid' => 'Código válido',
+        'invalid' => 'Código inválido, já usado ou expirado',
+        'invalid_help' => 'Não abasteça. Peça ao motorista para gerar um novo código no aplicativo.',
+        'person' => 'Motorista',
+        'max_volume' => 'Tanque de até',
+        'code' => 'Código informado pelo motorista',
+        'check' => 'Conferir',
+        'footer' => 'Confira a placa do veículo antes de abastecer.',
+    ],
+    'team' => [
+        'title' => 'Equipe da frota',
+        'help' => 'O papel de cada pessoa na frota. Donos e administradores da empresa são sempre gestores. Motoristas são ligados pelo e-mail do cadastro de motorista. Aparecem aqui as pessoas que já entraram pelo menos uma vez.',
+        'role' => 'Papel',
+        'company_admin' => 'Dono ou administrador da empresa',
+        'linked_driver' => 'Ligado ao motorista :name',
+        'last_access' => 'Último acesso',
+        'change_role' => 'Alterar papel',
+        'default_role' => 'Automático (motorista se estiver no cadastro, senão consulta)',
+        'default_help' => 'Gestor: tudo. Mecânico: registra os serviços e vê os veículos, sem painel e relatórios. Consulta: só olha.',
+        'empty' => 'Ninguém da empresa entrou no sistema ainda',
+    ],
+    'dashboard' => [
+        'title' => 'Painel da frota',
+        'period' => 'Período',
+        'months' => '{1} :count mês|[2,*] :count meses',
+        'all_vehicles' => 'Todos os veículos',
+        'fuel_spent' => 'Gasto com combustível',
+        'fuel_ups' => '{0} nenhum abastecimento|{1} :count abastecimento|[2,*] :count abastecimentos',
+        'volume' => 'Litros abastecidos',
+        'distance' => 'Rodado',
+        'distance_help' => 'Medido entre tanques cheios',
+        'consumption' => 'Média de consumo',
+        'cost_per_distance' => 'Custo por km',
+        'cost_per_distance_help' => 'Só combustível (manutenção entra na parte 3)',
+        'consumption_chart' => 'Média de consumo por mês (:unit)',
+        'spend_chart' => 'Gasto com combustível por mês (:currency)',
+        'alerts_title' => 'Consumo fora do normal',
+        'alerts_help' => 'Veículos cujo último tanque cheio rendeu bem menos que a média dos últimos 6 meses. Pode ser problema mecânico.',
+        'alert_line' => 'média :average, :percent% pior',
+        'no_alerts' => 'Nenhum veículo com consumo fora do normal.',
+    ],
+    'home' => [
+        'open_code' => 'Abastecimento em aberto · :plate',
+        'my_vehicles' => 'Meus veículos',
+        'fuel_up' => 'Abastecer',
+        'open_vehicle' => 'Ver',
+        'no_vehicles' => 'Nenhum veículo ligado a você. Fale com o gestor da frota.',
+    ],
+    'console' => [
+        'ran' => 'Rotina da frota: :expired códigos expirados.',
     ],
 ];

@@ -2,7 +2,6 @@
 
 return [
     'module' => 'Flota',
-
     'steps' => [
         'vehicle' => 'Registre el primer vehículo',
         'vehicle_help' => 'Con el kilometraje actual, el próximo cambio de aceite y el próximo servicio.',
@@ -11,7 +10,6 @@ return [
         'station' => 'Registre las estaciones de combustible',
         'station_help' => 'Los conductores eligen la estación al cargar combustible.',
     ],
-
     'vehicles' => [
         'singular' => 'vehículo',
         'plural' => 'vehículos',
@@ -25,36 +23,32 @@ return [
             'situation' => 'Situación',
         ],
     ],
-
     'drivers' => [
         'singular' => 'conductor',
         'plural' => 'conductores',
         'empty' => 'Ningún conductor registrado',
+        'singular_title' => 'Conductor',
     ],
-
     'stations' => [
         'singular' => 'estación',
         'plural' => 'estaciones',
         'empty' => 'Ninguna estación registrada',
+        'singular_title' => 'Estación',
     ],
-
     'odometer' => [
         'title' => 'Historial de kilometraje',
         'empty' => 'Ninguna lectura de kilometraje',
     ],
-
     'documents' => [
         'title' => 'Documentos',
         'empty' => 'Ningún documento',
     ],
-
     'events' => [
         'title' => 'Cambios importantes',
         'empty' => 'Ningún cambio',
         'identity' => 'Placa: :from → :to',
         'odometer' => 'Kilometraje: :from → :to',
     ],
-
     'fields' => [
         'vehicles' => 'Vehículos',
         'drivers' => 'Conductores',
@@ -103,8 +97,15 @@ return [
         'station_document' => 'Documento fiscal',
         'address' => 'Dirección',
         'city' => 'Ciudad',
+        'vehicle' => 'Vehículo',
+        'fuel' => 'Combustible',
+        'volume' => 'Litros',
+        'total' => 'Valor total',
+        'unit_price' => 'Precio por litro',
+        'full_tank' => 'Tanque lleno',
+        'consumption' => 'Rendimiento',
+        'any_vehicle' => 'Puede usar cualquier vehículo',
     ],
-
     'helpers' => [
         'identity_locked' => 'Bloqueada después del primer registro. Para cambiarla, use "Cambiar placa/chasis" en la página del vehículo.',
         'tank_capacity' => 'Se usa para verificar las cargas de combustible.',
@@ -125,15 +126,14 @@ return [
         'driver_vehicles' => 'El conductor ve y registra solo estos vehículos.',
         'access_linked' => 'Ya entró al sistema al menos una vez.',
         'access_pending' => 'Aún no entró. Invítelo en el área del cliente de Kiban con este e-mail.',
+        'any_vehicle' => 'Conductor de reserva: ve y carga combustible en todos los vehículos activos.',
     ],
-
     'filters' => [
         'inactive' => 'Inactivos',
         'without_inactive' => 'Sin los inactivos',
         'with_inactive' => 'Con los inactivos',
         'only_inactive' => 'Solo los inactivos',
     ],
-
     'actions' => [
         'inform_odometer' => 'Informar kilometraje',
         'confirm_jump' => 'Confirmo que el kilometraje es correcto (diferencia muy grande)',
@@ -142,11 +142,9 @@ return [
         'correct_odometer' => 'Corregir kilometraje',
         'open_file' => 'Abrir',
     ],
-
     'notifications' => [
         'saved' => 'Guardado.',
     ],
-
     'errors' => [
         'vehicle_inactive' => 'Este vehículo está inactivo y no recibe nuevos registros.',
         'odometer_negative' => 'El kilometraje no puede ser negativo.',
@@ -155,14 +153,23 @@ return [
         'reason_required' => 'Indique el motivo.',
         'identity_locked' => 'La placa y el chasis están bloqueados. Use "Cambiar placa/chasis".',
         'plate_taken' => 'Ya existe un vehículo con esta placa.',
+        'odometer_out_of_order' => 'Para esta fecha, el kilometraje debe estar entre :from y :to (las lecturas de antes y de después).',
+        'station_inactive' => 'Esta estación está desactivada.',
+        'other_vehicle_reason' => 'Indique el motivo para cargar un vehículo que no es suyo.',
+        'open_fuel_up' => 'Este vehículo ya tiene una carga abierta. Finalícela o cancélela antes de generar otro código.',
+        'fuel_up_closed' => 'Esta carga ya fue cerrada.',
+        'volume_invalid' => 'Cantidad de combustible inválida.',
+        'amount_invalid' => 'Valor inválido.',
+        'code_unavailable' => 'No fue posible generar un código ahora. Intente de nuevo.',
     ],
-
     'denied' => [
         'manager' => 'Solo el dueño o un administrador de la empresa puede hacer esto.',
         'not_your_vehicle' => 'Este vehículo no está vinculado a usted.',
         'vehicle_has_history' => 'Un vehículo con historial no se puede eliminar. Cambie su situación a "Inactivo".',
+        'fuel' => 'No tiene permiso para cargar combustible. Hable con el gestor de la flota.',
+        'has_history' => 'Tiene cargas registradas y no se puede eliminar. Desactívelo en lugar de eliminarlo.',
+        'fuel_up_locked' => 'Las cargas no se modifican ni se eliminan. Una carga abierta se puede cancelar.',
     ],
-
     'settings' => [
         'title' => 'Configuración de la flota',
         'units' => 'Unidades y moneda',
@@ -177,15 +184,16 @@ return [
         'alert_days' => 'Antes (días)',
         'days' => 'días',
         'save' => 'Guardar',
+        'fuel' => 'Cargas de combustible',
+        'allow_other_vehicle' => 'Los conductores pueden cargar vehículos que no son suyos',
+        'allow_other_vehicle_help' => 'Útil cuando alguien sale con otro auto. El conductor informa el motivo y la carga queda marcada para el gestor.',
     ],
-
     'units' => [
         'km' => 'Kilómetros (km)',
         'mi' => 'Millas (mi)',
         'l' => 'Litros (l)',
         'gal' => 'Galones (gal)',
     ],
-
     'enums' => [
         'vehicle_type' => [
             'car' => 'Auto',
@@ -241,5 +249,117 @@ return [
             'soon' => 'Pronto',
             'overdue' => 'Vencido',
         ],
+        'role' => [
+            'manager' => 'Gestor',
+            'mechanic' => 'Mecánico',
+            'driver' => 'Conductor',
+            'viewer' => 'Consulta',
+        ],
+        'fuel_status' => [
+            'authorized' => 'Código generado',
+            'completed' => 'Finalizada',
+            'expired' => 'Expirada',
+            'canceled' => 'Cancelada',
+        ],
+        'fuel_flag' => [
+            'over_capacity' => 'Más que el tanque',
+            'wrong_fuel' => 'Combustible distinto del vehículo',
+            'high_consumption' => 'Consumo por encima de lo normal',
+            'other_vehicle' => 'Vehículo de otro conductor',
+            'late' => 'Finalizada fuera de plazo',
+        ],
+    ],
+    'yes' => 'Sí',
+    'no' => 'No',
+    'fuel' => [
+        'singular' => 'carga de combustible',
+        'plural' => 'cargas de combustible',
+        'empty' => 'Ninguna carga de combustible',
+        'request_code' => 'Cargar combustible (generar código)',
+        'register' => 'Registrar carga',
+        'generate' => 'Generar código',
+        'sections' => [
+            'code' => 'Código para la estación',
+            'fuel_up' => 'Carga de combustible',
+            'photos' => 'Fotos',
+        ],
+        'code_valid_until' => 'Válido hasta las :time. Infórmelo al empleado de la estación.',
+        'code_expired' => 'El código expiró en la estación. Aún puede finalizar con la factura.',
+        'station_checked' => 'Verificado por la estación a las',
+        'not_checked_yet' => 'Aún no verificado',
+        'station_page' => 'Página de la estación',
+        'station_page_help' => 'El empleado escribe el código en esta página para verificarlo.',
+        'who' => 'Quién cargó',
+        'consumption_pending' => 'Se calcula en el próximo tanque lleno',
+        'warnings' => 'Avisos',
+        'no_warnings' => 'Ninguno',
+        'other_vehicle_reason' => 'Motivo (vehículo de otro conductor)',
+        'other_vehicle_help' => 'Este vehículo no está vinculado a usted. Explique por qué lo va a cargar; el gestor recibe el aviso.',
+        'odometer_photo' => 'Foto del tablero (kilometraje)',
+        'odometer_photo_help' => 'Tome una foto del tablero mostrando el kilometraje.',
+        'receipt_photo' => 'Foto de la factura',
+        'only_warnings' => 'Solo con avisos',
+        'odometer_now' => 'Kilometraje ahora (tablero)',
+        'last_odometer' => 'Último registrado: :value',
+        'not_yours' => 'no es suyo',
+        'title_for' => 'Carga de combustible · :plate',
+        'finish' => 'Finalizar carga',
+        'finish_help' => 'Copie de la factura los litros y el valor, y tome la foto de la factura.',
+        'full_tank_help' => '¿Llenó el tanque? El rendimiento se calcula de tanque lleno a tanque lleno.',
+        'finished' => 'Carga finalizada.',
+        'cancel' => 'Cancelar',
+    ],
+    'station' => [
+        'title' => 'Verificar código de carga',
+        'valid' => 'Código válido',
+        'invalid' => 'Código inválido, ya usado o expirado',
+        'invalid_help' => 'No cargue. Pida al conductor que genere un nuevo código en la aplicación.',
+        'person' => 'Conductor',
+        'max_volume' => 'Tanque de hasta',
+        'code' => 'Código informado por el conductor',
+        'check' => 'Verificar',
+        'footer' => 'Verifique la placa del vehículo antes de cargar.',
+    ],
+    'team' => [
+        'title' => 'Equipo de la flota',
+        'help' => 'El papel de cada persona en la flota. Los dueños y administradores de la empresa son siempre gestores. Los conductores se vinculan por el e-mail de su registro. Aquí aparecen las personas que ya entraron al menos una vez.',
+        'role' => 'Papel',
+        'company_admin' => 'Dueño o administrador de la empresa',
+        'linked_driver' => 'Vinculado al conductor :name',
+        'last_access' => 'Último acceso',
+        'change_role' => 'Cambiar papel',
+        'default_role' => 'Automático (conductor si está registrado, si no consulta)',
+        'default_help' => 'Gestor: todo. Mecánico: registra los servicios y ve los vehículos, sin panel ni informes. Consulta: solo mira.',
+        'empty' => 'Nadie de la empresa entró al sistema todavía',
+    ],
+    'dashboard' => [
+        'title' => 'Panel de la flota',
+        'period' => 'Período',
+        'months' => '{1} :count mes|[2,*] :count meses',
+        'all_vehicles' => 'Todos los vehículos',
+        'fuel_spent' => 'Gasto en combustible',
+        'fuel_ups' => '{0} ninguna carga|{1} :count carga|[2,*] :count cargas',
+        'volume' => 'Litros cargados',
+        'distance' => 'Recorrido',
+        'distance_help' => 'Medido entre tanques llenos',
+        'consumption' => 'Rendimiento medio',
+        'cost_per_distance' => 'Costo por km',
+        'cost_per_distance_help' => 'Solo combustible (el mantenimiento entra en la parte 3)',
+        'consumption_chart' => 'Rendimiento medio por mes (:unit)',
+        'spend_chart' => 'Gasto en combustible por mes (:currency)',
+        'alerts_title' => 'Consumo fuera de lo normal',
+        'alerts_help' => 'Vehículos cuyo último tanque lleno rindió mucho menos que su media de 6 meses. Puede ser un problema mecánico.',
+        'alert_line' => 'media :average, :percent% peor',
+        'no_alerts' => 'Ningún vehículo con consumo fuera de lo normal.',
+    ],
+    'home' => [
+        'open_code' => 'Carga abierta · :plate',
+        'my_vehicles' => 'Mis vehículos',
+        'fuel_up' => 'Cargar combustible',
+        'open_vehicle' => 'Ver',
+        'no_vehicles' => 'Ningún vehículo vinculado a usted. Hable con el gestor de la flota.',
+    ],
+    'console' => [
+        'ran' => 'Rutina de la flota: :expired códigos expirados.',
     ],
 ];

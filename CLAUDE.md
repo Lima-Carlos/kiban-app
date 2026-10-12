@@ -54,6 +54,8 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 ## Frota (`app/Modules/Fleet`, chave `frota`)
 - Todo registro com km passa por `OdometerService::record()` (nunca alterar `odometer` direto). O km nunca volta; só o gestor corrige com `correct()`.
 - Cadastro, placa/chassi e situação passam por `VehicleService` (travas contra reaproveitar vaga do plano, limite `vehicles`, histórico em `fleet_vehicle_events`).
-- Quem é gestor, motorista ou visitante: `FleetAccess`. Motorista só vê os veículos ligados a ele (`visibleVehicleIds`).
+- Papéis (`FleetAccess` / `FleetRole`): gestor (dono/admin ou dado na Equipe da frota), mecânico, motorista (ligado pelo e-mail; "qualquer veículo" = reserva) e consulta. Cada policy diz quais papéis veem a tela (`$viewRoles`). Motorista só vê os veículos dele (`visibleVehicleIds`).
+- Abastecimentos só por `FuelService` (código de uso único, página do posto `/posto` com limite de tentativas, finalizar, lançar, cancelar). Nunca alterar nem apagar um abastecimento. A média é de tanque cheio a tanque cheio. Painel: `FleetReports`.
+- Os módulos podem ter páginas, widgets e um bloco próprio na página Início para cada pessoa (`Module::pages()`, `widgets()`, `personalHome()`, `showsSetupTo()`).
 - Arquivos e fotos: `FleetFields::photo()` / `file()` (disco privado, pasta da empresa, foto reduzida no navegador).
 - Explicação para o dono: `docs/arquivos/frota.md`.

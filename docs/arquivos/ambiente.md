@@ -26,6 +26,7 @@ As portas são diferentes das do Core (8080, 5432, 6379), então os dois rodam j
 
 ## Agendador (`routes/console.php`)
 - `kiban:licenses`, a cada 5 minutos: renova as licenças e envia os primeiros passos ao Core.
+- `kiban:fleet`, de hora em hora: rotina da Frota (códigos de abastecimento não finalizados expiram).
 
 ## Arquivos
 - Docker:

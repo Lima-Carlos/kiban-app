@@ -50,6 +50,7 @@ class AppPanelProvider extends PanelProvider
                 ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())
+            ->widgets(collect(config('kiban.modules'))->flatMap(fn (string $module): array => app($module)->widgets())->all())
             ->userMenuItems([
                 Action::make('core_account')
                     ->label(fn (): string => __('app.menu.account'))

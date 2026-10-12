@@ -3,6 +3,7 @@
 namespace App\Modules;
 
 use App\Models\Tenant;
+use App\Models\User;
 
 /**
  * A system sold by the Kiban Core (Frota, Ponto...). The key is the product code in the Core:
@@ -48,6 +49,32 @@ abstract class Module
     public function pages(): array
     {
         return [];
+    }
+
+    /**
+     * Dashboard widgets of the module (registered in the panel).
+     *
+     * @return array<int, class-string>
+     */
+    public function widgets(): array
+    {
+        return [];
+    }
+
+    /** Who sees the first-steps assistant of this module (by default: owners and administrators). */
+    public function showsSetupTo(User $user): bool
+    {
+        return $user->canManageTenant();
+    }
+
+    /**
+     * A start-page block made for this person (e.g. the driver's buttons), or null.
+     *
+     * @return array{view: string, data: array<string, mixed>}|null
+     */
+    public function personalHome(User $user): ?array
+    {
+        return null;
     }
 
     /**

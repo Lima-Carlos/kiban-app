@@ -11,6 +11,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -58,7 +59,7 @@ class FleetSettingsPage extends Page
 
     public function mount(): void
     {
-        $this->form->fill(FleetSetting::current()->only(['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days']));
+        $this->form->fill(FleetSetting::current()->only(['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days', 'allow_other_vehicle']));
     }
 
     public function form(Schema $schema): Schema
@@ -89,6 +90,12 @@ class FleetSettingsPage extends Page
                             ->searchable()
                             ->required()
                             ->disabled($locked),
+                    ]),
+                Section::make(__('fleet.settings.fuel'))
+                    ->components([
+                        Toggle::make('allow_other_vehicle')
+                            ->label(__('fleet.settings.allow_other_vehicle'))
+                            ->helperText(__('fleet.settings.allow_other_vehicle_help')),
                     ]),
                 Section::make(__('fleet.settings.alerts'))
                     ->description(__('fleet.settings.alerts_help'))

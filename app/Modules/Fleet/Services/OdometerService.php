@@ -36,6 +36,33 @@ class OdometerService
                 throw new FleetException(__('fleet.errors.odometer_negative'));
             }
 
+            // A record from the past (e.g. a receipt typed in later): it must fit between the readings
+            // before and after that moment, and does not change the current odometer.
+            $later = $at !== null
+                ? OdometerReading::query()->where('vehicle_id', $vehicle->getKey())->where('read_at', '>', $at)->min('value')
+                : null;
+
+            if ($later !== null) {
+                $before = (int) OdometerReading::query()->where('vehicle_id', $vehicle->getKey())->where('read_at', '<=', $at)->max('value');
+
+                if ($value < $before || $value > (int) $later) {
+                    throw new FleetException(__('fleet.errors.odometer_out_of_order', [
+                        'from' => FleetFormat::distance($before),
+                        'to' => FleetFormat::distance((int) $later),
+                    ]));
+                }
+
+                return OdometerReading::create([
+                    'vehicle_id' => $vehicle->getKey(),
+                    'value' => $value,
+                    'source' => $source,
+                    'record_type' => $record?->getMorphClass(),
+                    'record_id' => $record?->getKey(),
+                    'read_at' => $at,
+                    'user_id' => $user?->getKey(),
+                ]);
+            }
+
             if ($value < $vehicle->odometer) {
                 throw new FleetException(__('fleet.errors.odometer_backwards', ['current' => FleetFormat::distance($vehicle->odometer)]));
             }

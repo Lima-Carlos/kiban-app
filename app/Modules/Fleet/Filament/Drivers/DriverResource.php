@@ -78,6 +78,10 @@ class DriverResource extends ModuleResource
                     ->label(__('fleet.fields.is_active'))
                     ->default(true)
                     ->inline(false),
+                Toggle::make('any_vehicle')
+                    ->label(__('fleet.fields.any_vehicle'))
+                    ->helperText(__('fleet.helpers.any_vehicle'))
+                    ->inline(false),
                 Select::make('vehicles')
                     ->label(__('fleet.fields.vehicles'))
                     ->relationship('vehicles', 'plate', fn (Builder $query) => $query->where('status', '!=', 'inactive'))

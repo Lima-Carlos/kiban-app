@@ -14,7 +14,7 @@ class FleetSetting extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days'];
+    protected $fillable = ['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days', 'allow_other_vehicle'];
 
     /** Countries that use miles / gallons by default. */
     protected const MILES = ['US', 'GB', 'LR', 'MM'];
@@ -39,6 +39,7 @@ class FleetSetting extends Model
         return [
             'alert_distance' => 'integer',
             'alert_days' => 'integer',
+            'allow_other_vehicle' => 'boolean',
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Modules\Fleet\Policies;
 
 use App\Models\User;
+use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\ModulePolicy;
@@ -17,14 +18,18 @@ abstract class FleetPolicy extends ModulePolicy
 {
     protected string $module = FleetModule::KEY;
 
-    /** Screens that drivers do not see at all (e.g. the list of drivers). */
-    protected bool $hiddenFromDrivers = false;
+    /**
+     * Roles that see this screen at all (e.g. drivers do not see the list of drivers).
+     *
+     * @var array<int, FleetRole>
+     */
+    protected array $viewRoles = [FleetRole::Manager, FleetRole::Mechanic, FleetRole::Driver, FleetRole::Viewer];
 
     public function viewAny(User $user): Response
     {
         $access = parent::viewAny($user);
 
-        if ($access->allowed() && $this->hiddenFromDrivers && $this->fleetAccess()->isDriver($user)) {
+        if ($access->allowed() && ! in_array($this->fleetAccess()->fleetRole($user), $this->viewRoles, true)) {
             return Response::deny(__('fleet.denied.manager'));
         }
 

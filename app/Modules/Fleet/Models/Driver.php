@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A driver of the company. When their e-mail is the same as a Kiban account that signed in here,
@@ -20,13 +21,17 @@ class Driver extends Model
 
     protected $table = 'fleet_drivers';
 
-    protected $fillable = ['name', 'email', 'phone', 'document', 'license_number', 'license_category', 'license_expires_on', 'is_active', 'notes'];
+    protected $fillable = ['name', 'email', 'phone', 'document', 'license_number', 'license_category', 'license_expires_on', 'is_active', 'any_vehicle', 'notes'];
+
+    /** New ones start active (same default as the database). */
+    protected $attributes = ['is_active' => true, 'any_vehicle' => false];
 
     protected function casts(): array
     {
         return [
             'license_expires_on' => 'date',
             'is_active' => 'boolean',
+            'any_vehicle' => 'boolean',
         ];
     }
 
@@ -49,5 +54,13 @@ class Driver extends Model
     public function vehicles(): BelongsToMany
     {
         return $this->belongsToMany(Vehicle::class, 'fleet_driver_vehicle')->using(DriverVehicle::class)->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<FuelUp, $this>
+     */
+    public function fuelUps(): HasMany
+    {
+        return $this->hasMany(FuelUp::class);
     }
 }

@@ -44,15 +44,18 @@ class Home extends Page
     public function getModules(): array
     {
         $tenant = $this->tenant();
+        $user = auth()->user();
 
         return collect(app(ModuleRegistry::class)->enabledFor($tenant))
-            ->map(function (Module $module) use ($tenant): array {
-                $steps = $module->progress($tenant);
+            ->map(function (Module $module) use ($tenant, $user): array {
+                // First steps only for who sets the module up; the others get their own block (e.g. driver buttons).
+                $steps = $module->showsSetupTo($user) ? $module->progress($tenant) : [];
                 $done = count(array_filter($steps, fn (array $step): bool => $step['done']));
                 $total = count($steps);
 
                 return [
                     'module' => $module,
+                    'personal' => $module->personalHome($user),
                     'steps' => $steps,
                     'done' => $done,
                     'total' => $total,

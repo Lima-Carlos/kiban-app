@@ -2,7 +2,6 @@
 
 return [
     'module' => 'Fleet',
-
     'steps' => [
         'vehicle' => 'Register the first vehicle',
         'vehicle_help' => 'With the current odometer, the next oil change and the next service.',
@@ -11,7 +10,6 @@ return [
         'station' => 'Register the fuel stations',
         'station_help' => 'Drivers pick the station when refueling.',
     ],
-
     'vehicles' => [
         'singular' => 'vehicle',
         'plural' => 'vehicles',
@@ -25,36 +23,32 @@ return [
             'situation' => 'Situation',
         ],
     ],
-
     'drivers' => [
         'singular' => 'driver',
         'plural' => 'drivers',
         'empty' => 'No drivers registered',
+        'singular_title' => 'Driver',
     ],
-
     'stations' => [
         'singular' => 'fuel station',
         'plural' => 'fuel stations',
         'empty' => 'No fuel stations registered',
+        'singular_title' => 'Fuel station',
     ],
-
     'odometer' => [
         'title' => 'Odometer history',
         'empty' => 'No odometer readings',
     ],
-
     'documents' => [
         'title' => 'Documents',
         'empty' => 'No documents',
     ],
-
     'events' => [
         'title' => 'Important changes',
         'empty' => 'No changes',
         'identity' => 'Plate: :from → :to',
         'odometer' => 'Odometer: :from → :to',
     ],
-
     'fields' => [
         'vehicles' => 'Vehicles',
         'drivers' => 'Drivers',
@@ -103,8 +97,15 @@ return [
         'station_document' => 'Company ID',
         'address' => 'Address',
         'city' => 'City',
+        'vehicle' => 'Vehicle',
+        'fuel' => 'Fuel',
+        'volume' => 'Volume',
+        'total' => 'Total amount',
+        'unit_price' => 'Price per unit',
+        'full_tank' => 'Full tank',
+        'consumption' => 'Consumption',
+        'any_vehicle' => 'May use any vehicle',
     ],
-
     'helpers' => [
         'identity_locked' => 'Locked after the first record. To change it, use "Change plate/VIN" on the vehicle page.',
         'tank_capacity' => 'Used to check the fuel-ups.',
@@ -125,15 +126,14 @@ return [
         'driver_vehicles' => 'The driver sees and records only these vehicles.',
         'access_linked' => 'Has signed in at least once.',
         'access_pending' => 'Has not signed in yet. Invite them in the Kiban customer area with this e-mail.',
+        'any_vehicle' => 'Backup driver: sees and fuels every active vehicle.',
     ],
-
     'filters' => [
         'inactive' => 'Inactive',
         'without_inactive' => 'Without inactive',
         'with_inactive' => 'With inactive',
         'only_inactive' => 'Only inactive',
     ],
-
     'actions' => [
         'inform_odometer' => 'Enter odometer',
         'confirm_jump' => 'I confirm the reading is right (very large difference)',
@@ -142,11 +142,9 @@ return [
         'correct_odometer' => 'Correct odometer',
         'open_file' => 'Open',
     ],
-
     'notifications' => [
         'saved' => 'Saved.',
     ],
-
     'errors' => [
         'vehicle_inactive' => 'This vehicle is inactive and accepts no new records.',
         'odometer_negative' => 'The odometer cannot be negative.',
@@ -155,14 +153,23 @@ return [
         'reason_required' => 'Enter the reason.',
         'identity_locked' => 'Plate and VIN are locked. Use "Change plate/VIN".',
         'plate_taken' => 'There is already a vehicle with this plate.',
+        'odometer_out_of_order' => 'For this date, the odometer must be between :from and :to (the readings before and after).',
+        'station_inactive' => 'This fuel station is deactivated.',
+        'other_vehicle_reason' => 'Give the reason for fueling a vehicle that is not yours.',
+        'open_fuel_up' => 'This vehicle already has an open fuel-up. Finish or cancel it before generating another code.',
+        'fuel_up_closed' => 'This fuel-up is already closed.',
+        'volume_invalid' => 'Invalid fuel volume.',
+        'amount_invalid' => 'Invalid amount.',
+        'code_unavailable' => 'Could not generate a code now. Please try again.',
     ],
-
     'denied' => [
         'manager' => 'Only the company owner or an administrator can do this.',
         'not_your_vehicle' => 'This vehicle is not linked to you.',
         'vehicle_has_history' => 'A vehicle with history cannot be deleted. Change its status to "Inactive".',
+        'fuel' => 'You are not allowed to fuel. Talk to the fleet manager.',
+        'has_history' => 'It has fuel-ups recorded and cannot be deleted. Deactivate it instead.',
+        'fuel_up_locked' => 'Fuel-ups are never changed or deleted. An open fuel-up can be canceled.',
     ],
-
     'settings' => [
         'title' => 'Fleet settings',
         'units' => 'Units and currency',
@@ -177,15 +184,16 @@ return [
         'alert_days' => 'Before (days)',
         'days' => 'days',
         'save' => 'Save',
+        'fuel' => 'Fuel-ups',
+        'allow_other_vehicle' => 'Drivers may fuel vehicles that are not theirs',
+        'allow_other_vehicle_help' => 'Useful when someone takes another car. The driver gives a reason and the fuel-up is flagged for the manager.',
     ],
-
     'units' => [
         'km' => 'Kilometers (km)',
         'mi' => 'Miles (mi)',
         'l' => 'Liters (l)',
         'gal' => 'Gallons (gal)',
     ],
-
     'enums' => [
         'vehicle_type' => [
             'car' => 'Car',
@@ -241,5 +249,117 @@ return [
             'soon' => 'Soon',
             'overdue' => 'Overdue',
         ],
+        'role' => [
+            'manager' => 'Manager',
+            'mechanic' => 'Mechanic',
+            'driver' => 'Driver',
+            'viewer' => 'Viewer',
+        ],
+        'fuel_status' => [
+            'authorized' => 'Code generated',
+            'completed' => 'Finished',
+            'expired' => 'Expired',
+            'canceled' => 'Canceled',
+        ],
+        'fuel_flag' => [
+            'over_capacity' => 'More than the tank',
+            'wrong_fuel' => 'Fuel different from the vehicle',
+            'high_consumption' => 'Consumption above normal',
+            'other_vehicle' => 'Another driver\'s vehicle',
+            'late' => 'Finished after the deadline',
+        ],
+    ],
+    'yes' => 'Yes',
+    'no' => 'No',
+    'fuel' => [
+        'singular' => 'fuel-up',
+        'plural' => 'fuel-ups',
+        'empty' => 'No fuel-ups',
+        'request_code' => 'Fuel up (get a code)',
+        'register' => 'Enter fuel-up',
+        'generate' => 'Generate code',
+        'sections' => [
+            'code' => 'Code for the station',
+            'fuel_up' => 'Fuel-up',
+            'photos' => 'Photos',
+        ],
+        'code_valid_until' => 'Valid until :time. Tell it to the attendant.',
+        'code_expired' => 'The code expired at the station. You can still finish with the receipt.',
+        'station_checked' => 'Checked by the station at',
+        'not_checked_yet' => 'Not checked yet',
+        'station_page' => 'Station page',
+        'station_page_help' => 'The attendant types the code on this page to check it.',
+        'who' => 'Fueled by',
+        'consumption_pending' => 'Calculated at the next full tank',
+        'warnings' => 'Warnings',
+        'no_warnings' => 'None',
+        'other_vehicle_reason' => 'Reason (another driver\'s vehicle)',
+        'other_vehicle_help' => 'This vehicle is not linked to you. Explain why you are fueling it; the manager is notified.',
+        'odometer_photo' => 'Dashboard photo (odometer)',
+        'odometer_photo_help' => 'Take a photo of the dashboard showing the odometer.',
+        'receipt_photo' => 'Receipt photo',
+        'only_warnings' => 'Only with warnings',
+        'odometer_now' => 'Odometer now (dashboard)',
+        'last_odometer' => 'Last recorded: :value',
+        'not_yours' => 'not yours',
+        'title_for' => 'Fuel-up · :plate',
+        'finish' => 'Finish fuel-up',
+        'finish_help' => 'Copy the volume and the amount from the station receipt and take a photo of it.',
+        'full_tank_help' => 'Did you fill the tank? Consumption is measured from full tank to full tank.',
+        'finished' => 'Fuel-up finished.',
+        'cancel' => 'Cancel',
+    ],
+    'station' => [
+        'title' => 'Check fuel code',
+        'valid' => 'Valid code',
+        'invalid' => 'Invalid, used or expired code',
+        'invalid_help' => 'Do not fuel. Ask the driver to generate a new code in the app.',
+        'person' => 'Driver',
+        'max_volume' => 'Tank up to',
+        'code' => 'Code given by the driver',
+        'check' => 'Check',
+        'footer' => 'Check the vehicle plate before fueling.',
+    ],
+    'team' => [
+        'title' => 'Fleet team',
+        'help' => 'The role of each person in the fleet. Company owners and administrators are always managers. Drivers are linked by the e-mail in the driver record. People appear here after signing in at least once.',
+        'role' => 'Role',
+        'company_admin' => 'Company owner or administrator',
+        'linked_driver' => 'Linked to driver :name',
+        'last_access' => 'Last access',
+        'change_role' => 'Change role',
+        'default_role' => 'Automatic (driver if in the driver records, otherwise viewer)',
+        'default_help' => 'Manager: everything. Mechanic: records services and sees vehicles, no dashboard or reports. Viewer: only looks.',
+        'empty' => 'Nobody from the company has signed in yet',
+    ],
+    'dashboard' => [
+        'title' => 'Fleet dashboard',
+        'period' => 'Period',
+        'months' => '{1} :count month|[2,*] :count months',
+        'all_vehicles' => 'All vehicles',
+        'fuel_spent' => 'Spent on fuel',
+        'fuel_ups' => '{0} no fuel-ups|{1} :count fuel-up|[2,*] :count fuel-ups',
+        'volume' => 'Fuel volume',
+        'distance' => 'Driven',
+        'distance_help' => 'Measured between full tanks',
+        'consumption' => 'Average consumption',
+        'cost_per_distance' => 'Cost per distance',
+        'cost_per_distance_help' => 'Fuel only (maintenance joins in part 3)',
+        'consumption_chart' => 'Average consumption per month (:unit)',
+        'spend_chart' => 'Spent on fuel per month (:currency)',
+        'alerts_title' => 'Unusual consumption',
+        'alerts_help' => 'Vehicles whose last full tank did much worse than their 6-month average. It may be a mechanical problem.',
+        'alert_line' => 'average :average, :percent% worse',
+        'no_alerts' => 'No vehicle with unusual consumption.',
+    ],
+    'home' => [
+        'open_code' => 'Open fuel-up · :plate',
+        'my_vehicles' => 'My vehicles',
+        'fuel_up' => 'Fuel up',
+        'open_vehicle' => 'Open',
+        'no_vehicles' => 'No vehicle linked to you. Talk to the fleet manager.',
+    ],
+    'console' => [
+        'ran' => 'Fleet routine: :expired codes expired.',
     ],
 ];
