@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Language: the person's choice (from the Core), then the session, then the company's language,
+ * Language: the choice made in this app, then the session, then the language of the Kiban account, then the company's,
  * then the browser, then the default.
  */
 class SetLocale
@@ -22,8 +22,9 @@ class SetLocale
         $tenant = $this->context->current();
 
         $candidates = [
-            $request->user()?->locale,
+            $request->user()?->app_locale,
             $request->hasSession() ? $request->session()->get('locale') : null,
+            $request->user()?->locale,
             $tenant?->license()->tenant('locale'),
             $request->getPreferredLanguage($supported),
         ];

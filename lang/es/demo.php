@@ -25,6 +25,7 @@ return [
     ],
 
     'fields' => [
+        'tasks' => 'Tareas',
         'name' => 'Nombre',
         'list' => 'Lista',
         'title' => 'Tarea',

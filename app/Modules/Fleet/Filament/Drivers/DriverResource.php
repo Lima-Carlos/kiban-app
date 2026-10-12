@@ -79,7 +79,7 @@ class DriverResource extends ModuleResource
                     ->default(true)
                     ->inline(false),
                 Select::make('vehicles')
-                    ->label(__('fleet.vehicles.plural'))
+                    ->label(__('fleet.fields.vehicles'))
                     ->relationship('vehicles', 'plate', fn (Builder $query) => $query->where('status', '!=', 'inactive'))
                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->displayName())
                     ->multiple()
@@ -112,7 +112,7 @@ class DriverResource extends ModuleResource
                     ->falseColor('gray')
                     ->tooltip(fn (Driver $record): string => $record->user_id ? __('fleet.helpers.access_linked') : __('fleet.helpers.access_pending')),
                 TextColumn::make('vehicles.plate')
-                    ->label(__('fleet.vehicles.plural'))
+                    ->label(__('fleet.fields.vehicles'))
                     ->badge()
                     ->placeholder('—'),
                 TextColumn::make('license_expires_on')

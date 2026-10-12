@@ -55,7 +55,7 @@ class TaskListResource extends ModuleResource
                     ->label(__('demo.fields.name'))
                     ->searchable(),
                 TextColumn::make('tasks_count')
-                    ->label(__('demo.tasks.plural'))
+                    ->label(__('demo.fields.tasks'))
                     ->counts('tasks')
                     ->alignEnd(),
             ])

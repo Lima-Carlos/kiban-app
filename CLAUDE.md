@@ -19,7 +19,7 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 
 ## Regras
 - **Comunicação:** responder e documentar sempre em português (pt-BR), de forma simples. O dono do projeto não é programador: explicar cada etapa e esperar a confirmação antes de seguir.
-- **Multi-idioma** (pt_BR, en, es): nenhum texto visível fica direto no código. Usar as chaves de `lang/`. Idiomas em `config/kiban.php`.
+- **Multi-idioma** (pt_BR, en, es): nenhum texto visível fica direto no código. Usar as chaves de `lang/`. Idiomas em `config/kiban.php`. Toda tela tem como trocar o idioma (menu do usuário e topo das páginas simples, rota `locale.switch`). Rótulos de campo/coluna usam chaves com letra maiúscula (`fields.*`), nunca `singular`/`plural`.
 - **Marca:** a mesma do Core (logo em `resources/brand/`, imagens em `public/images/brand/`, azul `#044299`).
 - **Documentação:** todo arquivo novo ganha uma explicação simples em português em `docs/arquivos/` (listada em `docs/arquivos/README.md`).
 - **Senhas:** tudo vai para `CREDENCIAIS.local.md` (no `.gitignore`). O segredo do Core (`KIBAN_CORE_CLIENT_SECRET`) fica só no `.env`, nunca no Git nem no chat.

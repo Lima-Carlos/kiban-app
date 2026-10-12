@@ -16,14 +16,15 @@
 - Os "crachás" do Core ficam guardados embaralhados na sessão.
 - **A cada 10 minutos**, a casca pergunta ao Core se a pessoa ainda faz parte da empresa. Quem foi removido da equipe no Core perde o acesso aqui também. Se a função mudou, ela é atualizada.
 - **Se o Core estiver fora do ar**, quem já está dentro continua trabalhando. Só um login novo precisa do Core.
-- O idioma segue o da pessoa no Core. A troca de idioma e de senha é feita em "Minha conta Kiban" (menu do usuário).
+- **Idioma:** no menu do usuário (a bolinha com as iniciais) há Português, English e Español. Nas páginas simples, os idiomas ficam no topo. A escolha fica guardada para a pessoa e vale mais que o idioma da conta Kiban. Sem escolha, vale o idioma da conta Kiban, depois o da empresa e depois o do navegador.
+- A troca de senha e das duas etapas é feita em "Minha conta Kiban" (menu do usuário).
 
 ## Arquivos
 - `app/Http/Controllers/Auth/SingleSignOnController.php`: entrada, retorno e bilhete.
 - `app/Auth/CoreSignIn.php`: cria ou atualiza a pessoa e a função dela na empresa.
 - `app/Http/Middleware/RevalidateMembership.php`: a conferência a cada 10 minutos.
 - `app/Http/Responses/LogoutResponse.php`: página "Você saiu".
-- `app/Http/Middleware/SetLocale.php`: idioma da pessoa (vem do Core), depois o da empresa.
+- `app/Http/Middleware/SetLocale.php` e `app/Http/Controllers/LocaleController.php` (`/idioma/{idioma}`): escolha e troca de idioma. Campo `users.app_locale` (`database/migrations/2026_10_12_110000_...`).
 - `routes/web.php`: os endereços do login e da página central.
 - Telas: `resources/views/auth/` (sem acesso, você saiu, não foi possível entrar).
 - Testes: `tests/Feature/SingleSignOnTest.php`.

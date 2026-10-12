@@ -56,6 +56,7 @@ class AppPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedUserCircle)
                     ->url(fn (): string => config('kiban.core.url').'/conta')
                     ->openUrlInNewTab(),
+                ...$this->localeMenuItems(),
             ])
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.license-notice'))
             ->middleware([
@@ -85,6 +86,22 @@ class AppPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    /**
+     * One entry per language in the user menu; the current one is marked with a check.
+     *
+     * @return array<int, Action>
+     */
+    protected function localeMenuItems(): array
+    {
+        return collect(config('kiban.locales'))
+            ->map(fn (string $name, string $code): Action => Action::make("locale_{$code}")
+                ->label($name)
+                ->icon(fn (): Heroicon => app()->getLocale() === $code ? Heroicon::OutlinedCheck : Heroicon::OutlinedLanguage)
+                ->url(fn (): string => route('locale.switch', $code)))
+            ->values()
+            ->all();
     }
 
     /**

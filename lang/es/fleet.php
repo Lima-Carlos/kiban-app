@@ -56,6 +56,7 @@ return [
     ],
 
     'fields' => [
+        'vehicles' => 'Vehículos',
         'drivers' => 'Conductores',
         'plate' => 'Placa',
         'vin' => 'Chasis (VIN)',

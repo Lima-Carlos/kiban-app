@@ -23,9 +23,16 @@
         .button, button { display: block; width: 100%; margin-top: 20px; padding: 12px; background: #044299; color: #fff; border: 0; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
         .button.secondary { background: #fff; color: #044299; border: 1px solid #044299; margin-top: 10px; }
         .muted { font-size: 13px; }
+        .languages { position: absolute; top: 16px; right: 24px; display: flex; gap: 12px; font-size: 13px; }
+        .languages a { color: #6b7280; text-decoration: none; } .languages a.active { color: #044299; font-weight: bold; }
     </style>
 </head>
 <body>
+    <nav class="languages">
+        @foreach (config('kiban.locales') as $code => $name)
+            <a href="{{ route('locale.switch', $code) }}" @class(['active' => app()->getLocale() === $code])>{{ $name }}</a>
+        @endforeach
+    </nav>
     <main class="card">
         <img class="logo" src="{{ asset('images/brand/logo.png') }}" alt="{{ config('app.name') }}">
         {{ $slot }}
