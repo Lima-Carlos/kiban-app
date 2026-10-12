@@ -2,12 +2,10 @@
 
 return [
     'date_format' => 'm/d/Y',
-    'datetime_format' => 'm/d/Y \a\t g:i A',
-
+    'datetime_format' => 'm/d/Y \\a\\t g:i A',
     'menu' => [
         'account' => 'My Kiban account',
     ],
-
     'home' => [
         'title' => 'Home',
         'welcome' => 'Welcome to :name',
@@ -18,14 +16,12 @@ return [
         'no_modules' => 'No systems subscribed',
         'no_modules_help' => 'The systems your company subscribes to appear here. Contact Kiban to subscribe.',
     ],
-
     'license' => [
         'read_only_badge' => 'Read-only',
         'read_only' => ':module is read-only: you can see the data but not change it. Settle the subscription in "My Kiban account".',
         'trial' => 'The :module trial ends on :date.',
         'offline' => 'We have not been able to reach Kiban for a while. The system keeps working until :date. If this notice stays, contact support.',
     ],
-
     'denied' => [
         'module' => 'This system is not part of the company plan.',
         'read_only' => 'Read-only: the data cannot be changed until the subscription is settled.',
@@ -33,7 +29,6 @@ return [
         'limit' => 'The company plan allows up to :limit records here. To add more, upgrade the plan in "My Kiban account".',
         'manager' => 'Only the company owner or an administrator can do this.',
     ],
-
     'central' => [
         'title' => 'Sign in',
         'intro' => 'Type your company address.',
@@ -43,13 +38,11 @@ return [
         'go' => 'Continue',
         'account' => 'Not sure of the address? See it in <a href=":url">My Kiban account</a>.',
     ],
-
     'not_found' => [
         'title' => 'Company not found',
         'body' => 'There is no company at this address. Please check that it was typed correctly.',
         'action' => 'Find my company',
     ],
-
     'blocked' => [
         'title' => 'Access unavailable',
         'inactive' => 'This company\'s access is suspended. The person in charge can see the details in "My Kiban account".',
@@ -57,7 +50,6 @@ return [
         'unavailable' => 'We could not confirm this company\'s license right now. Try again in a few minutes.',
         'action' => 'Go to My Kiban account',
     ],
-
     'no_access' => [
         'title' => 'No access to this company',
         'body' => 'Your account is not part of the :company team. Ask the person in charge of the company to invite you.',
@@ -65,7 +57,6 @@ return [
         'account' => 'Go to My Kiban account',
         'retry' => 'Try again',
     ],
-
     'signed_out' => [
         'title' => 'You signed out',
         'body' => 'You signed out of the :company system.',
@@ -73,15 +64,57 @@ return [
         'denied' => 'The sign-in was canceled. You can try again whenever you want.',
         'again' => 'Sign in again',
     ],
-
     'failed' => [
         'title' => 'Could not sign in',
         'expired' => 'The sign-in link expired or was already used. Please try again.',
         'core' => 'We could not reach Kiban right now. Try again in a few minutes.',
         'again' => 'Try again',
     ],
-
     'console' => [
         'licenses' => 'Licenses refreshed: :ok. No answer from the Core: :failed.',
+    ],
+    'people' => [
+        'title' => 'People',
+        'help' => 'Everyone of the company in the Kiban systems. Add drivers, mechanics and managers here and send the access by WhatsApp or e-mail.',
+        'add' => 'Add person',
+        'name' => 'Name',
+        'phone' => 'Mobile',
+        'phone_help' => 'With area code (outside Brazil, start with + and the country code). The person signs in with this number.',
+        'email' => 'E-mail (optional)',
+        'email_help' => 'If filled, the access also goes by e-mail.',
+        'company_role' => 'In the company',
+        'systems' => 'In the systems',
+        'status' => 'Access',
+        'edit' => 'Edit',
+        'saved' => 'Saved.',
+        'send_access' => 'Send access again',
+        'send_access_help' => 'A new access link will be generated. The previous link stops working.',
+        'remove' => 'Remove from the company',
+        'remove_help' => 'The person loses access to all the company systems within 10 minutes. Their history is kept.',
+        'removed' => 'Person removed.',
+        'empty' => 'Nobody added yet',
+        'access_ready' => 'Access for :name is ready',
+        'access_ready_body' => 'Send the link to the person (valid for 7 days): :link',
+        'access_ready_email' => 'We also sent it by e-mail. If you prefer, send the link by WhatsApp (valid for 7 days): :link',
+        'already_has_access' => ':name already has access: just sign in with the mobile or e-mail and the password.',
+        'send_whatsapp' => 'Send by WhatsApp',
+        'whatsapp_message' => 'Hi, :name! This is your access to the :company systems on Kiban. Tap the link to create your password: :link',
+        'roles' => [
+            'owner' => 'Owner',
+            'admin' => 'Administrator',
+            'member' => 'Member',
+        ],
+        'statuses' => [
+            'active' => 'Active',
+            'invited' => 'Invitation sent',
+            'blocked' => 'Blocked',
+        ],
+    ],
+    'install' => [
+        'title' => 'Install the app on your phone',
+        'ios' => 'In Safari, tap Share and then "Add to Home Screen".',
+        'android' => 'In the browser menu (⋮), tap "Install app" or "Add to Home screen".',
+        'button' => 'Install',
+        'close' => 'Close',
     ],
 ];

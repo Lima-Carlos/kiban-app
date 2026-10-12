@@ -3,6 +3,7 @@
 namespace App\Modules\Fleet\Filament\Vehicles;
 
 use App\Filament\Support\ModuleResource;
+use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\Enums\FuelType;
 use App\Modules\Fleet\Enums\VehicleStatus;
 use App\Modules\Fleet\Enums\VehicleType;
@@ -60,6 +61,12 @@ class VehicleResource extends ModuleResource
     public static function getPluralModelLabel(): string
     {
         return __('fleet.vehicles.plural');
+    }
+
+    /** Menu by role: drivers see their vehicles on the start page; mechanics work with maintenance. */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return parent::shouldRegisterNavigation() && app(FleetAccess::class)->fleetRole() !== FleetRole::Driver;
     }
 
     /** Drivers only see the vehicles assigned to them. */

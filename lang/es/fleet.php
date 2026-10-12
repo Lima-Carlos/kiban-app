@@ -362,4 +362,9 @@ return [
     'console' => [
         'ran' => 'Rutina de la flota: :expired códigos expirados.',
     ],
+    'people' => [
+        'role' => 'Papel en la flota',
+        'role_help' => 'Conductor: carga combustible y hace inspecciones por el celular. Mecánico: mantenimientos y lavados. Gestor: todo. Consulta: solo mira.',
+        'send_access_help' => 'El conductor recibe el enlace para crear la contraseña y entrar por el celular. Indique su celular (y e-mail, si tiene).',
+    ],
 ];

@@ -242,7 +242,7 @@ class FleetFuelTest extends TestCase
         $this->get($this->company->url('/frota/veiculos'))->assertOk();
         $this->get($this->company->url('/frota/abastecimentos'))->assertOk();
         $this->get($this->company->url('/frota/painel'))->assertForbidden();
-        $this->get($this->company->url('/frota/equipe'))->assertForbidden();
+        $this->get($this->company->url('/pessoas'))->assertForbidden();
         $this->get($this->company->url('/frota/motoristas'))->assertForbidden();
         $this->get($this->company->url('/frota/postos'))->assertForbidden();
 
@@ -250,7 +250,7 @@ class FleetFuelTest extends TestCase
         FleetMember::query()->where('user_id', $member->id)->update(['role' => FleetRole::Manager->value]);
         $this->assertTrue($access->isManager($member));
         $this->get($this->company->url('/frota/painel'))->assertOk();
-        $this->get($this->company->url('/frota/equipe'))->assertOk()->assertSee($member->email);
+        $this->get($this->company->url('/pessoas'))->assertOk()->assertSee($member->email);
 
         // Driver: home with their vehicles and the "fuel up" button, no setup steps.
         $driver = $this->driver([$this->car]);

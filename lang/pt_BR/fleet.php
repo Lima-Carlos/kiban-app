@@ -362,4 +362,9 @@ return [
     'console' => [
         'ran' => 'Rotina da frota: :expired códigos expirados.',
     ],
+    'people' => [
+        'role' => 'Papel na frota',
+        'role_help' => 'Motorista: abastece e faz vistorias pelo celular. Mecânico: manutenções e lavagens. Gestor: tudo. Consulta: só olha.',
+        'send_access_help' => 'O motorista recebe o link para criar a senha e entrar pelo celular. Informe o celular dele (e o e-mail, se tiver).',
+    ],
 ];

@@ -152,16 +152,29 @@ class SingleSignOnTest extends TestCase
 
         // Role changed in the Core: updated here.
         $this->coreDown = false;
-        $this->coreMe = $this->coreMeFor($user, [$this->padaria], 'admin');
+        $this->coreMember($this->padaria, $user, 'admin');
         $this->get($this->padaria->url('/'))->assertOk();
         $user->forgetRoles();
         $this->assertSame('admin', $user->roleIn($this->padaria));
 
-        // Removed from the company in the Core: signed out at the next check.
+        // Removed from the company in the Core: signed out at the next check (asked with the app's own access).
         $this->travel(11)->minutes();
-        $this->coreMe = $this->coreMeFor($user, []);
+        unset($this->coreMembers['padaria'][$user->core_id]);
         $this->get($this->padaria->url('/'))->assertForbidden()->assertSee(__('app.no_access.title'));
         $this->assertGuest();
+        $this->assertNull($user->fresh()->roleIn($this->padaria));
+    }
+
+    public function test_stays_signed_in_on_the_phone(): void
+    {
+        $this->coreKnowsPerson([['uuid' => $this->padaria->uuid, 'name' => 'Padaria', 'subdomain' => 'padaria', 'role' => 'member']]);
+        $flow = $this->startSignIn();
+        $handoff = $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->headers->get('Location');
+
+        // "Remember me" cookie, valid for 30 days.
+        $cookie = collect($this->get($handoff)->headers->getCookies())->first(fn ($cookie): bool => str_starts_with($cookie->getName(), 'remember_web_'));
+        $this->assertNotNull($cookie);
+        $this->assertEqualsWithDelta(now()->addDays(30)->getTimestamp(), $cookie->getExpiresTime(), 120);
     }
 
     public function test_sign_out_page(): void

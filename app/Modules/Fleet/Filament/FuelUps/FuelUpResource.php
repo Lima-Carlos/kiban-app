@@ -3,6 +3,7 @@
 namespace App\Modules\Fleet\Filament\FuelUps;
 
 use App\Filament\Support\ModuleResource;
+use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\Enums\FuelType;
 use App\Modules\Fleet\Enums\FuelUpFlag;
 use App\Modules\Fleet\Enums\FuelUpStatus;
@@ -52,6 +53,12 @@ class FuelUpResource extends ModuleResource
     public static function getPluralModelLabel(): string
     {
         return __('fleet.fuel.plural');
+    }
+
+    /** Menu by role: drivers see their vehicles on the start page; mechanics work with maintenance. */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return parent::shouldRegisterNavigation() && app(FleetAccess::class)->fleetRole() !== FleetRole::Mechanic;
     }
 
     /** Drivers see the fuel-ups of their vehicles and the ones they made. */

@@ -3,11 +3,17 @@
 namespace App\Modules\Fleet\Filament\Drivers;
 
 use App\Filament\Support\ModuleResource;
+use App\Licensing\CoreUnavailableException;
+use App\Licensing\CoreValidationException;
 use App\Modules\Fleet\Filament\FleetFields;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Driver;
 use App\Modules\Fleet\Models\FleetSetting;
+use App\People\AccessNotice;
+use App\People\PeopleService;
+use App\Tenancy\TenantContext;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -15,12 +21,14 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
 
 class DriverResource extends ModuleResource
 {
@@ -135,6 +143,43 @@ class DriverResource extends ModuleResource
             ])
             ->emptyStateHeading(__('fleet.drivers.empty'))
             ->recordActions([
+                Action::make('sendAccess')
+                    ->label(__('app.people.send_access'))
+                    ->icon(Heroicon::OutlinedPaperAirplane)
+                    ->color('success')
+                    ->visible(fn (Driver $record): bool => $record->user_id === null)
+                    ->authorize('update')
+                    ->modalDescription(__('fleet.people.send_access_help'))
+                    ->fillForm(fn (Driver $record): array => ['phone' => $record->phone, 'email' => $record->email])
+                    ->schema([
+                        TextInput::make('phone')
+                            ->label(__('app.people.phone'))
+                            ->tel()
+                            ->required(fn ($get): bool => blank($get('email')))
+                            ->helperText(__('app.people.phone_help')),
+                        TextInput::make('email')
+                            ->label(__('app.people.email'))
+                            ->email(),
+                    ])
+                    ->action(function (Driver $record, array $data): void {
+                        $tenant = app(TenantContext::class)->get();
+
+                        try {
+                            $result = app(PeopleService::class)->add($tenant, $record->name, $data['phone'] ?? null, $data['email'] ?? null, [], auth()->user());
+                        } catch (CoreValidationException $exception) {
+                            throw ValidationException::withMessages(collect($exception->errors)->mapWithKeys(fn ($messages, $field): array => ['mountedActions.0.data.{$field}' => $messages])->all());
+                        } catch (CoreUnavailableException) {
+                            Notification::make()->danger()->title(__('app.failed.core'))->send();
+
+                            return;
+                        }
+
+                        // The login is linked to this driver record right away.
+                        $record->fill(['phone' => $data['phone'] ?? $record->phone, 'email' => $data['email'] ?? $record->email]);
+                        $record->forceFill(['user_id' => $result['user']->getKey()])->save();
+
+                        AccessNotice::send($tenant, $result['user'], $result['invitation_url']);
+                    }),
                 EditAction::make(),
                 DeleteAction::make(),
             ]);

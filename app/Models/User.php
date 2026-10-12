@@ -25,9 +25,9 @@ class User extends Authenticatable implements FilamentUser
 
     public const ROLE_MEMBER = 'member';
 
-    protected $fillable = ['core_id', 'name', 'email', 'locale', 'app_locale', 'last_login_at'];
+    protected $fillable = ['core_id', 'name', 'email', 'phone', 'locale', 'app_locale', 'last_login_at'];
 
-    protected $rememberTokenName = '';
+    protected $hidden = ['remember_token'];
 
     protected function casts(): array
     {

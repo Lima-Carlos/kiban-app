@@ -41,6 +41,8 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+            // "Remember me": stays signed in for 30 days (minutes). Removal from the company still cuts access in 10 minutes.
+            'remember' => 60 * 24 * 30,
         ],
     ],
 

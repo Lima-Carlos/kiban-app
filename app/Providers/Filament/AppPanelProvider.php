@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Home;
+use App\Filament\Pages\PeoplePage;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\RevalidateMembership;
@@ -47,6 +48,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->pages([
                 Home::class,
+                PeoplePage::class,
                 ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())
@@ -59,6 +61,8 @@ class AppPanelProvider extends PanelProvider
                     ->openUrlInNewTab(),
                 ...$this->localeMenuItems(),
             ])
+            ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.pwa-head'))
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.install-hint'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.license-notice'))
             ->middleware([
                 EncryptCookies::class,

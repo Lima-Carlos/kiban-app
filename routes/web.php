@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
 use App\Http\Controllers\Fleet\StationCheckController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\ManifestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,3 +31,6 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
 
 // Language switch (works on the central address and on every company address).
 Route::get('/idioma/{locale}', LocaleController::class)->name('locale.switch');
+
+// Installable app (icon on the phone home screen).
+Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');

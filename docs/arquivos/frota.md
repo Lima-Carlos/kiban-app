@@ -26,8 +26,8 @@
 ### Quem vê o quê (papéis da frota)
 | Papel | Quem é | O que pode |
 |---|---|---|
-| **Gestor** | Dono ou administrador da empresa (sempre), ou quem recebeu "Gestor" na **Equipe da frota** | Tudo, inclusive painel, equipe e configurações |
-| **Mecânico** | Recebeu "Mecânico" na Equipe da frota | Vê os veículos e abastece qualquer um; os serviços entram na parte 3. Não vê painel nem relatórios |
+| **Gestor** | Dono ou administrador da empresa (sempre), ou quem recebeu "Gestor" na tela **Pessoas** | Tudo, inclusive painel, equipe e configurações |
+| **Mecânico** | Recebeu "Mecânico" na tela Pessoas | Vê os veículos e abastece qualquer um; os serviços entram na parte 3. Não vê painel nem relatórios |
 | **Motorista** | Membro com o mesmo e-mail de um motorista cadastrado | Só os veículos ligados a ele (ou todos, se marcado "Pode usar qualquer veículo"); abastece e informa km. Tela própria no celular |
 | **Consulta** | Qualquer outro membro | Só olhar |
 
@@ -108,7 +108,6 @@
 - `app/Modules/Fleet/Enums/`: `FleetRole`, `FuelUpStatus`, `FuelUpFlag`.
 - Telas:
   - `app/Modules/Fleet/Filament/FuelUps/` (lista, gerar código, abastecimento, lançar);
-  - `FleetTeamPage.php` (Equipe da frota);
   - `Dashboard/` (painel e gráficos);
   - `resources/views/fleet/home/driver.blade.php` (Início do motorista).
 - Página do posto: `app/Http/Controllers/Fleet/StationCheckController.php` + `resources/views/fleet/station-check.blade.php`.

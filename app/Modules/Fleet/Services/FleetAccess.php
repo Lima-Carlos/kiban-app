@@ -50,7 +50,8 @@ class FleetAccess
         $assigned = FleetMember::query()->where('user_id', $user->getKey())->value('role');
         $assigned = $assigned instanceof FleetRole ? $assigned : FleetRole::tryFrom((string) $assigned);
 
-        if ($assigned === FleetRole::Manager || $assigned === FleetRole::Mechanic) {
+        // A role given in "People" wins (manager, mechanic, or viewer even if linked to a driver record).
+        if ($assigned !== null && $assigned !== FleetRole::Driver) {
             return $assigned;
         }
 

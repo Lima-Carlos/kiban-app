@@ -14,7 +14,8 @@
 - O login precisa terminar **no mesmo navegador** que começou. Assim ninguém consegue fazer outra pessoa entrar com a conta dele.
 - Links de login e bilhetes valem **uma vez só**.
 - Os "crachás" do Core ficam guardados embaralhados na sessão.
-- **A cada 10 minutos**, a casca pergunta ao Core se a pessoa ainda faz parte da empresa. Quem foi removido da equipe no Core perde o acesso aqui também. Se a função mudou, ela é atualizada.
+- **A cada 10 minutos**, a casca pergunta ao Core (com o acesso do próprio sistema) se a pessoa ainda faz parte da empresa. Quem foi removido no Core ou na tela Pessoas perde o acesso aqui também. Se a função mudou, ela é atualizada.
+- A pessoa entra com **celular ou e-mail** e **fica conectada por 30 dias** no aparelho ("lembrar de mim"). A casca não guarda os "crachás" do Core das pessoas.
 - **Se o Core estiver fora do ar**, quem já está dentro continua trabalhando. Só um login novo precisa do Core.
 - **Idioma:** no menu do usuário (a bolinha com as iniciais) há Português, English e Español. Nas páginas simples, os idiomas ficam no topo. A escolha fica guardada para a pessoa e vale mais que o idioma da conta Kiban. Sem escolha, vale o idioma da conta Kiban, depois o da empresa e depois o do navegador.
 - A troca de senha e das duas etapas é feita em "Minha conta Kiban" (menu do usuário).

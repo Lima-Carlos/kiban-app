@@ -13,7 +13,6 @@ use App\Modules\Fleet\Filament\Dashboard\FleetStatsWidget;
 use App\Modules\Fleet\Filament\Dashboard\FuelSpendChartWidget;
 use App\Modules\Fleet\Filament\Drivers\DriverResource;
 use App\Modules\Fleet\Filament\FleetSettingsPage;
-use App\Modules\Fleet\Filament\FleetTeamPage;
 use App\Modules\Fleet\Filament\FuelStations\FuelStationResource;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
@@ -32,6 +31,7 @@ use App\Modules\Fleet\Policies\VehicleDocumentPolicy;
 use App\Modules\Fleet\Policies\VehicleEventPolicy;
 use App\Modules\Fleet\Policies\VehiclePolicy;
 use App\Modules\Fleet\Services\FleetAccess;
+use App\Modules\Fleet\Services\FleetPeople;
 use App\Modules\Fleet\Services\FuelService;
 use App\Modules\Module;
 use App\Modules\Step;
@@ -98,7 +98,7 @@ class FleetModule extends Module
 
     public function pages(): array
     {
-        return [FleetDashboard::class, FleetTeamPage::class, FleetSettingsPage::class];
+        return [FleetDashboard::class, FleetSettingsPage::class];
     }
 
     public function widgets(): array
@@ -141,6 +141,36 @@ class FleetModule extends Module
     protected function tenantCanWrite(): bool
     {
         return app(TenantContext::class)->get()->license()->canWrite(self::KEY);
+    }
+
+    public function managesPeople(User $user): bool
+    {
+        return app(FleetAccess::class)->isManager($user);
+    }
+
+    public function personFields(): array
+    {
+        return app(FleetPeople::class)->fields();
+    }
+
+    public function personData(User $user): array
+    {
+        return app(FleetPeople::class)->data($user);
+    }
+
+    public function savePerson(User $user, array $data): void
+    {
+        app(FleetPeople::class)->save($user, $data);
+    }
+
+    public function removePerson(User $user): void
+    {
+        app(FleetPeople::class)->remove($user);
+    }
+
+    public function personRoleLabel(User $user): ?string
+    {
+        return app(FleetPeople::class)->roleLabel($user);
     }
 
     public function policies(): array

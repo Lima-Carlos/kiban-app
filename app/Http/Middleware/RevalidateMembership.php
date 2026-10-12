@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use App\Auth\CoreSignIn;
 use App\Licensing\CoreClient;
 use App\Licensing\CoreUnavailableException;
-use App\Licensing\InvalidGrantException;
 use App\Models\User;
 use App\Tenancy\TenantContext;
 use Closure;
@@ -14,8 +13,9 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Every few minutes, asks the Core if the signed-in person still belongs to the company
- * (someone removed from the team in the Core loses access here too) and updates their role.
+ * Every few minutes, asks the Core (with the app's own access) if the signed-in person still belongs to
+ * the company: someone removed in the Core or in "People" loses access here too, and the role is updated.
+ * It works the same for people who stay signed in for days on their phone.
  *
  * If the Core is down, the person keeps working: only a clear "no" from the Core signs them out.
  */
@@ -50,55 +50,22 @@ class RevalidateMembership
         }
 
         try {
-            $me = $this->currentPerson($request);
+            $member = $this->core->member($tenant->subdomain, $user->core_id);
         } catch (CoreUnavailableException) {
             // Core unreachable: try again on a later page, keep the person working.
             return $next($request);
         }
 
-        $membership = $me !== null ? $this->signIn->membership($me, $tenant) : null;
+        if ($member === null || ($member['status'] ?? null) === 'blocked') {
+            $user->tenants()->detach($tenant->getKey());
 
-        if ($me === null || $membership === null || (int) $me['id'] !== $user->core_id) {
             return $this->signOut($request);
         }
 
-        $this->signIn->sync($me, $tenant, $membership);
+        $this->signIn->syncMember($member, $tenant);
         $session->put(CoreSignIn::SESSION_CHECKED, now()->getTimestamp());
 
         return $next($request);
-    }
-
-    /**
-     * The person according to the Core, renewing the access token when needed. null = the Core said no.
-     *
-     * @return array<string, mixed>|null
-     */
-    protected function currentPerson(Request $request): ?array
-    {
-        $session = $request->session();
-        $tokens = $this->signIn->tokens($session);
-
-        if ($tokens === null) {
-            return null;
-        }
-
-        if ($tokens['expires_at'] > now()->getTimestamp() && ($me = $this->core->me($tokens['access_token'])) !== null) {
-            return $me;
-        }
-
-        if ($tokens['refresh_token'] === null) {
-            return null;
-        }
-
-        try {
-            $fresh = $this->core->refreshToken($tokens['refresh_token']);
-        } catch (InvalidGrantException) {
-            return null;
-        }
-
-        $this->signIn->storeTokens($fresh, $session);
-
-        return $this->core->me($fresh['access_token']);
     }
 
     protected function signOut(Request $request): Response

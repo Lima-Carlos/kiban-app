@@ -362,4 +362,9 @@ return [
     'console' => [
         'ran' => 'Fleet routine: :expired codes expired.',
     ],
+    'people' => [
+        'role' => 'Role in the fleet',
+        'role_help' => 'Driver: fuels and inspects on the phone. Mechanic: maintenance and washes. Manager: everything. Viewer: only looks.',
+        'send_access_help' => 'The driver gets the link to create the password and sign in on the phone. Enter their mobile (and e-mail, if any).',
+    ],
 ];

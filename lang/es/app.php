@@ -2,12 +2,10 @@
 
 return [
     'date_format' => 'd/m/Y',
-    'datetime_format' => 'd/m/Y \a \l\a\s H:i',
-
+    'datetime_format' => 'd/m/Y \\a \\l\\a\\s H:i',
     'menu' => [
         'account' => 'Mi cuenta Kiban',
     ],
-
     'home' => [
         'title' => 'Inicio',
         'welcome' => 'Bienvenido(a) a :name',
@@ -18,14 +16,12 @@ return [
         'no_modules' => 'Ningún sistema contratado',
         'no_modules_help' => 'Los sistemas contratados por la empresa aparecen aquí. Hable con Kiban para contratar.',
     ],
-
     'license' => [
         'read_only_badge' => 'Solo consulta',
         'read_only' => ':module está en modo solo consulta: se pueden ver los datos, pero no modificarlos. Regularice la suscripción en "Mi cuenta Kiban".',
         'trial' => 'El período de prueba de :module termina el :date.',
         'offline' => 'No hemos podido comunicarnos con Kiban desde hace un tiempo. El sistema sigue funcionando hasta el :date. Si el aviso continúa, hable con soporte.',
     ],
-
     'denied' => [
         'module' => 'Este sistema no forma parte del plan de la empresa.',
         'read_only' => 'Solo consulta: los datos no se pueden modificar hasta que se regularice la suscripción.',
@@ -33,7 +29,6 @@ return [
         'limit' => 'El plan de la empresa permite hasta :limit registros aquí. Para registrar más, amplíe el plan en "Mi cuenta Kiban".',
         'manager' => 'Solo el dueño o un administrador de la empresa puede hacer esto.',
     ],
-
     'central' => [
         'title' => 'Entrar al sistema',
         'intro' => 'Escriba la dirección de su empresa.',
@@ -43,13 +38,11 @@ return [
         'go' => 'Continuar',
         'account' => '¿No sabe la dirección? Véala en <a href=":url">Mi cuenta Kiban</a>.',
     ],
-
     'not_found' => [
         'title' => 'Empresa no encontrada',
         'body' => 'No existe una empresa con esta dirección. Verifique que esté escrita correctamente.',
         'action' => 'Buscar mi empresa',
     ],
-
     'blocked' => [
         'title' => 'Acceso no disponible',
         'inactive' => 'El acceso de esta empresa está suspendido. El responsable puede ver los detalles en "Mi cuenta Kiban".',
@@ -57,7 +50,6 @@ return [
         'unavailable' => 'No fue posible confirmar la licencia de esta empresa ahora. Intente de nuevo en unos minutos.',
         'action' => 'Ir a Mi cuenta Kiban',
     ],
-
     'no_access' => [
         'title' => 'Sin acceso a esta empresa',
         'body' => 'Su cuenta no forma parte del equipo de :company. Pida al responsable de la empresa que lo invite.',
@@ -65,7 +57,6 @@ return [
         'account' => 'Ir a Mi cuenta Kiban',
         'retry' => 'Intentar de nuevo',
     ],
-
     'signed_out' => [
         'title' => 'Usted salió',
         'body' => 'Usted salió del sistema de :company.',
@@ -73,15 +64,57 @@ return [
         'denied' => 'El acceso fue cancelado. Puede intentar de nuevo cuando quiera.',
         'again' => 'Entrar de nuevo',
     ],
-
     'failed' => [
         'title' => 'No fue posible entrar',
         'expired' => 'El enlace de acceso expiró o ya fue usado. Intente de nuevo.',
         'core' => 'No pudimos comunicarnos con Kiban ahora. Intente de nuevo en unos minutos.',
         'again' => 'Intentar de nuevo',
     ],
-
     'console' => [
         'licenses' => 'Licencias actualizadas: :ok. Sin respuesta del Core: :failed.',
+    ],
+    'people' => [
+        'title' => 'Personas',
+        'help' => 'Todos los de la empresa en los sistemas de Kiban. Agregue aquí conductores, mecánicos y gestores y envíe el acceso por WhatsApp o e-mail.',
+        'add' => 'Agregar persona',
+        'name' => 'Nombre',
+        'phone' => 'Celular',
+        'phone_help' => 'Con código de área (fuera de Brasil, comience con + y el código del país). La persona entra con este número.',
+        'email' => 'E-mail (opcional)',
+        'email_help' => 'Si lo informa, el acceso también se envía por e-mail.',
+        'company_role' => 'En la empresa',
+        'systems' => 'En los sistemas',
+        'status' => 'Acceso',
+        'edit' => 'Editar',
+        'saved' => 'Guardado.',
+        'send_access' => 'Enviar acceso de nuevo',
+        'send_access_help' => 'Se generará un nuevo enlace de acceso. El enlace anterior deja de funcionar.',
+        'remove' => 'Quitar de la empresa',
+        'remove_help' => 'La persona pierde el acceso a todos los sistemas de la empresa en hasta 10 minutos. Su historial se conserva.',
+        'removed' => 'Persona quitada.',
+        'empty' => 'Nadie registrado todavía',
+        'access_ready' => 'Acceso de :name listo',
+        'access_ready_body' => 'Envíe el enlace a la persona (válido por 7 días): :link',
+        'access_ready_email' => 'También lo enviamos por e-mail. Si prefiere, envíe el enlace por WhatsApp (válido por 7 días): :link',
+        'already_has_access' => ':name ya tiene acceso: solo debe entrar con el celular o e-mail y la contraseña.',
+        'send_whatsapp' => 'Enviar por WhatsApp',
+        'whatsapp_message' => '¡Hola, :name! Este es su acceso a los sistemas de :company en Kiban. Toque el enlace para crear su contraseña: :link',
+        'roles' => [
+            'owner' => 'Dueño',
+            'admin' => 'Administrador',
+            'member' => 'Miembro',
+        ],
+        'statuses' => [
+            'active' => 'Activo',
+            'invited' => 'Invitación enviada',
+            'blocked' => 'Bloqueado',
+        ],
+    ],
+    'install' => [
+        'title' => 'Instale la app en el celular',
+        'ios' => 'En Safari, toque Compartir y luego "Agregar a pantalla de inicio".',
+        'android' => 'En el menú del navegador (⋮), toque "Instalar app" o "Agregar a pantalla principal".',
+        'button' => 'Instalar',
+        'close' => 'Cerrar',
     ],
 ];

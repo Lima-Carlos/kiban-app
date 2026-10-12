@@ -7,17 +7,15 @@ use App\Models\User;
 use Illuminate\Session\Store;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Turns the person returned by the Core (/api/v1/me) into a signed-in user of a company,
- * and keeps the person's Core tokens in the session (encrypted) to re-check access later.
+ * Turns the person returned by the Core (/api/v1/me at sign-in, or the company's people list later) into a
+ * signed-in user of a company. The person stays signed in for 30 days ("remember me"); their access is
+ * re-checked with the Core every few minutes (RevalidateMembership).
  */
 class CoreSignIn
 {
-    public const SESSION_TOKENS = 'kiban.core_tokens';
-
     public const SESSION_CHECKED = 'kiban.core_checked_at';
 
     /**
@@ -35,22 +33,55 @@ class CoreSignIn
     }
 
     /**
-     * Creates or updates the local user and their role in the company.
+     * Creates or updates the local user and their role in the company (from /api/v1/me).
      *
      * @param  array<string, mixed>  $me
      * @param  array<string, mixed>  $membership
      */
     public function sync(array $me, Tenant $tenant, array $membership): User
     {
-        return DB::transaction(function () use ($me, $tenant, $membership): User {
-            $user = User::query()->updateOrCreate(['core_id' => (int) $me['id']], [
-                'name' => (string) $me['name'],
-                'email' => (string) $me['email'],
-                'locale' => $me['locale'] ?? null,
-            ]);
+        return $this->store($me + ['role' => $membership['role'] ?? null], $tenant, $me['locale'] ?? null);
+    }
 
-            $role = in_array($membership['role'] ?? null, [User::ROLE_OWNER, User::ROLE_ADMIN, User::ROLE_MEMBER], true)
-                ? $membership['role']
+    /**
+     * Same, from an entry of the company's people list in the Core (id, name, email, phone, role).
+     *
+     * @param  array<string, mixed>  $member
+     */
+    public function syncMember(array $member, Tenant $tenant): User
+    {
+        return $this->store($member, $tenant);
+    }
+
+    public function login(User $user, Store $session): void
+    {
+        $session->regenerate();
+        Auth::login($user, remember: true);
+        $user->forceFill(['last_login_at' => now()])->save();
+
+        $session->put(self::SESSION_CHECKED, now()->getTimestamp());
+    }
+
+    /**
+     * @param  array<string, mixed>  $person
+     */
+    protected function store(array $person, Tenant $tenant, ?string $locale = null): User
+    {
+        return DB::transaction(function () use ($person, $tenant, $locale): User {
+            $attributes = [
+                'name' => (string) $person['name'],
+                'email' => $person['email'] ?? null,
+                'phone' => $person['phone'] ?? null,
+            ];
+
+            if ($locale !== null) {
+                $attributes['locale'] = $locale;
+            }
+
+            $user = User::query()->updateOrCreate(['core_id' => (int) $person['id']], $attributes);
+
+            $role = in_array($person['role'] ?? null, [User::ROLE_OWNER, User::ROLE_ADMIN, User::ROLE_MEMBER], true)
+                ? $person['role']
                 : User::ROLE_MEMBER;
 
             $user->tenants()->syncWithoutDetaching([$tenant->getKey() => ['role' => $role, 'last_seen_at' => now()]]);
@@ -58,40 +89,5 @@ class CoreSignIn
 
             return $user;
         });
-    }
-
-    /**
-     * @param  array<string, mixed>  $tokens  access_token, refresh_token, expires_in
-     */
-    public function login(User $user, array $tokens, Store $session): void
-    {
-        $session->regenerate();
-        Auth::login($user);
-        $user->forceFill(['last_login_at' => now()])->save();
-
-        $this->storeTokens($tokens, $session);
-        $session->put(self::SESSION_CHECKED, now()->getTimestamp());
-    }
-
-    /**
-     * @param  array<string, mixed>  $tokens
-     */
-    public function storeTokens(array $tokens, Store $session): void
-    {
-        $session->put(self::SESSION_TOKENS, Crypt::encrypt([
-            'access_token' => $tokens['access_token'],
-            'refresh_token' => $tokens['refresh_token'] ?? null,
-            'expires_at' => now()->addSeconds((int) ($tokens['expires_in'] ?? 3600) - 30)->getTimestamp(),
-        ]));
-    }
-
-    /**
-     * @return array{access_token: string, refresh_token: ?string, expires_at: int}|null
-     */
-    public function tokens(Store $session): ?array
-    {
-        $value = $session->get(self::SESSION_TOKENS);
-
-        return is_string($value) ? Crypt::decrypt($value) : null;
     }
 }

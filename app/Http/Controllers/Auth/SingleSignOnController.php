@@ -100,7 +100,6 @@ class SingleSignOnController extends Controller
             'tenant' => $tenant->getKey(),
             'nonce' => $flow['nonce'],
             'me' => $me,
-            'tokens' => $tokens,
         ], now()->addMinute());
 
         return redirect()->to($tenant->url('/auth/handoff?ticket='.$ticket));
@@ -123,7 +122,7 @@ class SingleSignOnController extends Controller
         }
 
         $user = $this->signIn->sync($data['me'], $tenant, $membership);
-        $this->signIn->login($user, $data['tokens'], $request->session());
+        $this->signIn->login($user, $request->session());
 
         return redirect()->intended($tenant->url());
     }

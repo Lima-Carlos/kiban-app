@@ -4,6 +4,8 @@ namespace App\Modules;
 
 use App\Models\Tenant;
 use App\Models\User;
+use Filament\Forms\Components\Field;
+use Filament\Schemas\Components\Component;
 
 /**
  * A system sold by the Kiban Core (Frota, Ponto...). The key is the product code in the Core:
@@ -73,6 +75,49 @@ abstract class Module
      * @return array{view: string, data: array<string, mixed>}|null
      */
     public function personalHome(User $user): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Who may add and change people in the "People" screen for this module (besides owners and administrators).
+     */
+    public function managesPeople(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * Fields of this module in the "Add person" form (e.g. the Frota asks the role and the vehicles).
+     * Their state is kept under "modules.<key>".
+     *
+     * @return array<int, Component|Field>
+     */
+    public function personFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * Current values of this module's fields for the person (to edit).
+     *
+     * @return array<string, mixed>
+     */
+    public function personData(User $user): array
+    {
+        return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function savePerson(User $user, array $data): void {}
+
+    /** The person left the company: unlink them here (their history stays). */
+    public function removePerson(User $user): void {}
+
+    /** What the person does in this module, for the people list (e.g. "Driver"). */
+    public function personRoleLabel(User $user): ?string
     {
         return null;
     }

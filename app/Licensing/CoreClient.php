@@ -18,7 +18,10 @@ use Illuminate\Support\Facades\Http;
  */
 class CoreClient
 {
-    protected const TOKEN_CACHE_KEY = 'kiban:core-system-token';
+    /** What the app asks the Core for. Part of the cache key: a token from before a new permission is not reused. */
+    protected const SCOPES = 'licenses onboarding team';
+
+    protected const TOKEN_CACHE_KEY = 'kiban:core-system-token:'.self::SCOPES;
 
     /**
      * Signed license of a company, or null when the Core does not know this address.
@@ -60,6 +63,86 @@ class CoreClient
         ));
 
         $this->ensureSuccessful($response);
+    }
+
+    /**
+     * People of the company in the Core (name, e-mail, mobile, role, status: invited / active / blocked).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function members(string $subdomain): array
+    {
+        $response = $this->asSystem(fn (PendingRequest $http): Response => $http->get($this->membersPath($subdomain)));
+        $this->ensureSuccessful($response);
+
+        return (array) $response->json('members', []);
+    }
+
+    /**
+     * One person of the company, or null when they no longer belong to it.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function member(string $subdomain, int $coreUserId): ?array
+    {
+        $response = $this->asSystem(fn (PendingRequest $http): Response => $http->get($this->membersPath($subdomain).'/'.$coreUserId));
+
+        if ($response->notFound()) {
+            return null;
+        }
+
+        $this->ensureSuccessful($response);
+
+        return $response->json();
+    }
+
+    /**
+     * Adds (or invites) a person by e-mail and/or mobile. The answer has 'member' and 'invitation_url'
+     * (link to create the password; null if the person already has one).
+     *
+     * @param  array{name: string, email?: ?string, phone?: ?string, next?: ?string, invited_by?: ?string}  $data
+     * @return array{member: array<string, mixed>, invitation_url: ?string}
+     */
+    public function addMember(string $subdomain, array $data): array
+    {
+        $response = $this->asSystem(fn (PendingRequest $http): Response => $http->post($this->membersPath($subdomain), $data));
+
+        if ($response->status() === 422) {
+            throw new CoreValidationException((array) $response->json('errors', []));
+        }
+
+        $this->ensureSuccessful($response);
+
+        return $response->json();
+    }
+
+    /**
+     * New invitation link (the previous one stops working).
+     *
+     * @return array{member: array<string, mixed>, invitation_url: ?string}
+     */
+    public function memberInvitation(string $subdomain, int $coreUserId, ?string $next = null, ?string $invitedBy = null): array
+    {
+        $response = $this->asSystem(fn (PendingRequest $http): Response => $http->post($this->membersPath($subdomain).'/'.$coreUserId.'/invitation', array_filter(['next' => $next, 'invited_by' => $invitedBy])));
+        $this->ensureSuccessful($response);
+
+        return $response->json();
+    }
+
+    public function removeMember(string $subdomain, int $coreUserId): void
+    {
+        $response = $this->asSystem(fn (PendingRequest $http): Response => $http->delete($this->membersPath($subdomain).'/'.$coreUserId));
+
+        if ($response->notFound()) {
+            return;
+        }
+
+        $this->ensureSuccessful($response);
+    }
+
+    protected function membersPath(string $subdomain): string
+    {
+        return '/api/v1/tenants/'.rawurlencode($subdomain).'/members';
     }
 
     /**
@@ -147,7 +230,7 @@ class CoreClient
 
         $response = $this->send(fn (): Response => $this->http()->asForm()->post('/oauth/token', [
             'grant_type' => 'client_credentials',
-            'scope' => 'licenses onboarding',
+            'scope' => self::SCOPES,
         ] + $this->credentials()));
 
         $this->ensureSuccessful($response);

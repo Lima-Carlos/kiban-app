@@ -35,9 +35,14 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Todo módulo novo precisa de teste de isolamento (veja `tests/Feature/TenancyTest.php`).
 - Os botões e formulários das telas mandam pedidos "por trás" (Livewire). Todo porteiro (middleware) que a tela precisa (empresa, licença, idioma, equipe) também fica em `persistentMiddleware` no `AppPanelProvider`, senão esses pedidos dão 403. O teste `tests/Feature/BrowserFlowTest.php` faz esses pedidos como um navegador.
 
+## Pessoas
+- Todos da empresa são cadastrados na tela **Pessoas** (`PeoplePage` + `App\People\PeopleService`), que pede ao Core para criar o login (permissão `team`). Celular é o principal; e-mail é opcional (nunca supor que existe). O acesso vai pelo WhatsApp (`AccessNotice`) ou e-mail.
+- Cada módulo acrescenta os próprios campos de pessoa (`personFields`/`savePerson`...). Ninguém precisa ir à Área do cliente para cadastrar funcionário.
+- Menus por papel: `shouldRegisterNavigation()` nas telas. O app é instalável (manifest + `public/sw.js`).
+
 ## Login (sem senhas aqui)
 - Todo login passa pelo Core (OAuth2 + PKCE), em `App\Http\Controllers\Auth\SingleSignOnController`. O retorno é sempre no endereço central (`/auth/callback`), e um bilhete de uso único leva a pessoa para o endereço da empresa.
-- A cada 10 minutos, `RevalidateMembership` pergunta ao Core se a pessoa ainda faz parte da empresa. Se o Core estiver fora, a pessoa continua trabalhando.
+- A cada 10 minutos, `RevalidateMembership` pergunta ao Core (acesso do sistema, `CoreClient::member`) se a pessoa ainda faz parte da empresa. Se o Core estiver fora, a pessoa continua trabalhando. Login fica lembrado por 30 dias.
 
 ## Licença
 - `App\Licensing\LicenseManager` busca a licença assinada a cada 5 minutos (`kiban:licenses`, e também durante o uso). `LicenseVerifier` confere a assinatura com a chave pública do Core.
