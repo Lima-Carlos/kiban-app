@@ -96,7 +96,75 @@
   - **média de consumo**;
   - **custo por km**.
 - Gráficos: média de consumo por mês e gasto por mês.
-- Lista de **consumo fora do normal**. A manutenção entra no painel na parte 3.
+- Lista de **consumo fora do normal**. A manutenção entra no painel desde a parte 3.
+
+## Parte 3 (F3): manutenção, lavagens, agenda, despesas e oficinas
+
+### O caminho de um pedido
+1. O **motorista** toca em **Solicitar manutenção ou lavagem** no veículo (página Início), escreve o que precisa e, se quiser, tira uma **foto** (não é obrigatória).
+2. A solicitação aparece para o **gestor** e o **mecânico**: no menu **Solicitações** (com um número de quantas estão esperando) e na página Início do mecânico.
+3. Eles **agendam** (data, hora, oficina ou local, responsável) ou **recusam** com uma resposta. O motorista vê a situação em "Minhas solicitações".
+4. Na **Agenda** (lista ou **calendário** do mês), o agendamento é **concluído** quando o serviço termina. Isso registra a manutenção ou a lavagem.
+5. Se o agendamento for **cancelado**, a solicitação volta para "esperando", para ninguém esquecer.
+
+O gestor e o mecânico também podem agendar ou registrar direto, sem pedido do motorista.
+
+### Manutenção
+- Registra:
+  - tipo (preventiva ou corretiva);
+  - serviços feitos (troca de óleo, revisão, pneus, freios...);
+  - data;
+  - **km**;
+  - oficina ou mecânico;
+  - **peças** e **mão de obra** (o total é a soma);
+  - nota ou orçamento.
+- **Troca de óleo e revisão calculam sozinhas a próxima**, usando os intervalos do veículo (ex.: a cada 10.000 km ou 6 meses).
+- O km entra no histórico do veículo. Uma manutenção de dias atrás precisa caber entre as leituras de antes e de depois.
+- Se o veículo estava "Em manutenção", ele volta a "Ativo".
+
+### Lavagem
+- Simples ou completa, valor e local. O km é opcional.
+
+### Despesas (só o gestor)
+- IPVA, licenciamento, seguro, multa, pedágio, estacionamento etc.
+- Podem ser de um veículo ou da **frota toda**.
+
+### Oficinas
+- Lista das oficinas de fora (só cadastro, elas não entram no sistema). Uma oficina com manutenção registrada não pode ser apagada.
+
+### Quem vê o quê
+- **Mecânico**:
+  - Solicitações, Agenda, Manutenções, Lavagens e Oficinas;
+  - **não** vê o painel nem as Despesas.
+- **Motorista**: pede e acompanha os próprios pedidos (só dos veículos dele).
+- **Gestor**: tudo. **Consulta**: só olha.
+- Nada disso é apagado; faz parte do histórico do veículo.
+- A página do veículo mostra as abas de manutenções, lavagens, despesas e agendamentos.
+
+### Painel
+- O painel agora soma **manutenção, lavagens e despesas**, além do combustível:
+  - "Gasto total da frota";
+  - gráfico de gastos por mês, em cores;
+  - **custo por km** com tudo.
+
+## Arquivos (parte 3)
+- Tabelas: `fleet_workshops`, `fleet_service_requests`, `fleet_appointments`, `fleet_maintenances`, `fleet_washes` e `fleet_expenses`, em `database/migrations/2026_10_12_160000_create_fleet_maintenance_tables.php`.
+- `app/Modules/Fleet/Services/MaintenanceService.php`: todas as regras (pedir, agendar, recusar, cancelar, registrar manutenção/lavagem/despesa, calcular a próxima troca).
+- `app/Modules/Fleet/Models/`: `Workshop`, `ServiceRequest`, `Appointment`, `Maintenance`, `Wash`, `Expense`.
+- `app/Modules/Fleet/Enums/`:
+  - `MaintenanceType`, `MaintenanceItem`;
+  - `WashKind`, `ExpenseCategory`, `ServiceKind`;
+  - `RequestStatus`, `AppointmentStatus`.
+- `app/Modules/Fleet/Policies/`: `WorkPolicy` (base: gestor e mecânico), `MaintenancePolicy`, `WashPolicy`, `AppointmentPolicy`, `ServiceRequestPolicy`, `ExpensePolicy`, `WorkshopPolicy`.
+- Telas:
+  - `app/Modules/Fleet/Filament/`: `Requests/`, `Appointments/` (lista + calendário), `Maintenances/`, `Washes/`, `Expenses/`, `Workshops/`;
+  - formulários comuns: `WorkForms.php`;
+  - mensagens de erro: `RunsFleetRules.php`;
+  - abas do veículo: `Vehicles/RelationManagers/`.
+- Visuais:
+  - `resources/views/fleet/appointments/calendar.blade.php` (calendário);
+  - `resources/views/fleet/home/mechanic.blade.php` (Início do mecânico).
+- Testes: `tests/Feature/FleetMaintenanceTest.php`.
 
 ## Arquivos (parte 2)
 - Tabelas: `fleet_members` (papéis) e `fleet_fuel_ups` (abastecimentos), em `database/migrations/2026_10_12_120000_create_fleet_fuel_tables.php`. Mais `..._130000_add_fuel_access_options.php` (motorista reserva, permitir outro veículo, motivo).

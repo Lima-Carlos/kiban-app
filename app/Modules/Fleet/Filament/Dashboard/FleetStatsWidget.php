@@ -28,6 +28,11 @@ class FleetStatsWidget extends StatsOverviewWidget
             Stat::make(__('fleet.dashboard.fuel_spent'), FleetFormat::money($totals['spent_cents']))
                 ->description(trans_choice('fleet.dashboard.fuel_ups', $totals['fuel_ups'], ['count' => $totals['fuel_ups']]))
                 ->icon(Heroicon::OutlinedBanknotes),
+            Stat::make(__('fleet.dashboard.other_spent'), FleetFormat::money($totals['maintenance_cents'] + $totals['wash_cents'] + $totals['expense_cents']))
+                ->description(__('fleet.dashboard.other_spent_help', ['maintenance' => FleetFormat::money($totals['maintenance_cents']), 'wash' => FleetFormat::money($totals['wash_cents']), 'expense' => FleetFormat::money($totals['expense_cents'])]))
+                ->icon(Heroicon::OutlinedWrenchScrewdriver),
+            Stat::make(__('fleet.dashboard.total_spent'), FleetFormat::money($totals['total_cents']))
+                ->icon(Heroicon::OutlinedCalculator),
             Stat::make(__('fleet.dashboard.volume'), FleetFormat::volume($totals['volume']))
                 ->icon(Heroicon::OutlinedBeaker),
             Stat::make(__('fleet.dashboard.distance'), FleetFormat::distance($totals['distance']))

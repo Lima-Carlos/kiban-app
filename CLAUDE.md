@@ -66,6 +66,7 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Cadastro, placa/chassi e situação passam por `VehicleService` (travas contra reaproveitar vaga do plano, limite `vehicles`, histórico em `fleet_vehicle_events`).
 - Papéis (`FleetAccess` / `FleetRole`): gestor (dono/admin ou dado na Equipe da frota), mecânico, motorista (ligado pelo e-mail; "qualquer veículo" = reserva) e consulta. Cada policy diz quais papéis veem a tela (`$viewRoles`). Motorista só vê os veículos dele (`visibleVehicleIds`).
 - Abastecimentos só por `FuelService` (código de uso único, página do posto `/posto` com limite de tentativas, finalizar, lançar, cancelar). Nunca alterar nem apagar um abastecimento. A média é de tanque cheio a tanque cheio. Painel: `FleetReports`.
+- Manutenção, lavagens, agenda, solicitações do motorista e despesas só por `MaintenanceService`. Concluir um agendamento registra a manutenção/lavagem; troca de óleo e revisão recalculam a próxima (`updateNextServices`). Cancelar devolve a solicitação para "esperando". Mecânico não vê painel nem despesas; despesas só o gestor lança. Nada do histórico é apagado (`WorkPolicy`). O painel soma tudo (`FleetReports::otherCosts`).
 - Os módulos podem ter páginas, widgets e um bloco próprio na página Início para cada pessoa (`Module::pages()`, `widgets()`, `personalHome()`, `showsSetupTo()`).
 - Arquivos e fotos: `FleetFields::photo()` / `file()` (disco privado, pasta da empresa, foto reduzida no navegador).
 - Explicação para o dono: `docs/arquivos/frota.md`.

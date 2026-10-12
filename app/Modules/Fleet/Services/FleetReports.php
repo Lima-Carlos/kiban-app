@@ -2,8 +2,11 @@
 
 namespace App\Modules\Fleet\Services;
 
+use App\Modules\Fleet\Models\Expense;
 use App\Modules\Fleet\Models\FuelUp;
+use App\Modules\Fleet\Models\Maintenance;
 use App\Modules\Fleet\Models\Vehicle;
+use App\Modules\Fleet\Models\Wash;
 use Carbon\CarbonImmutable;
 use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,13 +37,19 @@ class FleetReports
 
         $distance = (int) $segments->distance;
         $spent = (int) $row->spent;
+        $other = $this->otherCosts($from, $to, $vehicleId);
 
         return [
             'spent_cents' => $spent,
+            'maintenance_cents' => $other['maintenance'],
+            'wash_cents' => $other['wash'],
+            'expense_cents' => $other['expense'],
+            'total_cents' => $spent + array_sum($other),
             'volume' => round((float) $row->volume, 3),
             'distance' => $distance,
             'consumption' => (float) $segments->volume > 0 ? round($distance / (float) $segments->volume, 2) : null,
-            'cost_per_distance_cents' => $distance > 0 ? (int) round($this->segmentSpent($from, $to, $vehicleId) / $distance) : null,
+            // Everything the fleet cost (fuel of the measured stretches + maintenance, washes, other expenses) per distance.
+            'cost_per_distance_cents' => $distance > 0 ? (int) round(($this->segmentSpent($from, $to, $vehicleId) + array_sum($other)) / $distance) : null,
             'fuel_ups' => (int) $row->fuel_ups,
         ];
     }
@@ -66,15 +75,38 @@ class FleetReports
                 ->selectRaw('COALESCE(SUM(distance), 0) AS distance, COALESCE(SUM(segment_volume), 0) AS volume')
                 ->first();
 
+            $other = $this->otherCosts($from->utc(), $to->utc(), $vehicleId);
+
             $series[] = [
                 'label' => ucfirst($from->locale(app()->getLocale())->translatedFormat('M/y')),
                 'spent_cents' => $spent,
+                'maintenance_cents' => $other['maintenance'],
+                'wash_cents' => $other['wash'],
+                'expense_cents' => $other['expense'],
                 'volume' => round($volume, 2),
                 'consumption' => (float) $segments->volume > 0 ? round((int) $segments->distance / (float) $segments->volume, 2) : null,
             ];
         }
 
         return $series;
+    }
+
+    /**
+     * Maintenance, washes and other expenses in the period (dates in the company time zone).
+     *
+     * @return array{maintenance: int, wash: int, expense: int}
+     */
+    public function otherCosts(CarbonImmutable $from, CarbonImmutable $to, ?int $vehicleId = null): array
+    {
+        $timezone = FilamentTimezone::get();
+        $range = [$from->timezone($timezone)->toDateString(), $to->timezone($timezone)->toDateString()];
+        $vehicle = fn (Builder $query) => $vehicleId ? $query->where('vehicle_id', $vehicleId) : $query;
+
+        return [
+            'maintenance' => (int) $vehicle(Maintenance::query()->whereBetween('performed_on', $range))->sum('total_cents'),
+            'wash' => (int) $vehicle(Wash::query()->whereBetween('washed_on', $range))->sum('cost_cents'),
+            'expense' => (int) $vehicle(Expense::query()->whereBetween('spent_on', $range))->sum('amount_cents'),
+        ];
     }
 
     /**

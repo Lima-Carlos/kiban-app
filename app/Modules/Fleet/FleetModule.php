@@ -7,30 +7,49 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\Enums\FuelUpStatus;
+use App\Modules\Fleet\Enums\RequestStatus;
+use App\Modules\Fleet\Filament\Appointments\AppointmentResource;
 use App\Modules\Fleet\Filament\Dashboard\ConsumptionAlertsWidget;
 use App\Modules\Fleet\Filament\Dashboard\ConsumptionChartWidget;
 use App\Modules\Fleet\Filament\Dashboard\FleetDashboard;
 use App\Modules\Fleet\Filament\Dashboard\FleetStatsWidget;
 use App\Modules\Fleet\Filament\Dashboard\FuelSpendChartWidget;
 use App\Modules\Fleet\Filament\Drivers\DriverResource;
+use App\Modules\Fleet\Filament\Expenses\ExpenseResource;
 use App\Modules\Fleet\Filament\FleetSettingsPage;
 use App\Modules\Fleet\Filament\FuelStations\FuelStationResource;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
+use App\Modules\Fleet\Filament\Maintenances\MaintenanceResource;
+use App\Modules\Fleet\Filament\Requests\ServiceRequestResource;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
+use App\Modules\Fleet\Filament\Washes\WashResource;
+use App\Modules\Fleet\Filament\Workshops\WorkshopResource;
+use App\Modules\Fleet\Models\Appointment;
 use App\Modules\Fleet\Models\Driver;
+use App\Modules\Fleet\Models\Expense;
 use App\Modules\Fleet\Models\FuelStation;
 use App\Modules\Fleet\Models\FuelUp;
+use App\Modules\Fleet\Models\Maintenance;
 use App\Modules\Fleet\Models\OdometerReading;
+use App\Modules\Fleet\Models\ServiceRequest;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Models\VehicleDocument;
 use App\Modules\Fleet\Models\VehicleEvent;
+use App\Modules\Fleet\Models\Wash;
+use App\Modules\Fleet\Models\Workshop;
+use App\Modules\Fleet\Policies\AppointmentPolicy;
 use App\Modules\Fleet\Policies\DriverPolicy;
+use App\Modules\Fleet\Policies\ExpensePolicy;
 use App\Modules\Fleet\Policies\FuelStationPolicy;
 use App\Modules\Fleet\Policies\FuelUpPolicy;
+use App\Modules\Fleet\Policies\MaintenancePolicy;
 use App\Modules\Fleet\Policies\OdometerReadingPolicy;
+use App\Modules\Fleet\Policies\ServiceRequestPolicy;
 use App\Modules\Fleet\Policies\VehicleDocumentPolicy;
 use App\Modules\Fleet\Policies\VehicleEventPolicy;
 use App\Modules\Fleet\Policies\VehiclePolicy;
+use App\Modules\Fleet\Policies\WashPolicy;
+use App\Modules\Fleet\Policies\WorkshopPolicy;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\FleetPeople;
 use App\Modules\Fleet\Services\FuelService;
@@ -94,7 +113,11 @@ class FleetModule extends Module
 
     public function resources(): array
     {
-        return [VehicleResource::class, FuelUpResource::class, DriverResource::class, FuelStationResource::class];
+        return [
+            VehicleResource::class, FuelUpResource::class, ServiceRequestResource::class, AppointmentResource::class,
+            MaintenanceResource::class, WashResource::class, ExpenseResource::class,
+            DriverResource::class, FuelStationResource::class, WorkshopResource::class,
+        ];
     }
 
     public function pages(): array
@@ -126,6 +149,17 @@ class FleetModule extends Module
             return null;
         }
 
+        // Mechanic: the work queue (requests waiting and the next appointments).
+        if ($role === FleetRole::Mechanic) {
+            return [
+                'view' => 'fleet.home.mechanic',
+                'data' => [
+                    'requests' => ServiceRequest::query()->with(['vehicle', 'requester'])->where('status', RequestStatus::Open->value)->oldest()->limit(10)->get(),
+                    'appointments' => Appointment::query()->with(['vehicle', 'workshop'])->open()->where('scheduled_at', '<=', now()->addDays(7))->orderBy('scheduled_at')->limit(15)->get(),
+                ],
+            ];
+        }
+
         $visible = $access->visibleVehicleIds($user);
 
         return [
@@ -135,6 +169,7 @@ class FleetModule extends Module
                 'vehicles' => $role === FleetRole::Manager ? collect() : Vehicle::query()->countingInLimit()->when($visible !== null, fn ($query) => $query->whereKey($visible))->orderBy('plate')->get(),
                 'canFuel' => app(FuelService::class)->canFuel($user) && $this->tenantCanWrite(),
                 'showVehicles' => $role !== FleetRole::Manager,
+                'openRequests' => $role === FleetRole::Manager ? collect() : ServiceRequest::query()->with('vehicle')->where('requested_by', $user->getKey())->whereIn('status', [RequestStatus::Open->value, RequestStatus::Scheduled->value])->latest()->get(),
             ],
         ];
     }
@@ -201,6 +236,12 @@ class FleetModule extends Module
             OdometerReading::class => OdometerReadingPolicy::class,
             VehicleEvent::class => VehicleEventPolicy::class,
             FuelUp::class => FuelUpPolicy::class,
+            ServiceRequest::class => ServiceRequestPolicy::class,
+            Appointment::class => AppointmentPolicy::class,
+            Maintenance::class => MaintenancePolicy::class,
+            Wash::class => WashPolicy::class,
+            Expense::class => ExpensePolicy::class,
+            Workshop::class => WorkshopPolicy::class,
         ];
     }
 }

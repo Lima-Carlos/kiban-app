@@ -98,6 +98,46 @@ class Vehicle extends Model
     }
 
     /**
+     * @return HasMany<Maintenance, $this>
+     */
+    public function maintenances(): HasMany
+    {
+        return $this->hasMany(Maintenance::class);
+    }
+
+    /**
+     * @return HasMany<Wash, $this>
+     */
+    public function washes(): HasMany
+    {
+        return $this->hasMany(Wash::class);
+    }
+
+    /**
+     * @return HasMany<Expense, $this>
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * @return HasMany<ServiceRequest, $this>
+     */
+    public function serviceRequests(): HasMany
+    {
+        return $this->hasMany(ServiceRequest::class);
+    }
+
+    /**
      * @return HasMany<VehicleEvent, $this>
      */
     public function events(): HasMany

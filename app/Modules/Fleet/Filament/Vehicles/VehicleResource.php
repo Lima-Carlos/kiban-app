@@ -12,9 +12,13 @@ use App\Modules\Fleet\Filament\Vehicles\Pages\CreateVehicle;
 use App\Modules\Fleet\Filament\Vehicles\Pages\EditVehicle;
 use App\Modules\Fleet\Filament\Vehicles\Pages\ListVehicles;
 use App\Modules\Fleet\Filament\Vehicles\Pages\ViewVehicle;
+use App\Modules\Fleet\Filament\Vehicles\RelationManagers\AppointmentsRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\DocumentsRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\EventsRelationManager;
+use App\Modules\Fleet\Filament\Vehicles\RelationManagers\ExpensesRelationManager;
+use App\Modules\Fleet\Filament\Vehicles\RelationManagers\MaintenancesRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\OdometerReadingsRelationManager;
+use App\Modules\Fleet\Filament\Vehicles\RelationManagers\WashesRelationManager;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Models\Vehicle;
@@ -314,7 +318,11 @@ class VehicleResource extends ModuleResource
     public static function getRelations(): array
     {
         return [
+            MaintenancesRelationManager::class,
+            AppointmentsRelationManager::class,
             OdometerReadingsRelationManager::class,
+            WashesRelationManager::class,
+            ExpensesRelationManager::class,
             DocumentsRelationManager::class,
             EventsRelationManager::class,
         ];
