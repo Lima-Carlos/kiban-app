@@ -2,21 +2,20 @@
 
 namespace App\Modules\Fleet\Services;
 
+use App\Access\AccessManager;
 use App\Models\User;
 use App\Modules\Fleet\Enums\FleetRole;
+use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Driver;
-use App\Modules\Fleet\Models\FleetMember;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Who the signed-in person is in the Frota (FleetRole), in this order:
- *
- * 1. owner or administrator of the company (Kiban account) → manager;
- * 2. role given in "Fleet team" (manager or mechanic);
- * 3. linked to an active driver record (same e-mail) → driver;
- * 4. anyone else (or "viewer" in the team) → viewer: only looks.
+ * Who the signed-in person is in the Frota (FleetRole): manager, mechanic, driver, viewer or none.
+ * The role comes from the central access of the company (AccessManager): owners and administrators are
+ * managers; others get a role in the People screen (or an access profile); someone linked to a driver
+ * record is a driver; everyone else has no access to the Frota.
  */
 class FleetAccess
 {
@@ -40,22 +39,11 @@ class FleetAccess
         $user ??= Auth::user();
 
         if (! $user instanceof User || $this->context->current() === null) {
-            return FleetRole::Viewer;
+            return FleetRole::None;
         }
 
-        if ($user->canManageTenant()) {
-            return FleetRole::Manager;
-        }
-
-        $assigned = FleetMember::query()->where('user_id', $user->getKey())->value('role');
-        $assigned = $assigned instanceof FleetRole ? $assigned : FleetRole::tryFrom((string) $assigned);
-
-        // A role given in "People" wins (manager, mechanic, or viewer even if linked to a driver record).
-        if ($assigned !== null && $assigned !== FleetRole::Driver) {
-            return $assigned;
-        }
-
-        return $this->driverFor($user) !== null ? FleetRole::Driver : FleetRole::Viewer;
+        // Central access of the company (owners/administrators, People screen, linked driver record).
+        return FleetRole::tryFrom((string) app(AccessManager::class)->role($user, FleetModule::KEY)) ?? FleetRole::None;
     }
 
     public function isManager(?User $user = null): bool

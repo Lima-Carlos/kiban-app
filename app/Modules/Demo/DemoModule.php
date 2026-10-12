@@ -3,6 +3,7 @@
 namespace App\Modules\Demo;
 
 use App\Models\Tenant;
+use App\Models\User;
 use App\Modules\Demo\Filament\TaskListResource;
 use App\Modules\Demo\Filament\TaskResource;
 use App\Modules\Demo\Models\Task;
@@ -26,6 +27,12 @@ class DemoModule extends Module
     public function name(): string
     {
         return __('demo.module');
+    }
+
+    /** Demonstration: everyone of the company can use it. */
+    public function implicitRole(User $user): ?string
+    {
+        return 'member';
     }
 
     public function icon(): string

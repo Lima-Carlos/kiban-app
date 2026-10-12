@@ -59,13 +59,13 @@ class FuelService
         return match ($this->access->fleetRole($user)) {
             FleetRole::Manager, FleetRole::Mechanic => null,
             FleetRole::Driver => $this->access->visibleVehicleIds($user) ?? [],
-            FleetRole::Viewer => [],
+            FleetRole::Viewer, FleetRole::None => [],
         };
     }
 
     public function canFuel(User $user): bool
     {
-        return $this->access->fleetRole($user) !== FleetRole::Viewer;
+        return in_array($this->access->fleetRole($user), [FleetRole::Manager, FleetRole::Mechanic, FleetRole::Driver], true);
     }
 
     /** The vehicle is not one of the person's own (needs a reason, if the company allows it). */

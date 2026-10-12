@@ -2,8 +2,10 @@
 
 namespace App\Filament\Pages;
 
+use App\Access\AccessManager;
 use App\Licensing\CoreUnavailableException;
 use App\Licensing\CoreValidationException;
+use App\Models\AccessProfile;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Module;
@@ -15,12 +17,14 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
@@ -124,6 +128,7 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                         ->email()
                         ->helperText(__('app.people.email_help'))
                         ->maxLength(255),
+                    $this->profileField(),
                     ...$this->moduleSections(),
                 ])
                 ->action(function (array $data): void {
@@ -137,6 +142,7 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                         return;
                     }
 
+                    app(AccessManager::class)->rememberProfile($result['user'], AccessProfile::query()->find($data['profile_id'] ?? null));
                     $this->statuses = app(PeopleService::class)->statuses($this->tenant());
                     AccessNotice::send($this->tenant(), $result['user'], $result['invitation_url']);
                 }),
@@ -162,6 +168,11 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                     ->badge()
                     ->color(fn (User $record): string => $record->roleIn($tenant) === User::ROLE_MEMBER ? 'gray' : 'primary')
                     ->visibleFrom('md'),
+                TextColumn::make('profile')
+                    ->label(__('app.people.profile'))
+                    ->state(fn (User $record): ?string => app(AccessManager::class)->profileOf($record)?->name)
+                    ->placeholder('—')
+                    ->visibleFrom('lg'),
                 TextColumn::make('systems')
                     ->label(__('app.people.systems'))
                     ->state(fn (User $record): array => collect(static::modules())
@@ -187,10 +198,14 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                     ->iconButton()
                     ->visible(fn (User $record): bool => ! $record->canManageTenant() && $this->moduleSections() !== [])
                     ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
-                    ->fillForm(fn (User $record): array => ['modules' => collect(static::modules())->map(fn (Module $module): array => $module->personData($record))->all()])
-                    ->schema(fn (): array => $this->moduleSections())
+                    ->fillForm(fn (User $record): array => [
+                        'profile_id' => app(AccessManager::class)->profileOf($record)?->getKey(),
+                        'modules' => collect(static::modules())->map(fn (Module $module): array => $module->personData($record))->all(),
+                    ])
+                    ->schema(fn (): array => [$this->profileField(), ...$this->moduleSections()])
                     ->action(function (User $record, array $data): void {
                         app(PeopleService::class)->saveModules($record, (array) ($data['modules'] ?? []));
+                        app(AccessManager::class)->rememberProfile($record, AccessProfile::query()->find($data['profile_id'] ?? null));
                         Notification::make()->success()->title(__('app.people.saved'))->send();
                     }),
                 Action::make('access')
@@ -234,6 +249,31 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                     }),
             ])
             ->emptyStateHeading(__('app.people.empty'));
+    }
+
+    /**
+     * Access profile: choosing it fills the role of each module (it can still be adjusted below).
+     */
+    protected function profileField(): Select
+    {
+        app(AccessManager::class)->ensureSuggestedProfiles();
+
+        return Select::make('profile_id')
+            ->label(__('app.people.profile'))
+            ->helperText(__('app.people.profile_help'))
+            ->options(fn (): array => AccessProfile::query()->orderBy('name')->pluck('name', 'id')->all())
+            ->live()
+            ->afterStateUpdated(function (?string $state, Set $set): void {
+                $profile = $state ? AccessProfile::query()->find($state) : null;
+
+                if ($profile === null) {
+                    return;
+                }
+
+                foreach (array_keys(static::modules()) as $key) {
+                    $set("modules.{$key}.role", $profile->roleFor($key) ?? AccessManager::NONE);
+                }
+            });
     }
 
     /**

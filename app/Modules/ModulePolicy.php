@@ -2,6 +2,7 @@
 
 namespace App\Modules;
 
+use App\Access\AccessManager;
 use App\Licensing\License;
 use App\Models\User;
 use App\Tenancy\TenantContext;
@@ -94,9 +95,14 @@ abstract class ModulePolicy
 
     protected function access(): Response
     {
-        return $this->license()->hasModule($this->module)
+        if (! $this->license()->hasModule($this->module)) {
+            return Response::deny(__('app.denied.module'));
+        }
+
+        // The company has the module, but this person may not (e.g. HR does not see the fleet).
+        return app(AccessManager::class)->hasAccess(auth()->user(), $this->module)
             ? Response::allow()
-            : Response::deny(__('app.denied.module'));
+            : Response::deny(__('app.denied.no_access'));
     }
 
     protected function write(): Response

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Access\AccessManager;
 use App\Filament\Pages\PeoplePage;
 use App\Models\Tenant;
 use App\Models\User;
@@ -10,7 +11,6 @@ use App\Modules\Fleet\Filament\Drivers\Pages\ManageDrivers;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
 use App\Modules\Fleet\Models\Driver;
-use App\Modules\Fleet\Models\FleetMember;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\VehicleService;
@@ -101,7 +101,7 @@ class PeopleTest extends TestCase
             ->callTableAction('edit', $rui, ['modules' => ['frota' => ['role' => 'driver', 'vehicles' => [$this->car->id]]]])
             ->assertHasNoTableActionErrors();
         $this->assertSame(FleetRole::Driver, app(FleetAccess::class)->fleetRole($rui->fresh()));
-        $this->assertSame(0, FleetMember::query()->where('user_id', $rui->id)->count());
+        $this->assertSame('driver', app(AccessManager::class)->role($rui, 'frota'));
 
         // And back to mechanic: the driver record stays in the history, inactive.
         Livewire::test(PeoplePage::class)->callTableAction('edit', $rui, ['modules' => ['frota' => ['role' => 'mechanic']]]);
@@ -127,13 +127,13 @@ class PeopleTest extends TestCase
 
         // A member made fleet manager can manage people; drivers and mechanics cannot.
         $manager = User::factory()->memberOf($this->company, 'member')->create();
-        FleetMember::create(['user_id' => $manager->id, 'role' => FleetRole::Manager]);
+        app(AccessManager::class)->set($manager, 'frota', 'manager');
         $this->actingAs($manager);
         $this->coreMember($this->company, $manager);
         $this->get($this->company->url('/pessoas'))->assertOk();
 
         $mechanic = User::factory()->memberOf($this->company, 'member')->create();
-        FleetMember::create(['user_id' => $mechanic->id, 'role' => FleetRole::Mechanic]);
+        app(AccessManager::class)->set($mechanic, 'frota', 'mechanic');
         $this->actingAs($mechanic);
         $this->coreMember($this->company, $mechanic);
         $this->get($this->company->url('/pessoas'))->assertForbidden();
@@ -154,7 +154,7 @@ class PeopleTest extends TestCase
 
         // Mechanic: vehicles yes, fuel-ups no.
         $mechanic = User::factory()->memberOf($this->company, 'member')->create();
-        FleetMember::create(['user_id' => $mechanic->id, 'role' => FleetRole::Mechanic]);
+        app(AccessManager::class)->set($mechanic, 'frota', 'mechanic');
         $this->actingAs($mechanic);
         $this->assertTrue(VehicleResource::shouldRegisterNavigation());
         $this->assertFalse(FuelUpResource::shouldRegisterNavigation());

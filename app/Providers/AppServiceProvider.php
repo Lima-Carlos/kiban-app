@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Access\AccessManager;
 use App\Http\Responses\LogoutResponse;
 use App\Licensing\CoreClient;
 use App\Licensing\LicenseManager;
@@ -18,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // One current company and one copy of each service per request.
         $this->app->scoped(TenantContext::class);
+        $this->app->scoped(AccessManager::class);
         $this->app->singleton(ModuleRegistry::class);
         $this->app->singleton(CoreClient::class);
         $this->app->singleton(LicenseVerifier::class);

@@ -14,6 +14,12 @@ class FleetStatsWidget extends StatsOverviewWidget
 
     protected int|string|array $columnSpan = 'full';
 
+    /** On the start page it says what it is; on the fleet dashboard the filters already say it. */
+    protected function getHeading(): ?string
+    {
+        return ($this->pageFilters['home'] ?? false) ? __('fleet.dashboard.summary') : null;
+    }
+
     protected function getStats(): array
     {
         $totals = app(FleetReports::class)->totals($this->months(), $this->vehicleId());

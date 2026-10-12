@@ -14,6 +14,20 @@
 
 Nos bastidores, a casca pede ao Core para criar o login (permissão `team`). Uma pessoa que já tem login na Kiban, por exemplo porque trabalha em duas empresas, continua com **um login só**.
 
+## Um sistema, vários módulos (acesso por pessoa)
+- A empresa usa **um sistema só** (`suaempresa.kibancore.com.br`). Cada sistema contratado (Frota, Ponto...) é um **módulo** no mesmo menu.
+- Cada pessoa tem, em **cada módulo**, um papel ou **"Sem acesso"**, que é o padrão. Sem acesso, o módulo nem aparece no menu dela.
+- Donos e administradores da empresa têm todos os módulos, como gestores.
+- A página **Início** junta os resumos dos módulos que a pessoa acessa (ex.: "Frota · últimos 3 meses") e os botões do dia a dia (ex.: Abastecer, para o motorista). Os primeiros passos aparecem só para quem configura e ficam recolhidos quando estão concluídos.
+- Quem é da empresa mas ainda não tem acesso a nenhum módulo vê: "Você ainda não tem acesso a nenhum sistema. Fale com o gestor".
+
+## Perfis de acesso (setores)
+- Menu **Perfis de acesso**, só para donos e administradores.
+- Um perfil junta o papel em cada módulo. Ex.: **Logística** = Frota como gestor; **Motorista** = Frota como motorista.
+- A empresa já começa com perfis **sugeridos**: Logística, Motorista, Mecânico e Consulta. O RH aparece quando existir o Ponto. Dá para renomear, mudar, excluir ou criar novos.
+- Ao adicionar alguém em **Pessoas**, escolha o perfil: o acesso de cada módulo é preenchido sozinho e ainda dá para ajustar. A lista mostra o perfil de cada pessoa.
+- Mudar ou excluir um perfil **não altera quem já foi cadastrado**; essas pessoas são ajustadas em Pessoas.
+
 ## Na lista
 - **Na empresa:** dono, administrador ou membro (o papel na conta Kiban).
 - **Nos sistemas:** o papel em cada sistema (ex.: "Frota: Motorista").
@@ -62,4 +76,10 @@ Na tela **Motoristas** também há o botão **Enviar acesso**, para quem cadastr
   - `resources/views/filament/install-hint.blade.php`;
   - `public/images/brand/icon-192.png`.
 - Textos: `lang/*/app.php` (`people`, `install`) e `lang/*/fleet.php` (`people`).
-- Testes: `tests/Feature/PeopleTest.php`.
+- Acesso por módulo e perfis:
+  - `app/Access/AccessManager.php` (quem acessa o quê);
+  - `app/Models/ModuleAccess.php` e `AccessProfile.php`;
+  - `app/Filament/Pages/AccessProfilesPage.php`;
+  - `config/kiban.php` → `access_profiles` (sugestões);
+  - migração `2026_10_12_150000_create_module_access_tables.php`.
+- Testes: `tests/Feature/PeopleTest.php` e `tests/Feature/AccessProfilesTest.php`.

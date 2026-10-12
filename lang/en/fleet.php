@@ -254,6 +254,7 @@ return [
             'mechanic' => 'Mechanic',
             'driver' => 'Driver',
             'viewer' => 'Viewer',
+            'none' => 'No access',
         ],
         'fuel_status' => [
             'authorized' => 'Code generated',
@@ -351,6 +352,7 @@ return [
         'alerts_help' => 'Vehicles whose last full tank did much worse than their 6-month average. It may be a mechanical problem.',
         'alert_line' => 'average :average, :percent% worse',
         'no_alerts' => 'No vehicle with unusual consumption.',
+        'summary' => 'Fleet · last 3 months',
     ],
     'home' => [
         'open_code' => 'Open fuel-up · :plate',

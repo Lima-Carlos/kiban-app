@@ -22,6 +22,9 @@ enum FleetRole: string implements HasColor, HasLabel
     /** Only looks. */
     case Viewer = 'viewer';
 
+    /** No access: the Frota does not appear for this person (default for anyone without a role). */
+    case None = 'none';
+
     public function getLabel(): string
     {
         return __('fleet.enums.role.'.$this->value);
@@ -34,6 +37,7 @@ enum FleetRole: string implements HasColor, HasLabel
             self::Mechanic => 'warning',
             self::Driver => 'success',
             self::Viewer => 'gray',
+            self::None => 'gray',
         };
     }
 
@@ -44,6 +48,6 @@ enum FleetRole: string implements HasColor, HasLabel
      */
     public static function assignable(): array
     {
-        return [self::Manager, self::Mechanic, self::Viewer];
+        return [self::Driver, self::Mechanic, self::Manager, self::Viewer];
     }
 }

@@ -15,6 +15,7 @@
 | `FleetVehiclesTest` | Frota: km nunca volta, travas de placa, limite de veículos, motorista vê só os dele |
 | `FleetFuelTest` | Frota: código de abastecimento, página do posto, média de consumo, avisos, papéis, painel |
 | `PeopleTest` | Pessoas: adicionar pelo celular, editar, novo link, remover, menus por papel, app instalável |
+| `AccessProfilesTest` | Um sistema com vários módulos: sem acesso por padrão, perfis sugeridos e editáveis, Início com os resumos |
 | `LocaleTest` | Troca de idioma no sistema e nas páginas simples |
 | `FirstStepsTest` | Passos em ordem, dependências, envio ao Core só quando muda |
 

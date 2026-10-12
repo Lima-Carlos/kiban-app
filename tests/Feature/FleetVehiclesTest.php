@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Access\AccessManager;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Fleet\Enums\DueStatus;
@@ -201,6 +202,10 @@ class FleetVehiclesTest extends TestCase
         // Any other member only looks.
         $viewer = User::factory()->memberOf($tenant, 'member')->create();
         $this->actingAs($viewer);
+        $this->coreMember($tenant, $viewer);
+        // Without a role in the Frota: no access, the module does not appear.
+        $this->get($tenant->url('/frota/veiculos'))->assertForbidden();
+        app(AccessManager::class)->set($viewer, 'frota', 'viewer');
         $this->assertSame(FleetAccess::VIEWER, app(FleetAccess::class)->role($viewer));
         $this->get($tenant->url('/frota/veiculos'))->assertOk()->assertSee('OUT1234');
         $this->assertFalse($viewer->can('update', $other));

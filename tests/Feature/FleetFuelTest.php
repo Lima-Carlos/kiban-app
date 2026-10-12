@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Access\AccessManager;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Fleet\Enums\FleetRole;
@@ -12,7 +13,6 @@ use App\Modules\Fleet\Enums\OdometerSource;
 use App\Modules\Fleet\Filament\FuelUps\Pages\RequestFuelCode;
 use App\Modules\Fleet\Filament\FuelUps\Pages\ViewFuelUp;
 use App\Modules\Fleet\Models\Driver;
-use App\Modules\Fleet\Models\FleetMember;
 use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Models\FuelStation;
 use App\Modules\Fleet\Models\FuelUp;
@@ -230,9 +230,10 @@ class FleetFuelTest extends TestCase
     {
         $member = User::factory()->memberOf($this->company, 'member')->create();
         $access = app(FleetAccess::class);
-        $this->assertSame(FleetRole::Viewer, $access->fleetRole($member));
+        // Without a role: no access at all (the Frota does not even appear).
+        $this->assertSame(FleetRole::None, $access->fleetRole($member));
 
-        FleetMember::create(['user_id' => $member->id, 'role' => FleetRole::Mechanic]);
+        app(AccessManager::class)->set($member, 'frota', 'mechanic');
         $this->assertSame(FleetRole::Mechanic, $access->fleetRole($member));
         $this->assertTrue($this->fuel()->canFuel($member));
         $this->assertNull($this->fuel()->ownVehicleIds($member));
@@ -247,7 +248,7 @@ class FleetFuelTest extends TestCase
         $this->get($this->company->url('/frota/postos'))->assertForbidden();
 
         // A member made "manager of the fleet" (without being company administrator).
-        FleetMember::query()->where('user_id', $member->id)->update(['role' => FleetRole::Manager->value]);
+        app(AccessManager::class)->set($member, 'frota', 'manager');
         $this->assertTrue($access->isManager($member));
         $this->get($this->company->url('/frota/painel'))->assertOk();
         $this->get($this->company->url('/pessoas'))->assertOk()->assertSee($member->email);

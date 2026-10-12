@@ -55,6 +55,24 @@ return [
         FleetModule::class,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Suggested access profiles
+    |--------------------------------------------------------------------------
+    |
+    | Created for each company the first time (it can rename, change or delete them). Only the modules
+    | this app has are kept; the HR profile appears when the time clock module exists.
+    |
+    */
+
+    'access_profiles' => [
+        'logistics' => ['name' => 'app.profiles.suggested.logistics', 'description' => 'app.profiles.suggested.logistics_help', 'roles' => ['frota' => 'manager']],
+        'driver' => ['name' => 'app.profiles.suggested.driver', 'description' => 'app.profiles.suggested.driver_help', 'roles' => ['frota' => 'driver', 'ponto' => 'employee']],
+        'mechanic' => ['name' => 'app.profiles.suggested.mechanic', 'description' => 'app.profiles.suggested.mechanic_help', 'roles' => ['frota' => 'mechanic', 'ponto' => 'employee']],
+        'hr' => ['name' => 'app.profiles.suggested.hr', 'description' => 'app.profiles.suggested.hr_help', 'roles' => ['ponto' => 'manager']],
+        'viewer' => ['name' => 'app.profiles.suggested.viewer', 'description' => 'app.profiles.suggested.viewer_help', 'roles' => ['frota' => 'viewer', 'ponto' => 'viewer']],
+    ],
+
     'locales' => [
         'pt_BR' => 'Português (Brasil)',
         'en' => 'English',

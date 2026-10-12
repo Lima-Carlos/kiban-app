@@ -7,8 +7,14 @@
             @include($item['personal']['view'], $item['personal']['data'] + ['module' => $item['module']])
         @endif
 
+        {{-- Summary of the module (e.g. fleet spending and consumption) for who manages or follows it. --}}
+        @foreach ($item['widgets'] as $widget)
+            @livewire($widget, ['pageFilters' => ['period' => '3', 'home' => true]], key($item['module']->key().'-'.$widget))
+        @endforeach
+
         @if ($item['total'] > 0)
-            <x-filament::section :icon="$item['module']->icon()">
+            {{-- When everything is done, the list stays closed (one line: "all set"). --}}
+            <x-filament::section :icon="$item['module']->icon()" collapsible :collapsed="$item['done'] === $item['total']">
                 <x-slot name="heading">{{ $item['module']->name() }}</x-slot>
                 <x-slot name="description">
                     @if ($item['done'] === $item['total'])
@@ -57,9 +63,17 @@
             </x-filament::section>
         @endif
     @empty
-        <x-filament::section>
-            <x-slot name="heading">{{ __('app.home.no_modules') }}</x-slot>
-            <x-slot name="description">{{ __('app.home.no_modules_help') }}</x-slot>
-        </x-filament::section>
+        @if ($this->companyHasModules())
+            {{-- The company has systems, but this person was not given access to any yet. --}}
+            <x-filament::section>
+                <x-slot name="heading">{{ __('app.home.no_access') }}</x-slot>
+                <x-slot name="description">{{ __('app.home.no_access_help') }}</x-slot>
+            </x-filament::section>
+        @else
+            <x-filament::section>
+                <x-slot name="heading">{{ __('app.home.no_modules') }}</x-slot>
+                <x-slot name="description">{{ __('app.home.no_modules_help') }}</x-slot>
+            </x-filament::section>
+        @endif
     @endforelse
 </x-filament-panels::page>

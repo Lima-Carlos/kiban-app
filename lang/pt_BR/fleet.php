@@ -254,6 +254,7 @@ return [
             'mechanic' => 'Mecânico',
             'driver' => 'Motorista',
             'viewer' => 'Consulta',
+            'none' => 'Sem acesso',
         ],
         'fuel_status' => [
             'authorized' => 'Código gerado',
@@ -351,6 +352,7 @@ return [
         'alerts_help' => 'Veículos cujo último tanque cheio rendeu bem menos que a média dos últimos 6 meses. Pode ser problema mecânico.',
         'alert_line' => 'média :average, :percent% pior',
         'no_alerts' => 'Nenhum veículo com consumo fora do normal.',
+        'summary' => 'Frota · últimos 3 meses',
     ],
     'home' => [
         'open_code' => 'Abastecimento em aberto · :plate',

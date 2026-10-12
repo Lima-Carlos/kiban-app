@@ -35,6 +35,11 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Todo módulo novo precisa de teste de isolamento (veja `tests/Feature/TenancyTest.php`).
 - Os botões e formulários das telas mandam pedidos "por trás" (Livewire). Todo porteiro (middleware) que a tela precisa (empresa, licença, idioma, equipe) também fica em `persistentMiddleware` no `AppPanelProvider`, senão esses pedidos dão 403. O teste `tests/Feature/BrowserFlowTest.php` faz esses pedidos como um navegador.
 
+## Um sistema, vários módulos
+- Cada pessoa tem, por módulo, um papel ou nenhum acesso (padrão). Tudo passa por `App\Access\AccessManager` (dono/admin = gestor de tudo; `module_access`; `Module::implicitRole()`). `ModulePolicy` já exige acesso ao módulo.
+- Todo módulo novo declara `roles()`, `managerRole()` e, se quiser, `implicitRole()`, `homeWidgets()` (resumo no Início) e os campos de pessoa. Novos perfis sugeridos vão em `config/kiban.php` → `access_profiles`.
+- Os módulos devem conversar entre si (mesmas pessoas, mesmos veículos...): é um sistema só.
+
 ## Pessoas
 - Todos da empresa são cadastrados na tela **Pessoas** (`PeoplePage` + `App\People\PeopleService`), que pede ao Core para criar o login (permissão `team`). Celular é o principal; e-mail é opcional (nunca supor que existe). O acesso vai pelo WhatsApp (`AccessNotice`) ou e-mail.
 - Cada módulo acrescenta os próprios campos de pessoa (`personFields`/`savePerson`...). Ninguém precisa ir à Área do cliente para cadastrar funcionário.

@@ -9,4 +9,4 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [modulos-e-primeiros-passos.md](modulos-e-primeiros-passos.md): como um sistema (módulo) é montado e o assistente de primeiros passos.
 - [testes.md](testes.md): os testes automáticos.
 - [frota.md](frota.md): o sistema Kiban Frota (veículos, km sempre atualizado, motoristas, postos, documentos).
-- [pessoas.md](pessoas.md): cadastrar motoristas, mecânicos e gestores, enviar o acesso pelo WhatsApp, entrar pelo celular e o app na tela do celular.
+- [pessoas.md](pessoas.md): um sistema com vários módulos; quem acessa o quê (perfis de acesso); cadastrar pessoas, enviar o acesso pelo WhatsApp, entrar pelo celular e o app na tela do celular.

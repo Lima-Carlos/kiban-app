@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Access\AccessManager;
 use App\Models\Tenant;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
@@ -46,7 +47,8 @@ class Home extends Page
         $tenant = $this->tenant();
         $user = auth()->user();
 
-        return collect(app(ModuleRegistry::class)->enabledFor($tenant))
+        // Only the modules this person can open (one system, many modules).
+        return collect(app(AccessManager::class)->modulesFor($user, $tenant))
             ->map(function (Module $module) use ($tenant, $user): array {
                 // First steps only for who sets the module up; the others get their own block (e.g. driver buttons).
                 $steps = $module->showsSetupTo($user) ? $module->progress($tenant) : [];
@@ -56,6 +58,7 @@ class Home extends Page
                 return [
                     'module' => $module,
                     'personal' => $module->personalHome($user),
+                    'widgets' => $module->homeWidgets($user),
                     'steps' => $steps,
                     'done' => $done,
                     'total' => $total,
@@ -65,6 +68,11 @@ class Home extends Page
             })
             ->values()
             ->all();
+    }
+
+    public function companyHasModules(): bool
+    {
+        return app(ModuleRegistry::class)->enabledFor($this->tenant()) !== [];
     }
 
     protected function tenant(): Tenant

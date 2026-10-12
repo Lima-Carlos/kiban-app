@@ -2,10 +2,11 @@
 
 namespace App\Modules\Fleet\Services;
 
+use App\Access\AccessManager;
 use App\Models\User;
 use App\Modules\Fleet\Enums\FleetRole;
+use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Driver;
-use App\Modules\Fleet\Models\FleetMember;
 use App\Modules\Fleet\Models\Vehicle;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -33,8 +34,8 @@ class FleetPeople
         return [
             Select::make('role')
                 ->label(__('fleet.people.role'))
-                ->options(collect([FleetRole::Driver, FleetRole::Mechanic, FleetRole::Manager, FleetRole::Viewer])->mapWithKeys(fn (FleetRole $role): array => [$role->value => $role->getLabel()])->all())
-                ->default(FleetRole::Driver->value)
+                ->options(collect([FleetRole::None, ...FleetRole::assignable()])->mapWithKeys(fn (FleetRole $role): array => [$role->value => $role->getLabel()])->all())
+                ->default(FleetRole::None->value)
                 ->helperText(__('fleet.people.role_help'))
                 ->required()
                 ->live(),
@@ -94,13 +95,14 @@ class FleetPeople
             return;
         }
 
-        $role = FleetRole::tryFrom((string) ($data['role'] ?? '')) ?? FleetRole::Viewer;
+        $role = FleetRole::tryFrom((string) ($data['role'] ?? '')) ?? FleetRole::None;
 
         DB::transaction(function () use ($user, $data, $role): void {
             $driver = Driver::query()->where('user_id', $user->getKey())->first();
 
+            app(AccessManager::class)->set($user, FleetModule::KEY, $role === FleetRole::None ? null : $role->value);
+
             if ($role === FleetRole::Driver) {
-                FleetMember::query()->where('user_id', $user->getKey())->delete();
 
                 $driver ??= new Driver;
                 $driver->fill([
@@ -120,20 +122,21 @@ class FleetPeople
                 return;
             }
 
-            FleetMember::query()->updateOrCreate(['user_id' => $user->getKey()], ['role' => $role]);
-            // No longer a driver: the record stays (history), inactive.
+            // Not a driver (anymore): the record stays (history), inactive.
             $driver?->forceFill(['is_active' => false])->save();
         });
     }
 
     public function remove(User $user): void
     {
-        FleetMember::query()->where('user_id', $user->getKey())->delete();
+        app(AccessManager::class)->set($user, FleetModule::KEY, null);
         Driver::query()->where('user_id', $user->getKey())->update(['user_id' => null, 'is_active' => false]);
     }
 
-    public function roleLabel(User $user): string
+    public function roleLabel(User $user): ?string
     {
-        return $this->access->fleetRole($user)->getLabel();
+        $role = $this->access->fleetRole($user);
+
+        return $role === FleetRole::None ? null : $role->getLabel();
     }
 }

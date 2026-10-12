@@ -80,6 +80,41 @@ abstract class Module
     }
 
     /**
+     * Roles a person can have in this module, with their labels (e.g. Frota: driver, mechanic, manager, viewer).
+     *
+     * @return array<string, string>
+     */
+    public function roles(): array
+    {
+        return [];
+    }
+
+    /** Role of owners and administrators of the company (they have every module). */
+    public function managerRole(): string
+    {
+        return 'manager';
+    }
+
+    /**
+     * A role the module gives by itself when nothing was set for the person (e.g. Frota: linked to a
+     * driver record → driver). null = no access.
+     */
+    public function implicitRole(User $user): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Dashboard blocks of this module for the start page (only for who has access).
+     *
+     * @return array<int, class-string>
+     */
+    public function homeWidgets(User $user): array
+    {
+        return [];
+    }
+
+    /**
      * Who may add and change people in the "People" screen for this module (besides owners and administrators).
      */
     public function managesPeople(User $user): bool

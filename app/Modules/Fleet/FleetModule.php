@@ -122,7 +122,7 @@ class FleetModule extends Module
         $role = $access->fleetRole($user);
         $open = FuelUp::query()->with('vehicle')->where('created_by', $user->getKey())->where('status', FuelUpStatus::Authorized->value)->latest()->get();
 
-        if ($role === FleetRole::Viewer || ($role === FleetRole::Manager && $open->isEmpty())) {
+        if (in_array($role, [FleetRole::Viewer, FleetRole::None], true) || ($role === FleetRole::Manager && $open->isEmpty())) {
             return null;
         }
 
@@ -142,6 +142,23 @@ class FleetModule extends Module
     protected function tenantCanWrite(): bool
     {
         return app(TenantContext::class)->get()->license()->canWrite(self::KEY);
+    }
+
+    public function roles(): array
+    {
+        return collect(FleetRole::assignable())->mapWithKeys(fn (FleetRole $role): array => [$role->value => $role->getLabel()])->all();
+    }
+
+    /** Someone linked to an active driver record (same e-mail or added as driver) drives without anything else. */
+    public function implicitRole(User $user): ?string
+    {
+        return app(FleetAccess::class)->driverFor($user) !== null ? FleetRole::Driver->value : null;
+    }
+
+    /** Fleet summary on the start page for managers and viewers. */
+    public function homeWidgets(User $user): array
+    {
+        return in_array(app(FleetAccess::class)->fleetRole($user), [FleetRole::Manager, FleetRole::Viewer], true) ? [FleetStatsWidget::class] : [];
     }
 
     public function managesPeople(User $user): bool

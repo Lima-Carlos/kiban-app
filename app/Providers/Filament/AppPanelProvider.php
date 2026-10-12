@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\AccessProfilesPage;
 use App\Filament\Pages\Home;
 use App\Filament\Pages\PeoplePage;
 use App\Http\Middleware\EnsureLicense;
@@ -49,6 +50,7 @@ class AppPanelProvider extends PanelProvider
             ->pages([
                 Home::class,
                 PeoplePage::class,
+                AccessProfilesPage::class,
                 ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())
