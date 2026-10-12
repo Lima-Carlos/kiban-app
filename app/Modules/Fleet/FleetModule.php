@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fleet;
 
+use App\Filament\Pages\PeoplePage;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Fleet\Enums\FleetRole;
@@ -79,7 +80,7 @@ class FleetModule extends Module
                 descriptionKey: 'fleet.steps.driver_help',
                 requires: ['vehicle'],
                 done: fn (Tenant $tenant): bool => Driver::query()->whereHas('vehicles')->exists(),
-                url: fn (): string => DriverResource::getUrl('index'),
+                url: fn (): string => PeoplePage::getUrl(),
             ),
             new Step(
                 key: 'station',

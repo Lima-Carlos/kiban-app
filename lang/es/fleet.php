@@ -6,7 +6,7 @@ return [
         'vehicle' => 'Registre el primer vehículo',
         'vehicle_help' => 'Con el kilometraje actual, el próximo cambio de aceite y el próximo servicio.',
         'driver' => 'Registre un conductor',
-        'driver_help' => 'Vincule el conductor a los vehículos que usa. Con el mismo e-mail de su cuenta Kiban, entra desde el celular.',
+        'driver_help' => 'En Personas, agregue al conductor con su celular, elija sus vehículos y envíe el acceso por WhatsApp.',
         'station' => 'Registre las estaciones de combustible',
         'station_help' => 'Los conductores eligen la estación al cargar combustible.',
     ],
