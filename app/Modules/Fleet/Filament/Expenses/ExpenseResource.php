@@ -36,7 +36,7 @@ class ExpenseResource extends ModuleResource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 8;
 
     public static function getModelLabel(): string
     {

@@ -118,7 +118,10 @@ class FuelService
                 'code' => $this->newCode(),
                 'code_expires_at' => now()->addHours(self::CODE_HOURS),
                 'created_by' => $user->getKey(),
-                'flags' => $other ? [FuelUpFlag::OtherVehicle->value] : [],
+                'flags' => array_values(array_filter([
+                    $other ? FuelUpFlag::OtherVehicle->value : null,
+                    app(InspectionService::class)->isDue($vehicle) ? FuelUpFlag::NoInspection->value : null,
+                ])),
             ])->save();
 
             $this->odometer->record($vehicle, $odometer, OdometerSource::Fuel, $fuelUp, $user);

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fleet\Filament;
 
+use App\Modules\Fleet\Enums\InspectionFrequency;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Services\FleetAccess;
@@ -59,7 +60,7 @@ class FleetSettingsPage extends Page
 
     public function mount(): void
     {
-        $this->form->fill(FleetSetting::current()->only(['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days', 'allow_other_vehicle']));
+        $this->form->fill(FleetSetting::current()->only(['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days', 'allow_other_vehicle', 'inspection_frequency']));
     }
 
     public function form(Schema $schema): Schema
@@ -96,6 +97,14 @@ class FleetSettingsPage extends Page
                         Toggle::make('allow_other_vehicle')
                             ->label(__('fleet.settings.allow_other_vehicle'))
                             ->helperText(__('fleet.settings.allow_other_vehicle_help')),
+                    ]),
+                Section::make(__('fleet.settings.inspections'))
+                    ->components([
+                        Select::make('inspection_frequency')
+                            ->label(__('fleet.settings.inspection_frequency'))
+                            ->helperText(__('fleet.settings.inspection_frequency_help'))
+                            ->options(InspectionFrequency::class)
+                            ->required(),
                     ]),
                 Section::make(__('fleet.settings.alerts'))
                     ->description(__('fleet.settings.alerts_help'))

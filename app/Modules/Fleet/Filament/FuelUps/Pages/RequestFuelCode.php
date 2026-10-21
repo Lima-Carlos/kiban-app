@@ -4,6 +4,7 @@ namespace App\Modules\Fleet\Filament\FuelUps\Pages;
 
 use App\Modules\Fleet\Filament\FleetFields;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
+use App\Modules\Fleet\Filament\Inspections\InspectionResource;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Models\FuelStation;
@@ -11,6 +12,7 @@ use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetException;
 use App\Modules\Fleet\Services\FleetFormat;
 use App\Modules\Fleet\Services\FuelService;
+use App\Modules\Fleet\Services\InspectionService;
 use App\Tenancy\TenantContext;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -19,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Utilities\Get;
@@ -77,6 +80,16 @@ class RequestFuelCode extends Page
                     ->searchable()
                     ->required()
                     ->live(),
+                // Reminder only: fueling is never blocked by a missing inspection.
+                Callout::make(__('fleet.inspections.reminder'))
+                    ->description(__('fleet.inspections.reminder_help'))
+                    ->warning()
+                    ->visible(fn (Get $get): bool => ($vehicle = Vehicle::query()->find($get('vehicle_id'))) !== null && app(InspectionService::class)->isDue($vehicle))
+                    ->actions([
+                        Action::make('inspect')
+                            ->label(__('fleet.inspections.do'))
+                            ->url(fn (Get $get): string => InspectionResource::getUrl('do', ['vehicle' => $get('vehicle_id')])),
+                    ]),
                 Select::make('station_id')
                     ->label(__('fleet.stations.singular_title'))
                     ->options(fn (): array => FuelStation::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all())

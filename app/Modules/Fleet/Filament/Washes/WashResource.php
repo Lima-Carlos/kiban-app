@@ -23,7 +23,7 @@ class WashResource extends ModuleResource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     public static function getModelLabel(): string
     {

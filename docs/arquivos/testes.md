@@ -14,6 +14,7 @@
 | `BrowserFlowTest` | Os botões das telas funcionam como num navegador (pedidos "por trás" sabem a empresa) |
 | `FleetVehiclesTest` | Frota: km nunca volta, travas de placa, limite de veículos, motorista vê só os dele |
 | `FleetFuelTest` | Frota: código de abastecimento, página do posto, média de consumo, avisos, papéis, painel |
+| `FleetInspectionTest` | Frota: vistoria pelo celular, problemas viram solicitações, item grave para o veículo, frequência e lembrete no abastecimento, itens da vistoria, quem vê o quê |
 | `FleetMaintenanceTest` | Frota: pedido do motorista → agenda → manutenção, próxima troca de óleo/revisão, lavagens, despesas, menus de cada papel, painel com todos os gastos |
 | `PeopleTest` | Pessoas: adicionar pelo celular, editar, novo link, remover, menus por papel, app instalável |
 | `AccessProfilesTest` | Um sistema com vários módulos: sem acesso por padrão, perfis sugeridos e editáveis, Início com os resumos |

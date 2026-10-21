@@ -58,6 +58,13 @@
                             {{ __('fleet.home.open_vehicle') }}
                         </x-filament::button>
                     </div>
+                    @if ($canInspect)
+                        @php($due = in_array($vehicle->getKey(), $dueInspection, true))
+                        <x-filament::button tag="a" size="lg" :color="$due ? 'primary' : 'gray'" icon="heroicon-o-clipboard-document-check" style="width:100%;margin-top:8px"
+                            :href="\App\Modules\Fleet\Filament\Inspections\InspectionResource::getUrl('do', ['vehicle' => $vehicle->getKey()])">
+                            {{ $due ? __('fleet.inspections.do_pending') : __('fleet.inspections.do') }}
+                        </x-filament::button>
+                    @endif
                     @if ($canFuel)
                         <x-filament::button tag="a" size="lg" color="warning" icon="heroicon-o-wrench-screwdriver" style="width:100%;margin-top:8px"
                             :href="\App\Modules\Fleet\Filament\Requests\ServiceRequestResource::getUrl('index', ['new' => 1, 'vehicle' => $vehicle->getKey()])">

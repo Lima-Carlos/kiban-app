@@ -166,6 +166,63 @@ O gestor e o mecânico também podem agendar ou registrar direto, sem pedido do 
   - `resources/views/fleet/home/mechanic.blade.php` (Início do mecânico).
 - Testes: `tests/Feature/FleetMaintenanceTest.php`.
 
+## Parte 4 (F4): vistorias
+
+### Como o motorista faz (no celular, 1 ou 2 minutos)
+1. Na página **Início**, toca em **Fazer vistoria** no veículo. Quando falta a vistoria do período, o botão fica azul e diz "(pendente)".
+2. Digita o **km** do painel.
+3. Em cada item da lista, toca em **OK** ou em **Problema**. Um problema pede **o que está errado**; a foto é opcional (nem tudo dá para fotografar, como um barulho).
+4. Tira as **5 fotos**: frente, traseira, os dois lados e o painel ligado.
+5. Toca em **Concluir vistoria**.
+
+### O que acontece sozinho
+- O km entra no histórico do veículo.
+- **Cada problema vira uma solicitação de manutenção** (com a foto), no mesmo caminho da parte 3: o gestor e o mecânico veem, agendam e concluem.
+- **Item grave com problema** (freios, pneus, luzes e luzes de alerta, já marcados): o veículo vai para **"Em manutenção"** e fica registrado no histórico ("Parado pela vistoria"). Quando a manutenção é registrada, ele volta a "Ativo". O gestor também pode liberar mudando a situação.
+- A vistoria nunca é alterada nem apagada. As respostas guardam o nome do item como era naquele dia.
+
+### Com que frequência (Configurações → Vistoria)
+- **Todo dia** (padrão), toda semana, todo mês ou só quando quiser.
+- **Nunca bloqueia nada.** Sem a vistoria:
+  - o motorista vê um lembrete na tela de abastecer (com o botão para fazer a vistoria);
+  - o abastecimento fica marcado "Sem a vistoria do período", para o gestor conferir.
+- Só os veículos **ativos** precisam de vistoria (em manutenção ou parados, não).
+
+### Itens da vistoria (só o gestor)
+- Vêm 9 itens prontos: pneus, luzes e setas, freios, óleo e água, luzes de alerta no painel, lataria e vidros, limpeza, documento, e extintor/triângulo/macaco/estepe.
+- O gestor pode:
+  - desligar um item ("Usar na vistoria");
+  - marcar ou desmarcar como **grave**;
+  - mudar o nome;
+  - mudar a ordem (arrastando);
+  - criar itens próprios (ex.: tacógrafo).
+- Os itens prontos são desligados, não apagados. Os próprios podem ser apagados.
+
+### Quem vê o quê
+- **Motorista:** faz e vê as vistorias dos veículos dele.
+- **Gestor:** faz e vê todas, e cuida dos itens e da frequência.
+- **Mecânico:** pode fazer, mas recebe os problemas como solicitações (a vistoria não aparece no menu dele).
+- **Consulta:** só olha.
+
+### Painel e veículo
+- O painel e a página Início do gestor mostram o quadro **Vistorias**:
+  - "Hoje: X de Y veículos vistoriados" e quais faltam;
+  - os **problemas encontrados ainda em aberto**.
+- A página do veículo ganhou a aba **Vistorias**.
+
+## Arquivos (parte 4)
+- Tabelas `fleet_checklist_items` e `fleet_inspections`, a ligação da solicitação com a vistoria e a frequência nas configurações: `database/migrations/2026_10_21_100000_create_fleet_inspection_tables.php`.
+- `app/Modules/Fleet/Services/InspectionService.php`: todas as regras (itens prontos, registrar, problemas → solicitações, item grave → em manutenção, frequência e quem está pendente).
+- `app/Modules/Fleet/Models/`: `ChecklistItem`, `Inspection`.
+- `app/Modules/Fleet/Enums/InspectionFrequency.php`. Também ganharam opções novas: `VehicleEventType` ("parado pela vistoria") e `FuelUpFlag` ("sem a vistoria").
+- `app/Modules/Fleet/Policies/`: `InspectionPolicy`, `ChecklistItemPolicy`.
+- Telas:
+  - `app/Modules/Fleet/Filament/Inspections/`: lista, "Fazer vistoria" (`Pages/DoInspection.php`) e detalhes com fotos;
+  - `app/Modules/Fleet/Filament/Checklist/`: itens da vistoria;
+  - quadro do painel: `Dashboard/InspectionStatusWidget.php` + `resources/views/fleet/dashboard/inspection-status.blade.php`;
+  - aba do veículo: `Vehicles/RelationManagers/InspectionsRelationManager.php`.
+- Testes: `tests/Feature/FleetInspectionTest.php`.
+
 ## Arquivos (parte 2)
 - Tabelas: `fleet_members` (papéis) e `fleet_fuel_ups` (abastecimentos), em `database/migrations/2026_10_12_120000_create_fleet_fuel_tables.php`. Mais `..._130000_add_fuel_access_options.php` (motorista reserva, permitir outro veículo, motivo).
 - `app/Modules/Fleet/Services/`:

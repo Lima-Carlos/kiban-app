@@ -9,26 +9,31 @@ use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\Enums\FuelUpStatus;
 use App\Modules\Fleet\Enums\RequestStatus;
 use App\Modules\Fleet\Filament\Appointments\AppointmentResource;
+use App\Modules\Fleet\Filament\Checklist\ChecklistItemResource;
 use App\Modules\Fleet\Filament\Dashboard\ConsumptionAlertsWidget;
 use App\Modules\Fleet\Filament\Dashboard\ConsumptionChartWidget;
 use App\Modules\Fleet\Filament\Dashboard\FleetDashboard;
 use App\Modules\Fleet\Filament\Dashboard\FleetStatsWidget;
 use App\Modules\Fleet\Filament\Dashboard\FuelSpendChartWidget;
+use App\Modules\Fleet\Filament\Dashboard\InspectionStatusWidget;
 use App\Modules\Fleet\Filament\Drivers\DriverResource;
 use App\Modules\Fleet\Filament\Expenses\ExpenseResource;
 use App\Modules\Fleet\Filament\FleetSettingsPage;
 use App\Modules\Fleet\Filament\FuelStations\FuelStationResource;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
+use App\Modules\Fleet\Filament\Inspections\InspectionResource;
 use App\Modules\Fleet\Filament\Maintenances\MaintenanceResource;
 use App\Modules\Fleet\Filament\Requests\ServiceRequestResource;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
 use App\Modules\Fleet\Filament\Washes\WashResource;
 use App\Modules\Fleet\Filament\Workshops\WorkshopResource;
 use App\Modules\Fleet\Models\Appointment;
+use App\Modules\Fleet\Models\ChecklistItem;
 use App\Modules\Fleet\Models\Driver;
 use App\Modules\Fleet\Models\Expense;
 use App\Modules\Fleet\Models\FuelStation;
 use App\Modules\Fleet\Models\FuelUp;
+use App\Modules\Fleet\Models\Inspection;
 use App\Modules\Fleet\Models\Maintenance;
 use App\Modules\Fleet\Models\OdometerReading;
 use App\Modules\Fleet\Models\ServiceRequest;
@@ -38,10 +43,12 @@ use App\Modules\Fleet\Models\VehicleEvent;
 use App\Modules\Fleet\Models\Wash;
 use App\Modules\Fleet\Models\Workshop;
 use App\Modules\Fleet\Policies\AppointmentPolicy;
+use App\Modules\Fleet\Policies\ChecklistItemPolicy;
 use App\Modules\Fleet\Policies\DriverPolicy;
 use App\Modules\Fleet\Policies\ExpensePolicy;
 use App\Modules\Fleet\Policies\FuelStationPolicy;
 use App\Modules\Fleet\Policies\FuelUpPolicy;
+use App\Modules\Fleet\Policies\InspectionPolicy;
 use App\Modules\Fleet\Policies\MaintenancePolicy;
 use App\Modules\Fleet\Policies\OdometerReadingPolicy;
 use App\Modules\Fleet\Policies\ServiceRequestPolicy;
@@ -53,6 +60,7 @@ use App\Modules\Fleet\Policies\WorkshopPolicy;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\FleetPeople;
 use App\Modules\Fleet\Services\FuelService;
+use App\Modules\Fleet\Services\InspectionService;
 use App\Modules\Module;
 use App\Modules\Step;
 use App\Tenancy\TenantContext;
@@ -114,9 +122,9 @@ class FleetModule extends Module
     public function resources(): array
     {
         return [
-            VehicleResource::class, FuelUpResource::class, ServiceRequestResource::class, AppointmentResource::class,
+            VehicleResource::class, FuelUpResource::class, InspectionResource::class, ServiceRequestResource::class, AppointmentResource::class,
             MaintenanceResource::class, WashResource::class, ExpenseResource::class,
-            DriverResource::class, FuelStationResource::class, WorkshopResource::class,
+            DriverResource::class, FuelStationResource::class, WorkshopResource::class, ChecklistItemResource::class,
         ];
     }
 
@@ -127,7 +135,7 @@ class FleetModule extends Module
 
     public function widgets(): array
     {
-        return [FleetStatsWidget::class, ConsumptionChartWidget::class, FuelSpendChartWidget::class, ConsumptionAlertsWidget::class];
+        return [FleetStatsWidget::class, InspectionStatusWidget::class, ConsumptionChartWidget::class, FuelSpendChartWidget::class, ConsumptionAlertsWidget::class];
     }
 
     public function showsSetupTo(User $user): bool
@@ -161,12 +169,17 @@ class FleetModule extends Module
         }
 
         $visible = $access->visibleVehicleIds($user);
+        $vehicles = $role === FleetRole::Manager ? collect() : Vehicle::query()->countingInLimit()->when($visible !== null, fn ($query) => $query->whereKey($visible))->orderBy('plate')->get();
+        $inspections = app(InspectionService::class);
 
         return [
             'view' => 'fleet.home.driver',
             'data' => [
                 'openFuelUps' => $open,
-                'vehicles' => $role === FleetRole::Manager ? collect() : Vehicle::query()->countingInLimit()->when($visible !== null, fn ($query) => $query->whereKey($visible))->orderBy('plate')->get(),
+                'vehicles' => $vehicles,
+                // Vehicles still missing the inspection of today / this week / this month.
+                'dueInspection' => $vehicles->filter(fn (Vehicle $vehicle): bool => $inspections->isDue($vehicle))->modelKeys(),
+                'canInspect' => $inspections->canInspect($user) && $this->tenantCanWrite(),
                 'canFuel' => app(FuelService::class)->canFuel($user) && $this->tenantCanWrite(),
                 'showVehicles' => $role !== FleetRole::Manager,
                 'openRequests' => $role === FleetRole::Manager ? collect() : ServiceRequest::query()->with('vehicle')->where('requested_by', $user->getKey())->whereIn('status', [RequestStatus::Open->value, RequestStatus::Scheduled->value])->latest()->get(),
@@ -193,7 +206,7 @@ class FleetModule extends Module
     /** Fleet summary on the start page for managers and viewers. */
     public function homeWidgets(User $user): array
     {
-        return in_array(app(FleetAccess::class)->fleetRole($user), [FleetRole::Manager, FleetRole::Viewer], true) ? [FleetStatsWidget::class] : [];
+        return in_array(app(FleetAccess::class)->fleetRole($user), [FleetRole::Manager, FleetRole::Viewer], true) ? [FleetStatsWidget::class, InspectionStatusWidget::class] : [];
     }
 
     public function managesPeople(User $user): bool
@@ -242,6 +255,8 @@ class FleetModule extends Module
             Wash::class => WashPolicy::class,
             Expense::class => ExpensePolicy::class,
             Workshop::class => WorkshopPolicy::class,
+            Inspection::class => InspectionPolicy::class,
+            ChecklistItem::class => ChecklistItemPolicy::class,
         ];
     }
 }

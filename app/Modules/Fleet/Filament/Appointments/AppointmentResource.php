@@ -34,7 +34,7 @@ class AppointmentResource extends ModuleResource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     public static function getModelLabel(): string
     {

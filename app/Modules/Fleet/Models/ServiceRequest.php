@@ -20,7 +20,7 @@ class ServiceRequest extends Model
 
     protected $table = 'fleet_service_requests';
 
-    protected $fillable = ['vehicle_id', 'kind', 'description', 'photo_path'];
+    protected $fillable = ['vehicle_id', 'kind', 'description', 'photo_path', 'inspection_id'];
 
     protected $attributes = ['status' => 'open'];
 
@@ -46,6 +46,16 @@ class ServiceRequest extends Model
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by');
+    }
+
+    /**
+     * The inspection that found the problem (if it came from one).
+     *
+     * @return BelongsTo<Inspection, $this>
+     */
+    public function inspection(): BelongsTo
+    {
+        return $this->belongsTo(Inspection::class);
     }
 
     /**

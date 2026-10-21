@@ -51,6 +51,8 @@ class FleetFuelTest extends TestCase
         $this->manager = $this->signIn($this->company);
         $this->car = app(VehicleService::class)->register(['plate' => 'CAR1A11', 'brand' => 'Fiat', 'model' => 'Strada', 'type' => 'pickup', 'fuel_type' => 'flex', 'tank_capacity' => 55], 10000, $this->manager);
         $this->station = FuelStation::create(['name' => 'Posto Centro']);
+        // Inspections (and their "no inspection" warning) are tested in FleetInspectionTest.
+        FleetSetting::current()->update(['inspection_frequency' => 'free']);
     }
 
     /**

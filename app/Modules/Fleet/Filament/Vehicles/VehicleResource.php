@@ -16,6 +16,7 @@ use App\Modules\Fleet\Filament\Vehicles\RelationManagers\AppointmentsRelationMan
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\DocumentsRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\EventsRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\ExpensesRelationManager;
+use App\Modules\Fleet\Filament\Vehicles\RelationManagers\InspectionsRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\MaintenancesRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\OdometerReadingsRelationManager;
 use App\Modules\Fleet\Filament\Vehicles\RelationManagers\WashesRelationManager;
@@ -320,6 +321,7 @@ class VehicleResource extends ModuleResource
         return [
             MaintenancesRelationManager::class,
             AppointmentsRelationManager::class,
+            InspectionsRelationManager::class,
             OdometerReadingsRelationManager::class,
             WashesRelationManager::class,
             ExpensesRelationManager::class,

@@ -35,7 +35,7 @@ class MaintenanceResource extends ModuleResource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     public static function getModelLabel(): string
     {

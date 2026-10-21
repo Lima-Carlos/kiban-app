@@ -38,7 +38,7 @@ class ServiceRequestResource extends ModuleResource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftEllipsis;
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     public static function getModelLabel(): string
     {

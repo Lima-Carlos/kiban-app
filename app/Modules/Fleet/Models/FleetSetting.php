@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fleet\Models;
 
+use App\Modules\Fleet\Enums\InspectionFrequency;
 use App\Tenancy\BelongsToTenant;
 use App\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,9 @@ class FleetSetting extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days', 'allow_other_vehicle'];
+    protected $attributes = ['inspection_frequency' => 'daily'];
+
+    protected $fillable = ['distance_unit', 'volume_unit', 'currency', 'alert_distance', 'alert_days', 'allow_other_vehicle', 'inspection_frequency'];
 
     /** Countries that use miles / gallons by default. */
     protected const MILES = ['US', 'GB', 'LR', 'MM'];
@@ -40,6 +43,7 @@ class FleetSetting extends Model
             'alert_distance' => 'integer',
             'alert_days' => 'integer',
             'allow_other_vehicle' => 'boolean',
+            'inspection_frequency' => InspectionFrequency::class,
         ];
     }
 

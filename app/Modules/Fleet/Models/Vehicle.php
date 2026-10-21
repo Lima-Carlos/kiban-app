@@ -138,6 +138,14 @@ class Vehicle extends Model
     }
 
     /**
+     * @return HasMany<Inspection, $this>
+     */
+    public function inspections(): HasMany
+    {
+        return $this->hasMany(Inspection::class);
+    }
+
+    /**
      * @return HasMany<VehicleEvent, $this>
      */
     public function events(): HasMany

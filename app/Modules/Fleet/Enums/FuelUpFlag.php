@@ -24,6 +24,9 @@ enum FuelUpFlag: string implements HasLabel
     /** Finished after the code expired. */
     case Late = 'late';
 
+    /** Fueled while the vehicle's inspection was missing (it does not block, it only warns). */
+    case NoInspection = 'no_inspection';
+
     public function getLabel(): string
     {
         return __('fleet.enums.fuel_flag.'.$this->value);

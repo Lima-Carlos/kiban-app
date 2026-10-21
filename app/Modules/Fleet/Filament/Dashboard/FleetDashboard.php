@@ -84,6 +84,7 @@ class FleetDashboard extends Dashboard
     {
         return [
             FleetStatsWidget::class,
+            InspectionStatusWidget::class,
             ConsumptionChartWidget::class,
             FuelSpendChartWidget::class,
             ConsumptionAlertsWidget::class,
