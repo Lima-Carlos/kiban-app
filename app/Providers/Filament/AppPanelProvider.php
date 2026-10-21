@@ -63,6 +63,9 @@ class AppPanelProvider extends PanelProvider
                     ->openUrlInNewTab(),
                 ...$this->localeMenuItems(),
             ])
+            // The bell: warnings of the current company, checked every 30 seconds.
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.pwa-head'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.install-hint'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.license-notice'))

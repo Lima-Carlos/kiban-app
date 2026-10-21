@@ -149,4 +149,9 @@ return [
             'viewer_help' => 'Sees everything, without changing.',
         ],
     ],
+    'notices' => [
+        'open' => 'Open',
+        'attention' => 'Attention',
+        'cleaned' => 'Old warnings removed: :count.',
+    ],
 ];

@@ -113,7 +113,7 @@ class InspectionService
         $problems = array_values(array_filter($answers, fn (array $answer): bool => ! $answer['ok']));
         $critical = collect($problems)->contains(fn (array $answer): bool => $answer['critical']);
 
-        return DB::transaction(function () use ($vehicle, $data, $user, $answers, $problems, $critical): Inspection {
+        $inspection = DB::transaction(function () use ($vehicle, $data, $user, $answers, $problems, $critical): Inspection {
             $inspection = new Inspection([
                 'vehicle_id' => $vehicle->getKey(),
                 'performed_at' => now(),
@@ -156,6 +156,10 @@ class InspectionService
 
             return $inspection;
         });
+
+        app(FleetNotices::class)->inspectionDone($inspection, $user);
+
+        return $inspection;
     }
 
     /**

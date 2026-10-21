@@ -223,6 +223,38 @@ O gestor e o mecânico também podem agendar ou registrar direto, sem pedido do 
   - aba do veículo: `Vehicles/RelationManagers/InspectionsRelationManager.php`.
 - Testes: `tests/Feature/FleetInspectionTest.php`.
 
+## Parte 5 (F5): avisos no sino e quadro "Atenção"
+
+Os avisos ficam só dentro do sistema (sem e-mail). O funcionamento geral está em `avisos.md`.
+
+### Quem recebe o quê
+| Aviso | Quem recebe | Quando |
+|---|---|---|
+| Vistoria com **item grave** ("Veículo parado") | Gestor e mecânico | Na hora |
+| Vistoria com outros problemas | Gestor e mecânico | Na hora |
+| Pedido novo de manutenção ou lavagem | Gestor e mecânico | Na hora |
+| Pedido agendado (com a data), recusado (com a resposta), resolvido ou de volta à fila | Quem pediu | Na hora |
+| Abastecimento com alerta (mais que o tanque, combustível errado, consumo alto, outro veículo, atrasado) | Gestor | Ao finalizar |
+| Agendamento para amanhã | Quem vai fazer (sem responsável: os mecânicos) | Rotina de hora em hora |
+| Troca de óleo ou revisão chegando / vencida | Gestor e os motoristas do veículo | Rotina, uma vez cada |
+| Documento vencendo / vencido | Gestor | Rotina, uma vez cada |
+| Veículos sem a vistoria de hoje (lista das placas) | Gestor | Depois das 11h, uma vez por dia (só com vistoria diária) |
+
+"Sem a vistoria" sozinho não gera aviso de abastecimento: o aviso das 11h já cobre isso.
+
+### Quadro "Atenção" (página Início)
+- **Gestor, mecânico e consulta:**
+  - veículo parado pela vistoria, com os itens graves;
+  - troca de óleo ou revisão vencida.
+- O gestor e a consulta também veem os **documentos vencidos**.
+- **Motorista:** "Não use o veículo X: ele está em manutenção".
+- Tudo some sozinho quando é resolvido.
+
+## Arquivos (parte 5)
+- `app/Modules/Fleet/Services/FleetNotices.php`: quem recebe cada aviso, a rotina de hora em hora (`scan()`) e o quadro "Atenção" (`attention()`).
+- Os avisos são disparados por `InspectionService`, `MaintenanceService` e `FuelService`; a rotina roda dentro do `kiban:fleet`.
+- Testes: `tests/Feature/FleetNoticesTest.php`.
+
 ## Arquivos (parte 2)
 - Tabelas: `fleet_members` (papéis) e `fleet_fuel_ups` (abastecimentos), em `database/migrations/2026_10_12_120000_create_fleet_fuel_tables.php`. Mais `..._130000_add_fuel_access_options.php` (motorista reserva, permitir outro veículo, motivo).
 - `app/Modules/Fleet/Services/`:

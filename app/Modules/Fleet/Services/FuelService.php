@@ -311,6 +311,7 @@ class FuelService
 
         $fuelUp->flags = array_values(array_unique($flags));
         $fuelUp->save();
+        app(FleetNotices::class)->fuelUpFlagged($fuelUp, auth()->user());
 
         return $fuelUp;
     }

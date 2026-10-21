@@ -149,4 +149,9 @@ return [
             'viewer_help' => 'Ve todo, sin modificar.',
         ],
     ],
+    'notices' => [
+        'open' => 'Abrir',
+        'attention' => 'Atención',
+        'cleaned' => 'Avisos antiguos eliminados: :count.',
+    ],
 ];

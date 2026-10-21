@@ -40,6 +40,11 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Todo módulo novo declara `roles()`, `managerRole()` e, se quiser, `implicitRole()`, `homeWidgets()` (resumo no Início) e os campos de pessoa. Novos perfis sugeridos vão em `config/kiban.php` → `access_profiles`.
 - Os módulos devem conversar entre si (mesmas pessoas, mesmos veículos...): é um sistema só.
 
+## Avisos (sem e-mail)
+- Avisos só dentro do sistema: o sino (`databaseNotifications`) e o quadro "Atenção" do Início (`Module::attention()`, some quando resolvido). Nada por e-mail (decisão do dono).
+- Enviar sempre por `App\Notices\Notifier` com um `App\Notices\Notice` (chaves de tradução; enum/closure nos parâmetros são traduzidos no idioma de quem recebe). Cada aviso guarda a empresa (`tenant_id`) e o sino só mostra os da empresa atual (`User::notifications()`).
+- Rotinas passam uma chave `once` (tabela `notice_log`) para nunca repetir. Quem fez a ação não é avisado (`except`).
+
 ## Pessoas
 - Todos da empresa são cadastrados na tela **Pessoas** (`PeoplePage` + `App\People\PeopleService`), que pede ao Core para criar o login (permissão `team`). Celular é o principal; e-mail é opcional (nunca supor que existe). O acesso vai pelo WhatsApp (`AccessNotice`) ou e-mail.
 - Cada módulo acrescenta os próprios campos de pessoa (`personFields`/`savePerson`...). Ninguém precisa ir à Área do cliente para cadastrar funcionário.
@@ -68,6 +73,7 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Abastecimentos só por `FuelService` (código de uso único, página do posto `/posto` com limite de tentativas, finalizar, lançar, cancelar). Nunca alterar nem apagar um abastecimento. A média é de tanque cheio a tanque cheio. Painel: `FleetReports`.
 - Manutenção, lavagens, agenda, solicitações do motorista e despesas só por `MaintenanceService`. Concluir um agendamento registra a manutenção/lavagem; troca de óleo e revisão recalculam a próxima (`updateNextServices`). Cancelar devolve a solicitação para "esperando". Mecânico não vê painel nem despesas; despesas só o gestor lança. Nada do histórico é apagado (`WorkPolicy`). O painel soma tudo (`FleetReports::otherCosts`).
 - Vistorias só por `InspectionService`: itens da empresa (`ChecklistItem`, prontos com `key` traduzida + próprios com `label`), 5 fotos obrigatórias, problema pede comentário (foto opcional) e vira `ServiceRequest` (`inspection_id`); item grave com problema leva o veículo a "Em manutenção" (evento `StoppedByInspection`). A frequência (`inspection_frequency`) nunca bloqueia: só lembra o motorista e marca o abastecimento (`FuelUpFlag::NoInspection`). As respostas guardam nome e "grave" do momento (histórico).
+- Avisos da Frota só em `FleetNotices` (na hora: vistoria com problema, pedidos, abastecimento com alerta; rotina `scan()` no `kiban:fleet`: agendamento amanhã, óleo/revisão, documentos, vistorias faltando depois das 11h).
 - Os módulos podem ter páginas, widgets e um bloco próprio na página Início para cada pessoa (`Module::pages()`, `widgets()`, `personalHome()`, `showsSetupTo()`).
 - Arquivos e fotos: `FleetFields::photo()` / `file()` (disco privado, pasta da empresa, foto reduzida no navegador).
 - Explicação para o dono: `docs/arquivos/frota.md`.

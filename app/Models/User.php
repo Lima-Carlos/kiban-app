@@ -6,15 +6,18 @@ use App\Tenancy\TenantContext;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notifiable;
 
 /**
  * A person signed in through the Kiban Core. The same person can belong to several companies.
  */
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasLocalePreference
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -74,6 +77,37 @@ class User extends Authenticatable implements FilamentUser
     public function canManageTenant(): bool
     {
         return in_array($this->roleIn(app(TenantContext::class)->current()), [self::ROLE_OWNER, self::ROLE_ADMIN], true);
+    }
+
+    /**
+     * Warnings of the bell: only the current company's (the same person can be in several companies).
+     *
+     * @return MorphMany<DatabaseNotification, $this>
+     */
+    public function notifications(): MorphMany
+    {
+        $query = $this->morphMany(DatabaseNotification::class, 'notifiable')->latest();
+        $tenant = app(TenantContext::class)->current();
+
+        if ($tenant !== null) {
+            $query->where('tenant_id', $tenant->getKey());
+        }
+
+        return $query;
+    }
+
+    /** Warnings are written in the person's language (same order as the pages). */
+    public function preferredLocale(): ?string
+    {
+        $supported = array_keys(config('kiban.locales'));
+
+        foreach ([$this->app_locale, $this->locale, app(TenantContext::class)->current()?->license()->tenant('locale')] as $locale) {
+            if (in_array($locale, $supported, true)) {
+                return $locale;
+            }
+        }
+
+        return null;
     }
 
     public function canAccessPanel(Panel $panel): bool

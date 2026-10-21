@@ -80,6 +80,17 @@ abstract class Module
     }
 
     /**
+     * Urgent things for this person right now, shown in the "Attention" box at the top of the start page.
+     * They disappear by themselves when solved (e.g. a vehicle stopped by an inspection).
+     *
+     * @return array<int, array{text: string, url: ?string, color: string}>
+     */
+    public function attention(User $user): array
+    {
+        return [];
+    }
+
+    /**
      * Roles a person can have in this module, with their labels (e.g. Frota: driver, mechanic, manager, viewer).
      *
      * @return array<string, string>

@@ -59,6 +59,7 @@ class MaintenanceService
 
         $request = new ServiceRequest(['vehicle_id' => $vehicle->getKey(), 'kind' => $kind, 'description' => $description, 'photo_path' => $photo]);
         $request->forceFill(['requested_by' => $user->getKey()])->save();
+        app(FleetNotices::class)->requestCreated($request, $user);
 
         return $request;
     }
@@ -72,12 +73,16 @@ class MaintenanceService
             throw new FleetException(__('fleet.errors.request_closed'));
         }
 
-        return DB::transaction(function () use ($request, $data, $user): Appointment {
+        $appointment = DB::transaction(function () use ($request, $data, $user): Appointment {
             $appointment = $this->schedule($request->vehicle, $request->kind, $data + ['request_id' => $request->getKey(), 'notes' => $data['notes'] ?? $request->description], $user);
             $request->forceFill(['status' => RequestStatus::Scheduled, 'handled_by' => $user->getKey()])->save();
 
             return $appointment;
         });
+
+        app(FleetNotices::class)->requestAnswered($request->setRelation('appointment', $appointment), $user);
+
+        return $appointment;
     }
 
     public function rejectRequest(ServiceRequest $request, string $response, User $user): void
@@ -89,6 +94,7 @@ class MaintenanceService
         }
 
         $request->forceFill(['status' => RequestStatus::Rejected, 'response' => $response, 'handled_by' => $user->getKey()])->save();
+        app(FleetNotices::class)->requestAnswered($request, $user);
     }
 
     /**
@@ -130,6 +136,10 @@ class MaintenanceService
             // The driver's request goes back to "open" so someone takes care of it.
             $appointment->request?->forceFill(['status' => RequestStatus::Open])->save();
         });
+
+        if ($appointment->request !== null) {
+            app(FleetNotices::class)->requestAnswered($appointment->request, $user);
+        }
     }
 
     /**
@@ -164,7 +174,7 @@ class MaintenanceService
 
             $this->odometer->record($vehicle, (int) $data['odometer'], OdometerSource::Maintenance, $maintenance, $user, $this->readingTime($data['performed_on']));
             $this->updateNextServices($vehicle->refresh(), $maintenance);
-            $this->close($appointment);
+            $this->close($appointment, $user);
 
             if ($vehicle->status === VehicleStatus::Maintenance) {
                 $vehicle->forceFill(['status' => VehicleStatus::Active])->save();
@@ -200,7 +210,7 @@ class MaintenanceService
                 $this->odometer->record($vehicle, (int) $data['odometer'], OdometerSource::Wash, $wash, $user, $this->readingTime($data['washed_on']));
             }
 
-            $this->close($appointment);
+            $this->close($appointment, $user);
 
             return $wash;
         });
@@ -254,14 +264,19 @@ class MaintenanceService
         $vehicle->save();
     }
 
-    protected function close(?Appointment $appointment): void
+    protected function close(?Appointment $appointment, User $user): void
     {
         if ($appointment === null) {
             return;
         }
 
         $appointment->forceFill(['status' => AppointmentStatus::Done, 'completed_at' => now()])->save();
-        $appointment->request?->forceFill(['status' => RequestStatus::Done])->save();
+        $request = $appointment->request;
+
+        if ($request !== null) {
+            $request->forceFill(['status' => RequestStatus::Done])->save();
+            app(FleetNotices::class)->requestAnswered($request, $user);
+        }
     }
 
     protected function ensureOpen(?Appointment $appointment, Vehicle $vehicle, ServiceKind $kind): void

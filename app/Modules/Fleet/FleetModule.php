@@ -58,6 +58,7 @@ use App\Modules\Fleet\Policies\VehiclePolicy;
 use App\Modules\Fleet\Policies\WashPolicy;
 use App\Modules\Fleet\Policies\WorkshopPolicy;
 use App\Modules\Fleet\Services\FleetAccess;
+use App\Modules\Fleet\Services\FleetNotices;
 use App\Modules\Fleet\Services\FleetPeople;
 use App\Modules\Fleet\Services\FuelService;
 use App\Modules\Fleet\Services\InspectionService;
@@ -190,6 +191,12 @@ class FleetModule extends Module
     protected function tenantCanWrite(): bool
     {
         return app(TenantContext::class)->get()->license()->canWrite(self::KEY);
+    }
+
+    /** Vehicle stopped by an inspection, overdue oil change / revision / documents; drivers: "do not use". */
+    public function attention(User $user): array
+    {
+        return app(FleetNotices::class)->attention($user);
     }
 
     public function roles(): array

@@ -70,6 +70,19 @@ class Home extends Page
             ->all();
     }
 
+    /**
+     * Urgent items of every module this person can open.
+     *
+     * @return array<int, array{text: string, url: ?string, color: string}>
+     */
+    public function getAttention(): array
+    {
+        return collect(app(AccessManager::class)->modulesFor(auth()->user(), $this->tenant()))
+            ->flatMap(fn (Module $module): array => $module->attention(auth()->user()))
+            ->values()
+            ->all();
+    }
+
     public function companyHasModules(): bool
     {
         return app(ModuleRegistry::class)->enabledFor($this->tenant()) !== [];
