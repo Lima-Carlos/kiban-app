@@ -255,6 +255,45 @@ Os avisos ficam só dentro do sistema (sem e-mail). O funcionamento geral está 
 - Os avisos são disparados por `InspectionService`, `MaintenanceService` e `FuelService`; a rotina roda dentro do `kiban:fleet`.
 - Testes: `tests/Feature/FleetNoticesTest.php`.
 
+## Parte 6 (F6): ficha em PDF, planilhas e limpeza das fotos antigas
+
+### Ficha do veículo (PDF)
+- Na página do veículo, botão **Ficha (PDF)**. Só o gestor e a consulta veem, porque a ficha mostra os gastos.
+- A ficha traz:
+  - identificação (situação, km, tipo, combustível, ano, cor, chassi, RENAVAM, tanque e motoristas);
+  - troca de óleo e revisão (próxima e situação);
+  - documentos com vencimento;
+  - **gastos dos últimos 12 meses** (combustível, manutenção, lavagem, despesas, total, média e custo por km);
+  - manutenções do período;
+  - as últimas 10 vistorias.
+- Sai no idioma de quem baixa, com o logo da Kiban, o nome da empresa e a data no rodapé.
+
+### Relatórios (planilhas do Excel)
+- Menu **Relatórios** (gestor e consulta). Escolha a planilha, o período e, se quiser, um veículo.
+- As planilhas:
+  - **Abastecimentos:** litros, preço, valor, km, rodado, média, tanque cheio e avisos;
+  - **Gastos:** tudo o que a frota gastou, um por linha (combustível, manutenção, lavagem, despesa), mais uma aba **"Resumo por veículo"** com os mesmos números do painel, inclusive o custo por km;
+  - **Manutenções:** serviços, quem fez, km, peças, mão de obra e total;
+  - **Vistorias:** quem fez, km, resultado e os problemas.
+- Os valores vão como números, então dá para somar e fazer gráficos no Excel. A última linha traz os totais.
+
+### Limpeza das fotos antigas
+- **Fotos** (vistorias, painel do abastecimento e pedidos): apagadas depois de **6 meses**.
+- **Notas e comprovantes** (abastecimento, manutenção e despesas): apagados depois de **5 anos**.
+- **Ficam sempre:** a foto do veículo e os documentos.
+- **Os dados nunca são apagados.** Valores, datas, km, quem fez e os problemas continuam. Só a foto some, e a tela avisa: "As fotos desta vistoria foram apagadas depois de 6 meses".
+- **Aviso antes:** uma vez por mês, o gestor recebe no sino quantos arquivos serão apagados nos próximos 30 dias, para baixar o que precisar.
+- A regra aparece em Configurações → "Fotos e arquivos antigos". A limpeza roda dentro da rotina de hora em hora (`kiban:fleet`).
+
+## Arquivos (parte 6)
+- `app/Modules/Fleet/Services/VehicleRecord.php` + `resources/views/fleet/pdf/vehicle.blade.php`: a ficha em PDF (biblioteca DomPDF, com a fonte DejaVu, que tem acentos; só as letras usadas vão no arquivo).
+- `app/Modules/Fleet/Services/FleetExporter.php`: as 4 planilhas (biblioteca OpenSpout, a mesma do Core).
+- `app/Modules/Fleet/Filament/FleetReportsPage.php`: a tela Relatórios.
+- `app/Modules/Fleet/Services/FleetCleanup.php`: a limpeza e a contagem para o aviso.
+- `FleetReports::totalsBetween()`: os números do painel para qualquer período (usado no resumo da planilha e na ficha).
+- Bibliotecas novas no `composer.json`: `barryvdh/laravel-dompdf` e `openspout/openspout`.
+- Testes: `tests/Feature/FleetReportsTest.php`.
+
 ## Arquivos (parte 2)
 - Tabelas: `fleet_members` (papéis) e `fleet_fuel_ups` (abastecimentos), em `database/migrations/2026_10_12_120000_create_fleet_fuel_tables.php`. Mais `..._130000_add_fuel_access_options.php` (motorista reserva, permitir outro veículo, motivo).
 - `app/Modules/Fleet/Services/`:

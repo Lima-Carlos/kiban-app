@@ -27,6 +27,17 @@ class FleetReports
     public function totals(int $months, ?int $vehicleId = null): array
     {
         [$from, $to] = $this->range($months);
+
+        return $this->totalsBetween($from, $to, $vehicleId);
+    }
+
+    /**
+     * The same numbers for any period (UTC limits), e.g. the spreadsheets.
+     *
+     * @return array{spent_cents: int, maintenance_cents: int, wash_cents: int, expense_cents: int, total_cents: int, volume: float, distance: int, consumption: ?float, cost_per_distance_cents: ?int, fuel_ups: int}
+     */
+    public function totalsBetween(CarbonImmutable $from, CarbonImmutable $to, ?int $vehicleId = null): array
+    {
         $row = $this->fuelUps($from, $to, $vehicleId)
             ->selectRaw('COALESCE(SUM(total_cents), 0) AS spent, COALESCE(SUM(volume), 0) AS volume, COUNT(*) AS fuel_ups')
             ->first();

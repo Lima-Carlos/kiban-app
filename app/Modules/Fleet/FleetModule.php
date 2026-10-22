@@ -18,6 +18,7 @@ use App\Modules\Fleet\Filament\Dashboard\FuelSpendChartWidget;
 use App\Modules\Fleet\Filament\Dashboard\InspectionStatusWidget;
 use App\Modules\Fleet\Filament\Drivers\DriverResource;
 use App\Modules\Fleet\Filament\Expenses\ExpenseResource;
+use App\Modules\Fleet\Filament\FleetReportsPage;
 use App\Modules\Fleet\Filament\FleetSettingsPage;
 use App\Modules\Fleet\Filament\FuelStations\FuelStationResource;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
@@ -131,7 +132,7 @@ class FleetModule extends Module
 
     public function pages(): array
     {
-        return [FleetDashboard::class, FleetSettingsPage::class];
+        return [FleetDashboard::class, FleetReportsPage::class, FleetSettingsPage::class];
     }
 
     public function widgets(): array

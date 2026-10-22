@@ -161,6 +161,7 @@ class InspectionResource extends ModuleResource
                             ]),
                     ]),
                 Section::make(__('fleet.inspections.photos'))
+                    ->description(fn (Inspection $record): ?string => $record->photos === [] ? __('fleet.cleanup.removed') : null)
                     ->components([
                         Grid::make(['default' => 2, 'md' => 5])->components(
                             collect(Inspection::PHOTOS)->map(fn (string $photo) => ImageEntry::make('photos.'.$photo)

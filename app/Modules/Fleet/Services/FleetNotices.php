@@ -133,7 +133,7 @@ class FleetNotices
      */
     public function scan(): int
     {
-        return $this->appointmentsTomorrow() + $this->dueServices() + $this->documents() + $this->missingInspections();
+        return $this->appointmentsTomorrow() + $this->dueServices() + $this->documents() + $this->missingInspections() + $this->cleanupWarning();
     }
 
     protected function appointmentsTomorrow(): int
@@ -245,6 +245,27 @@ class FleetNotices
             'heroicon-o-clipboard-document-check',
             'warning',
         ), once: 'inspections:'.$now->toDateString());
+
+        return 1;
+    }
+
+    /** Once a month: how many old photos and receipts will be removed in the next 30 days. */
+    protected function cleanupWarning(): int
+    {
+        $count = app(FleetCleanup::class)->upcoming();
+
+        if ($count === 0 || ! $this->notifier->firstTime($this->context->get()->getKey(), 'cleanup:'.now()->format('Y-m'))) {
+            return 0;
+        }
+
+        $this->notifier->send($this->people([FleetRole::Manager]), $this->notice(
+            'fleet.notices.cleanup',
+            ['count' => $count],
+            'fleet.notices.cleanup_body',
+            ['days' => FleetCleanup::WARN_DAYS],
+            InspectionResource::getUrl('index'),
+            'heroicon-o-photo',
+        ));
 
         return 1;
     }

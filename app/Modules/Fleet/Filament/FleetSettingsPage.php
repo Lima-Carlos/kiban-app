@@ -106,6 +106,9 @@ class FleetSettingsPage extends Page
                             ->options(InspectionFrequency::class)
                             ->required(),
                     ]),
+                Section::make(__('fleet.cleanup.title'))
+                    ->description(__('fleet.cleanup.rule'))
+                    ->components([]),
                 Section::make(__('fleet.settings.alerts'))
                     ->description(__('fleet.settings.alerts_help'))
                     ->columns(2)

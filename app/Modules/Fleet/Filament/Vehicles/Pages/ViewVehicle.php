@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fleet\Filament\Vehicles\Pages;
 
+use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\Enums\OdometerSource;
 use App\Modules\Fleet\Enums\VehicleStatus;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
@@ -12,6 +13,7 @@ use App\Modules\Fleet\Rules\UniquePlate;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\FleetException;
 use App\Modules\Fleet\Services\OdometerService;
+use App\Modules\Fleet\Services\VehicleRecord;
 use App\Modules\Fleet\Services\VehicleService;
 use App\Tenancy\TenantContext;
 use Filament\Actions\Action;
@@ -27,6 +29,7 @@ use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Vehicle page: situation, odometer, next oil change and revision, documents and history.
@@ -47,6 +50,7 @@ class ViewVehicle extends ViewRecord
     {
         return [
             $this->informOdometerAction(),
+            $this->recordAction(),
             EditAction::make(),
             ActionGroup::make([
                 $this->changeStatusAction(),
@@ -54,6 +58,21 @@ class ViewVehicle extends ViewRecord
                 DeleteAction::make(),
             ]),
         ];
+    }
+
+    /** The vehicle record in PDF (managers and viewers: it shows the costs). */
+    protected function recordAction(): Action
+    {
+        return Action::make('record')
+            ->label(__('fleet.record.download'))
+            ->icon(Heroicon::OutlinedDocumentArrowDown)
+            ->color('gray')
+            ->visible(fn (): bool => in_array(app(FleetAccess::class)->fleetRole(), [FleetRole::Manager, FleetRole::Viewer], true))
+            ->action(function (Vehicle $record): StreamedResponse {
+                $pdf = app(VehicleRecord::class);
+
+                return response()->streamDownload(fn () => print ($pdf->pdf($record)), $pdf->fileName($record), ['Content-Type' => 'application/pdf']);
+            });
     }
 
     /** Manager or a driver of this vehicle types the current odometer. */
