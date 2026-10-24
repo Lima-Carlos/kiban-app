@@ -41,6 +41,17 @@ class ChecklistItemResource extends ModuleResource
         return __('fleet.checklist_items.plural');
     }
 
+    /** Menu and title: only the first letter in capitals ("Itens da vistoria"). */
+    public static function getTitleCasePluralModelLabel(): string
+    {
+        return __('fleet.checklist_items.plural_title');
+    }
+
+    public static function getTitleCaseModelLabel(): string
+    {
+        return __('fleet.checklist_items.singular_title');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema

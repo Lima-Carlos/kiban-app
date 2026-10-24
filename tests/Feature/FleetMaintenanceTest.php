@@ -239,8 +239,14 @@ class FleetMaintenanceTest extends TestCase
         $this->assertSame(5000, $totals['wash_cents']);
         $this->assertSame(10000, $totals['expense_cents']);
         $this->assertSame(88000, $totals['total_cents']);
-        // 500 km: fuel of the measured stretch (40 l × R$ 6) + 400 of other costs = 640 → R$ 1,28/km.
-        $this->assertSame(128, $totals['cost_per_distance_cents']);
+        // Drove 10.000 → 10.500 km: R$ 880 ÷ 500 km = R$ 1,76/km (total spent ÷ distance really driven).
+        $this->assertSame(500, $totals['driven']);
+        $this->assertSame(176, $totals['cost_per_distance_cents']);
+
+        // A maintenance at a higher odometer counts as driven too (not only the stretches between full tanks).
+        app(MaintenanceService::class)->recordMaintenance($this->car, ['type' => 'corrective', 'services' => ['brakes'], 'performed_on' => now(), 'odometer' => 11000], $this->manager);
+        $this->assertSame(1000, app(FleetReports::class)->totals(3)['driven']);
+        $this->assertSame(500, app(FleetReports::class)->totals(3)['distance']); // the consumption average still uses the full tanks
         $this->assertSame(25000, collect(app(FleetReports::class)->monthly(3))->sum('maintenance_cents'));
 
         $this->get($this->company->url('/frota/painel'))->assertOk();

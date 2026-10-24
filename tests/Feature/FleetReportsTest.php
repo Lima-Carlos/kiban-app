@@ -125,7 +125,8 @@ class FleetReportsTest extends TestCase
         $this->assertContains(__('fleet.helpers.whole_fleet'), array_column($lines, 1));
         $this->assertEquals(1880.0, end($lines)[4]);
         $summary = $costs[__('fleet.reports.sheet.summary')];
-        $this->assertSame(['CAR1A11', 480.0, 250.0, 50.0, 100.0, 880.0, 500, 1.28], array_map(fn ($value) => is_int($value) && $value !== 500 ? (float) $value : $value, $summary[1]));
+        // Drove 10.000 → 10.550 km (the last reading is the inspection): R$ 880 ÷ 550 km = R$ 1,60/km.
+        $this->assertSame(['CAR1A11', 480.0, 250.0, 50.0, 100.0, 880.0, 550, 1.6], array_map(fn ($value) => is_int($value) && $value !== 550 ? (float) $value : $value, $summary[1]));
 
         $maintenances = $this->read($exporter->export('maintenances', $from, $to))[__('fleet.maintenances.plural_title')];
         $this->assertStringContainsString(__('fleet.enums.maintenance_item.oil_change'), $maintenances[1][3]);

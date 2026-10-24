@@ -138,7 +138,7 @@ class FleetExporter
         foreach ($vehicles as $item) {
             $totals = $this->reports->totalsBetween($start, $end, $item->getKey());
 
-            if ($totals['total_cents'] === 0 && $totals['distance'] === 0) {
+            if ($totals['total_cents'] === 0 && $totals['driven'] === 0) {
                 continue;
             }
 
@@ -149,7 +149,7 @@ class FleetExporter
                 $this->money($totals['wash_cents']),
                 $this->money($totals['expense_cents']),
                 $this->money($totals['total_cents']),
-                $totals['distance'],
+                $totals['driven'],
                 $totals['cost_per_distance_cents'] !== null ? $this->money($totals['cost_per_distance_cents']) : null,
             ];
         }

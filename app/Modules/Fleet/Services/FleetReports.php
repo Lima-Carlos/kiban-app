@@ -5,6 +5,7 @@ namespace App\Modules\Fleet\Services;
 use App\Modules\Fleet\Models\Expense;
 use App\Modules\Fleet\Models\FuelUp;
 use App\Modules\Fleet\Models\Maintenance;
+use App\Modules\Fleet\Models\OdometerReading;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Models\Wash;
 use Carbon\CarbonImmutable;
@@ -34,7 +35,7 @@ class FleetReports
     /**
      * The same numbers for any period (UTC limits), e.g. the spreadsheets.
      *
-     * @return array{spent_cents: int, maintenance_cents: int, wash_cents: int, expense_cents: int, total_cents: int, volume: float, distance: int, consumption: ?float, cost_per_distance_cents: ?int, fuel_ups: int}
+     * @return array{spent_cents: int, maintenance_cents: int, wash_cents: int, expense_cents: int, total_cents: int, volume: float, distance: int, driven: int, consumption: ?float, cost_per_distance_cents: ?int, fuel_ups: int}
      */
     public function totalsBetween(CarbonImmutable $from, CarbonImmutable $to, ?int $vehicleId = null): array
     {
@@ -49,18 +50,23 @@ class FleetReports
         $distance = (int) $segments->distance;
         $spent = (int) $row->spent;
         $other = $this->otherCosts($from, $to, $vehicleId);
+        $total = $spent + array_sum($other);
+        $driven = $this->driven($from, $to, $vehicleId);
 
         return [
             'spent_cents' => $spent,
             'maintenance_cents' => $other['maintenance'],
             'wash_cents' => $other['wash'],
             'expense_cents' => $other['expense'],
-            'total_cents' => $spent + array_sum($other),
+            'total_cents' => $total,
             'volume' => round((float) $row->volume, 3),
+            // Between full tanks: only for the consumption average.
             'distance' => $distance,
+            // What the vehicles really drove in the period (odometer history).
+            'driven' => $driven,
             'consumption' => (float) $segments->volume > 0 ? round($distance / (float) $segments->volume, 2) : null,
-            // Everything the fleet cost (fuel of the measured stretches + maintenance, washes, other expenses) per distance.
-            'cost_per_distance_cents' => $distance > 0 ? (int) round(($this->segmentSpent($from, $to, $vehicleId) + array_sum($other)) / $distance) : null,
+            // Everything the fleet cost in the period ÷ what it drove in the period.
+            'cost_per_distance_cents' => $driven > 0 ? (int) round($total / $driven) : null,
             'fuel_ups' => (int) $row->fuel_ups,
         ];
     }
@@ -177,15 +183,26 @@ class FleetReports
             ->when($vehicleId, fn (Builder $query) => $query->where('vehicle_id', $vehicleId));
     }
 
-    /** Money of the fuel-ups that have a measured distance (so cost per km compares like with like). */
-    protected function segmentSpent(CarbonImmutable $from, CarbonImmutable $to, ?int $vehicleId): int
+    /**
+     * Distance driven in the period, from the odometer history of each vehicle: the last reading of the period
+     * minus the last one before it (or the first one of the period, for a vehicle that started in it).
+     */
+    public function driven(CarbonImmutable $from, CarbonImmutable $to, ?int $vehicleId = null): int
     {
-        // Cost of the volume used in the measured segments: segment volume × average unit price of the period.
-        $row = $this->fuelUps($from, $to, $vehicleId)
-            ->selectRaw('COALESCE(SUM(total_cents), 0) AS spent, COALESCE(SUM(volume), 0) AS volume')
-            ->first();
-        $segmentVolume = (float) $this->fuelUps($from, $to, $vehicleId)->whereNotNull('consumption')->sum('segment_volume');
+        $ids = $vehicleId !== null ? [$vehicleId] : OdometerReading::query()->whereBetween('read_at', [$from, $to])->distinct()->pluck('vehicle_id')->all();
+        $driven = 0;
 
-        return (float) $row->volume > 0 ? (int) round((int) $row->spent / (float) $row->volume * $segmentVolume) : 0;
+        foreach ($ids as $id) {
+            $readings = OdometerReading::query()->where('vehicle_id', $id);
+            $end = (clone $readings)->whereBetween('read_at', [$from, $to])->max('value');
+            $start = (clone $readings)->where('read_at', '<', $from)->max('value')
+                ?? (clone $readings)->whereBetween('read_at', [$from, $to])->min('value');
+
+            if ($end !== null && $start !== null) {
+                $driven += max(0, (int) $end - (int) $start);
+            }
+        }
+
+        return $driven;
     }
 }

@@ -35,7 +35,7 @@ class FleetStatsWidget extends StatsOverviewWidget
                 ->icon(Heroicon::OutlinedCalculator),
             Stat::make(__('fleet.dashboard.volume'), FleetFormat::volume($totals['volume']))
                 ->icon(Heroicon::OutlinedBeaker),
-            Stat::make(__('fleet.dashboard.distance'), FleetFormat::distance($totals['distance']))
+            Stat::make(__('fleet.dashboard.distance'), FleetFormat::distance($totals['driven']))
                 ->description(__('fleet.dashboard.distance_help'))
                 ->icon(Heroicon::OutlinedMapPin),
             Stat::make(__('fleet.dashboard.consumption'), FleetFormat::consumption($totals['consumption']))
