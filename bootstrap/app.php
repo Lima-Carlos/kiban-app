@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Behind a proxy that adds the padlock (Caddy in the external tests, the VPS later): trust it to say the
+        // visit came by HTTPS and by which address and port. TRUSTED_PROXIES="*" by default; on the VPS, the proxy address.
+        $proxies = (string) env('TRUSTED_PROXIES', '*');
+        $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+
         $middleware->alias([
             'tenant' => IdentifyTenant::class,
             'central' => EnsureCentral::class,
