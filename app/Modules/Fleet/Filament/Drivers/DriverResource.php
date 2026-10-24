@@ -165,7 +165,7 @@ class DriverResource extends ModuleResource
                         $tenant = app(TenantContext::class)->get();
 
                         try {
-                            $result = app(PeopleService::class)->add($tenant, $record->name, $data['phone'] ?? null, $data['email'] ?? null, [], auth()->user());
+                            $result = app(PeopleService::class)->add($tenant, ['name' => $record->name, 'phone' => $data['phone'] ?? null, 'email' => $data['email'] ?? null], [], auth()->user());
                         } catch (CoreValidationException $exception) {
                             throw ValidationException::withMessages(collect($exception->errors)->mapWithKeys(fn ($messages, $field): array => ["mountedActions.0.data.{$field}" => $messages])->all());
                         } catch (CoreUnavailableException) {

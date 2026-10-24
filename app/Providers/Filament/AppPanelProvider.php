@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\AccessProfilesPage;
 use App\Filament\Pages\Home;
 use App\Filament\Pages\PeoplePage;
+use App\Filament\Pages\TeamsPage;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\RevalidateMembership;
@@ -51,6 +52,7 @@ class AppPanelProvider extends PanelProvider
                 Home::class,
                 PeoplePage::class,
                 AccessProfilesPage::class,
+                TeamsPage::class,
                 ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())

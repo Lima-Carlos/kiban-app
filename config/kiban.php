@@ -2,6 +2,7 @@
 
 use App\Modules\Demo\DemoModule;
 use App\Modules\Fleet\FleetModule;
+use App\Modules\TimeClock\TimeClockModule;
 
 return [
 
@@ -53,6 +54,7 @@ return [
     'modules' => [
         DemoModule::class,
         FleetModule::class,
+        TimeClockModule::class,
     ],
 
     /*

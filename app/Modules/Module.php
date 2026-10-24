@@ -4,6 +4,7 @@ namespace App\Modules;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\People\Person;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
 
@@ -135,7 +136,8 @@ abstract class Module
 
     /**
      * Fields of this module in the "Add person" form (e.g. the Frota asks the role and the vehicles).
-     * Their state is kept under "modules.<key>".
+     * Their state is kept under "modules.<key>". Inside them, `PeopleForm::hasLogin()` says if the person
+     * has (or will get) a login.
      *
      * @return array<int, Component|Field>
      */
@@ -149,7 +151,7 @@ abstract class Module
      *
      * @return array<string, mixed>
      */
-    public function personData(User $user): array
+    public function personData(Person $person): array
     {
         return [];
     }
@@ -157,13 +159,37 @@ abstract class Module
     /**
      * @param  array<string, mixed>  $data
      */
-    public function savePerson(User $user, array $data): void {}
+    public function savePerson(Person $person, array $data): void {}
+
+    /**
+     * Checks the module's rules before anything is saved (and before a login is created in the Core).
+     * Throws PersonRuleException with a translated message.
+     *
+     * @param  array<string, mixed>  $data  this module's section of the form
+     * @param  array<string, mixed>  $details  name, document, team... of the person
+     */
+    public function checkPerson(?Person $person, array $data, array $details): void {}
 
     /** The person left the company: unlink them here (their history stays). */
-    public function removePerson(User $user): void {}
+    public function removePerson(Person $person): void {}
+
+    /** Someone without a login just got one: what they already do here now counts for the login too. */
+    public function personGotLogin(Person $person): void {}
+
+    /** The section of this module in the "People" form only makes sense for people with a login (e.g. Frota roles). */
+    public function personNeedsLogin(): bool
+    {
+        return false;
+    }
+
+    /** Who may see personal documents (CPF...) in the "People" screen, besides owners and administrators. */
+    public function seesPersonDocuments(User $user): bool
+    {
+        return false;
+    }
 
     /** What the person does in this module, for the people list (e.g. "Driver"). */
-    public function personRoleLabel(User $user): ?string
+    public function personRoleLabel(Person $person): ?string
     {
         return null;
     }

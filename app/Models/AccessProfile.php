@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Tenancy\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Access profile of the company ("Logistics", "HR", "Driver"...): the role in each module. Choosing it when
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AccessProfile extends Model
 {
-    use BelongsToTenant;
+    use BelongsToTenant, SoftDeletes;
 
     protected $fillable = ['name', 'description', 'roles', 'suggestion'];
 

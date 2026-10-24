@@ -3,11 +3,11 @@
 namespace App\Modules\Fleet\Services;
 
 use App\Access\AccessManager;
-use App\Models\User;
 use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Driver;
 use App\Modules\Fleet\Models\Vehicle;
+use App\People\Person;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * The Frota part of the "People" screen: the person's role in the fleet and, for drivers,
- * their vehicles and driver's license.
+ * their vehicles and driver's license. Only for people with a login (owner's decision).
  */
 class FleetPeople
 {
@@ -70,8 +70,14 @@ class FleetPeople
     /**
      * @return array<string, mixed>
      */
-    public function data(User $user): array
+    public function data(Person $person): array
     {
+        $user = $person->user;
+
+        if ($user === null) {
+            return ['role' => FleetRole::None->value];
+        }
+
         $driver = Driver::query()->where('user_id', $user->getKey())->first();
 
         return [
@@ -88,10 +94,12 @@ class FleetPeople
     /**
      * @param  array<string, mixed>  $data
      */
-    public function save(User $user, array $data): void
+    public function save(Person $person, array $data): void
     {
-        // Owners and administrators are always managers of the fleet.
-        if ($user->canManageTenant()) {
+        $user = $person->user;
+
+        // No login, no Frota role. Owners and administrators are always managers of the fleet.
+        if ($user === null || $user->canManageTenant()) {
             return;
         }
 
@@ -127,15 +135,25 @@ class FleetPeople
         });
     }
 
-    public function remove(User $user): void
+    public function remove(Person $person): void
     {
+        $user = $person->user;
+
+        if ($user === null) {
+            return;
+        }
+
         app(AccessManager::class)->set($user, FleetModule::KEY, null);
         Driver::query()->where('user_id', $user->getKey())->update(['user_id' => null, 'is_active' => false]);
     }
 
-    public function roleLabel(User $user): ?string
+    public function roleLabel(Person $person): ?string
     {
-        $role = $this->access->fleetRole($user);
+        if ($person->user === null) {
+            return null;
+        }
+
+        $role = $this->access->fleetRole($person->user);
 
         return $role === FleetRole::None ? null : $role->getLabel();
     }

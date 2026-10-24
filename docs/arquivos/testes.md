@@ -18,7 +18,8 @@
 | `FleetNoticesTest` | Avisos: cada aviso para as pessoas certas, no idioma de cada uma, uma vez só, só na própria empresa; quadro "Atenção"; limpeza dos antigos |
 | `FleetReportsTest` | Frota: planilhas com os números do painel, ficha em PDF, quem pode baixar, limpeza de fotos antigas (dados ficam) com aviso antes |
 | `FleetMaintenanceTest` | Frota: pedido do motorista → agenda → manutenção, próxima troca de óleo/revisão, lavagens, despesas, menus de cada papel, painel com todos os gastos |
-| `PeopleTest` | Pessoas: adicionar pelo celular, editar, novo link, remover, menus por papel, app instalável |
+| `PeopleTest` | Pessoas: adicionar pelo celular, editar, novo link, desligar (a ficha fica), menus por papel, app instalável |
+| `TimeClockEmployeesTest` | Ponto (P1): pessoa sem login que ganha login depois, CPF (válido, único, obrigatório no Brasil), documento e celular de outro país, limite de funcionários, quem vê o CPF, locais com ponto no mapa, equipes, separação entre empresas |
 | `AccessProfilesTest` | Um sistema com vários módulos: sem acesso por padrão, perfis sugeridos e editáveis, Início com os resumos |
 | `LocaleTest` | Troca de idioma no sistema e nas páginas simples |
 | `FirstStepsTest` | Passos em ordem, dependências, envio ao Core só quando muda |

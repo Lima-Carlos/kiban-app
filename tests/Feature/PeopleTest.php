@@ -14,6 +14,7 @@ use App\Modules\Fleet\Models\Driver;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\VehicleService;
+use App\People\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -79,7 +80,7 @@ class PeopleTest extends TestCase
 
         // The list shows it as "invitation sent".
         Livewire::test(PeoplePage::class)
-            ->assertCanSeeTableRecords([$person])
+            ->assertCanSeeTableRecords([Person::query()->where('user_id', $person->id)->sole()])
             ->assertSee(__('app.people.statuses.invited'));
     }
 
@@ -94,26 +95,29 @@ class PeopleTest extends TestCase
         $this->addPerson(['name' => 'Rui Mecânico', 'phone' => '11977776666', 'email' => 'rui@oficina.test', 'modules' => ['frota' => ['role' => 'mechanic']]])
             ->assertHasNoActionErrors();
         $rui = User::query()->where('name', 'Rui Mecânico')->sole();
+        $ruiPerson = Person::query()->where('user_id', $rui->id)->sole();
         $this->assertSame(FleetRole::Mechanic, app(FleetAccess::class)->fleetRole($rui));
 
         // Edit: becomes a driver of the car.
         Livewire::test(PeoplePage::class)
-            ->callTableAction('edit', $rui, ['modules' => ['frota' => ['role' => 'driver', 'vehicles' => [$this->car->id]]]])
+            ->callTableAction('edit', $ruiPerson, ['modules' => ['frota' => ['role' => 'driver', 'vehicles' => [$this->car->id]]]])
             ->assertHasNoTableActionErrors();
         $this->assertSame(FleetRole::Driver, app(FleetAccess::class)->fleetRole($rui->fresh()));
         $this->assertSame('driver', app(AccessManager::class)->role($rui, 'frota'));
 
         // And back to mechanic: the driver record stays in the history, inactive.
-        Livewire::test(PeoplePage::class)->callTableAction('edit', $rui, ['modules' => ['frota' => ['role' => 'mechanic']]]);
+        Livewire::test(PeoplePage::class)->callTableAction('edit', $ruiPerson, ['modules' => ['frota' => ['role' => 'mechanic']]]);
         $this->assertFalse(Driver::query()->where('user_id', $rui->id)->sole()->is_active);
 
         // New access link.
         Livewire::test(PeoplePage::class)
-            ->callTableAction('access', $rui)
+            ->callTableAction('access', $ruiPerson)
             ->assertNotified(__('app.people.access_ready', ['name' => 'Rui Mecânico']));
 
-        // Remove from the company: Core and here; the driver record loses the login.
-        Livewire::test(PeoplePage::class)->callTableAction('remove', $rui)->assertNotified(__('app.people.removed'));
+        // Deactivate: out of the company in the Core and here; the record stays (inactive) and the driver record loses the login.
+        Livewire::test(PeoplePage::class)->callTableAction('deactivate', $ruiPerson)->assertNotified(__('app.people.deactivated'));
+        $this->assertFalse($ruiPerson->fresh()->is_active);
+        $this->assertNull($ruiPerson->fresh()->user_id);
         $this->assertArrayNotHasKey($rui->core_id, $this->coreMembers['transportes']);
         $this->assertNull($rui->fresh()->roleIn($this->company));
         $this->assertNull(Driver::query()->where('name', 'Rui Mecânico')->sole()->user_id);
@@ -121,9 +125,9 @@ class PeopleTest extends TestCase
 
     public function test_owners_are_locked_and_only_managers_open_people(): void
     {
+        // The owner cannot be deactivated (they can still edit their team and documents).
         Livewire::test(PeoplePage::class)
-            ->assertTableActionHidden('remove', $this->owner)
-            ->assertTableActionHidden('edit', $this->owner);
+            ->assertTableActionHidden('deactivate', Person::query()->where('user_id', $this->owner->id)->sole());
 
         // A member made fleet manager can manage people; drivers and mechanics cannot.
         $manager = User::factory()->memberOf($this->company, 'member')->create();

@@ -65,6 +65,7 @@ use App\Modules\Fleet\Services\FuelService;
 use App\Modules\Fleet\Services\InspectionService;
 use App\Modules\Module;
 use App\Modules\Step;
+use App\People\Person;
 use App\Tenancy\TenantContext;
 
 /**
@@ -227,24 +228,30 @@ class FleetModule extends Module
         return app(FleetPeople::class)->fields();
     }
 
-    public function personData(User $user): array
+    public function personData(Person $person): array
     {
-        return app(FleetPeople::class)->data($user);
+        return app(FleetPeople::class)->data($person);
     }
 
-    public function savePerson(User $user, array $data): void
+    public function savePerson(Person $person, array $data): void
     {
-        app(FleetPeople::class)->save($user, $data);
+        app(FleetPeople::class)->save($person, $data);
     }
 
-    public function removePerson(User $user): void
+    /** Fleet roles are for people who sign in (owner's decision: no login, no Frota role). */
+    public function personNeedsLogin(): bool
     {
-        app(FleetPeople::class)->remove($user);
+        return true;
     }
 
-    public function personRoleLabel(User $user): ?string
+    public function removePerson(Person $person): void
     {
-        return app(FleetPeople::class)->roleLabel($user);
+        app(FleetPeople::class)->remove($person);
+    }
+
+    public function personRoleLabel(Person $person): ?string
+    {
+        return app(FleetPeople::class)->roleLabel($person);
     }
 
     public function policies(): array

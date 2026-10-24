@@ -108,19 +108,19 @@ class AccessManager
     }
 
     /**
-     * Creates the suggested profiles (Logistics, Driver, Mechanic, HR...) the first time, with the modules
-     * this app has. The company can rename, change or delete them.
+     * Creates the suggested profiles (Logistics, Driver, Mechanic, HR...) with the systems the company has.
+     * A suggestion appears once: when the company gets a new system (e.g. the time clock brings "HR"); one the
+     * company deleted is not offered again. The company can rename, change or delete them.
      */
     public function ensureSuggestedProfiles(): void
     {
-        if (AccessProfile::query()->exists()) {
-            return;
-        }
+        $enabled = $this->modules->enabledFor($this->context->get());
+        $offered = AccessProfile::withTrashed()->whereNotNull('suggestion')->pluck('suggestion')->all();
 
         foreach ((array) config('kiban.access_profiles') as $key => $profile) {
-            $roles = array_intersect_key((array) $profile['roles'], $this->modules->all());
+            $roles = array_intersect_key((array) $profile['roles'], $enabled);
 
-            if ($roles === []) {
+            if ($roles === [] || in_array($key, $offered, true)) {
                 continue;
             }
 

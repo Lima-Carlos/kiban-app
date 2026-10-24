@@ -9,5 +9,6 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [modulos-e-primeiros-passos.md](modulos-e-primeiros-passos.md): como um sistema (módulo) é montado e o assistente de primeiros passos.
 - [testes.md](testes.md): os testes automáticos.
 - [frota.md](frota.md): o sistema Kiban Frota (veículos e km, abastecimento, manutenção e agenda, vistorias, avisos, ficha em PDF, planilhas e limpeza de fotos).
+- [ponto.md](ponto.md): o sistema Kiban Ponto (regras por país, locais de trabalho com ponto no mapa, funcionários com ou sem login).
 - [pessoas.md](pessoas.md): um sistema com vários módulos; quem acessa o quê (perfis de acesso); cadastrar pessoas, enviar o acesso pelo WhatsApp, entrar pelo celular e o app na tela do celular.
 - [avisos.md](avisos.md): os avisos dentro do sistema (o sino e o quadro "Atenção"), sem e-mail.

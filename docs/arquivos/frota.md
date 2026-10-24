@@ -92,9 +92,9 @@
 - Números:
   - gasto com combustível;
   - litros;
-  - km rodados (entre tanques cheios);
-  - **média de consumo**;
-  - **custo por km**.
+  - **km rodados**: pelo km registrado no período (abastecimentos, manutenções, vistorias...);
+  - **média de consumo**: medida de tanque cheio a tanque cheio;
+  - **custo por km** = gasto total do período ÷ km rodados no período (corrigido em 24/10/2026; antes usava só os trechos entre tanques cheios).
 - Gráficos: média de consumo por mês e gasto por mês.
 - Lista de **consumo fora do normal**. A manutenção entra no painel desde a parte 3.
 

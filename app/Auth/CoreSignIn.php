@@ -4,6 +4,8 @@ namespace App\Auth;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\People\Person;
+use App\Tenancy\TenantContext;
 use Illuminate\Session\Store;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -86,6 +88,9 @@ class CoreSignIn
 
             $user->tenants()->syncWithoutDetaching([$tenant->getKey() => ['role' => $role, 'last_seen_at' => now()]]);
             $user->forgetRoles();
+
+            // The person's record in the company (People screen) follows the login.
+            app(TenantContext::class)->run($tenant, fn (): Person => Person::forUser($user));
 
             return $user;
         });

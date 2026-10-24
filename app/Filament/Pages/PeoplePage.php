@@ -6,22 +6,30 @@ use App\Access\AccessManager;
 use App\Licensing\CoreUnavailableException;
 use App\Licensing\CoreValidationException;
 use App\Models\AccessProfile;
+use App\Models\Team;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
 use App\People\AccessNotice;
 use App\People\PeopleService;
+use App\People\Person;
+use App\People\PersonRuleException;
+use App\Rules\Cpf;
+use App\Support\Country;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -32,14 +40,18 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * "People": everyone of the company in the Kiban systems, in one place. The manager adds a driver or a
- * mechanic here (name, mobile, optional e-mail, what they do in each system) and sends the access by
- * WhatsApp or e-mail. Nobody needs to go to the customer area for this.
+ * "People": everyone of the company in the Kiban systems, in one place. The manager adds a driver, a
+ * mechanic or an employee here (name, mobile, optional e-mail, document, team, what they do in each
+ * system). With a login, the access goes by WhatsApp or e-mail; without one (e.g. clocks in only on the
+ * company tablet), the person can get it later. "Deactivate" keeps the record and the history.
  */
 class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
 {
@@ -51,7 +63,7 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
 
     protected static ?string $slug = 'pessoas';
 
-    /** Status of each person in the Core (invited / active / blocked), by Core user id. */
+    /** Status of each login in the Core (invited / active / blocked), by Core user id. */
     public array $statuses = [];
 
     public static function canAccess(): bool
@@ -83,7 +95,13 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
 
     public function mount(): void
     {
+        app(PeopleService::class)->ensureRecords($this->tenant());
         $this->statuses = app(PeopleService::class)->statuses($this->tenant());
+
+        // Opened from another screen (e.g. "Add employee"): the form is already open.
+        if (request()->boolean('add')) {
+            $this->mountAction('add');
+        }
     }
 
     /**
@@ -117,23 +135,25 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                         ->label(__('app.people.name'))
                         ->required()
                         ->maxLength(255),
-                    TextInput::make('phone')
-                        ->label(__('app.people.phone'))
-                        ->tel()
-                        ->helperText(__('app.people.phone_help'))
-                        ->required(fn (Get $get): bool => blank($get('email')))
-                        ->maxLength(30),
-                    TextInput::make('email')
-                        ->label(__('app.people.email'))
-                        ->email()
-                        ->helperText(__('app.people.email_help'))
-                        ->maxLength(255),
-                    $this->profileField(),
+                    Toggle::make('with_login')
+                        ->label(__('app.people.with_login'))
+                        ->helperText(__('app.people.with_login_help'))
+                        ->default(true)
+                        ->live(),
+                    ...$this->contactFields(),
+                    ...$this->detailFields(),
+                    $this->profileField()->visible(fn (Get $get): bool => (bool) $get('with_login')),
                     ...$this->moduleSections(),
                 ])
-                ->action(function (array $data): void {
+                ->action(function (array $data, Action $action): void {
+                    $withLogin = (bool) ($data['with_login'] ?? false);
+
                     try {
-                        $result = app(PeopleService::class)->add($this->tenant(), $data['name'], $data['phone'] ?? null, $data['email'] ?? null, (array) ($data['modules'] ?? []), auth()->user());
+                        $result = app(PeopleService::class)->add($this->tenant(), $this->details($data), (array) ($data['modules'] ?? []), auth()->user(), $withLogin);
+                    } catch (PersonRuleException $exception) {
+                        // A module refused (e.g. plan limit, CPF missing): nothing was saved, no login was created.
+                        Notification::make()->danger()->title($exception->getMessage())->send();
+                        $action->halt();
                     } catch (CoreValidationException $exception) {
                         throw ValidationException::withMessages(collect($exception->errors)->mapWithKeys(fn ($messages, $field): array => ["mountedActions.0.data.{$field}" => $messages])->all());
                     } catch (CoreUnavailableException) {
@@ -142,10 +162,21 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                         return;
                     }
 
+                    if ($result['user'] === null) {
+                        Notification::make()->success()->title(__('app.people.added_without_login', ['name' => $result['person']->name]))->send();
+
+                        return;
+                    }
+
                     app(AccessManager::class)->rememberProfile($result['user'], AccessProfile::query()->find($data['profile_id'] ?? null));
                     $this->statuses = app(PeopleService::class)->statuses($this->tenant());
                     AccessNotice::send($this->tenant(), $result['user'], $result['invitation_url']);
                 }),
+            Action::make('teams')
+                ->label(__('app.teams.title'))
+                ->icon(Heroicon::OutlinedUserGroup)
+                ->color('gray')
+                ->url(fn (): string => TeamsPage::getUrl()),
         ];
     }
 
@@ -154,101 +185,287 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
         $tenant = $this->tenant();
 
         return $table
-            ->query(fn (): Builder => User::query()->whereHas('tenants', fn (Builder $query) => $query->whereKey($tenant->getKey())))
+            ->query(fn (): Builder => Person::query()->with(['user', 'team']))
             ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')
                     ->label(__('app.people.name'))
                     ->weight('bold')
-                    ->description(fn (User $record): ?string => collect([static::formatPhone($record->phone), $record->email])->filter()->implode(' · ') ?: null)
+                    ->description(fn (Person $record): ?string => collect([static::formatPhone($record->phone), $record->email])->filter()->implode(' · ') ?: null)
                     ->searchable(['name', 'email', 'phone']),
+                TextColumn::make('team.name')
+                    ->label(__('app.teams.team'))
+                    ->placeholder('—')
+                    ->visibleFrom('md'),
                 TextColumn::make('company_role')
                     ->label(__('app.people.company_role'))
-                    ->state(fn (User $record): string => __('app.people.roles.'.($record->roleIn($tenant) ?? 'member')))
-                    ->badge()
-                    ->color(fn (User $record): string => $record->roleIn($tenant) === User::ROLE_MEMBER ? 'gray' : 'primary')
-                    ->visibleFrom('md'),
-                TextColumn::make('profile')
-                    ->label(__('app.people.profile'))
-                    ->state(fn (User $record): ?string => app(AccessManager::class)->profileOf($record)?->name)
+                    ->state(fn (Person $record): ?string => $record->user ? __('app.people.roles.'.($record->user->roleIn($tenant) ?? 'member')) : null)
                     ->placeholder('—')
+                    ->badge()
+                    ->color(fn (Person $record): string => $record->user?->roleIn($tenant) === User::ROLE_MEMBER ? 'gray' : 'primary')
                     ->visibleFrom('lg'),
                 TextColumn::make('systems')
                     ->label(__('app.people.systems'))
-                    ->state(fn (User $record): array => collect(static::modules())
+                    ->state(fn (Person $record): array => collect(static::modules())
                         ->map(fn (Module $module): ?string => ($label = $module->personRoleLabel($record)) ? $module->name().': '.$label : null)
                         ->filter()->values()->all())
                     ->badge()
                     ->color('success'),
                 TextColumn::make('status')
                     ->label(__('app.people.status'))
-                    ->state(fn (User $record): string => $this->statusOf($record))
+                    ->state(fn (Person $record): string => $this->statusOf($record))
                     ->formatStateUsing(fn (string $state): string => __('app.people.statuses.'.$state))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
                         'invited' => 'warning',
+                        'no_login', 'inactive' => 'gray',
                         default => 'danger',
                     }),
+            ])
+            ->filters([
+                TernaryFilter::make('is_active')
+                    ->label(__('app.people.situation'))
+                    ->trueLabel(__('app.people.active_only'))
+                    ->falseLabel(__('app.people.inactive_only'))
+                    ->default(true),
+                SelectFilter::make('team_id')
+                    ->label(__('app.teams.team'))
+                    ->options(fn (): array => Team::query()->orderBy('name')->pluck('name', 'id')->all()),
             ])
             ->recordActions([
                 Action::make('edit')
                     ->label(__('app.people.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)
                     ->iconButton()
-                    ->visible(fn (User $record): bool => ! $record->canManageTenant() && $this->moduleSections() !== [])
+                    ->visible(fn (Person $record): bool => $record->is_active)
                     ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
-                    ->fillForm(fn (User $record): array => [
-                        'profile_id' => app(AccessManager::class)->profileOf($record)?->getKey(),
+                    ->modalWidth('2xl')
+                    ->fillForm(fn (Person $record): array => [
+                        'with_login' => $record->hasLogin(),
+                        'name' => $record->name,
+                        'phone' => static::formatPhone($record->phone),
+                        'email' => $record->email,
+                        'document' => $record->document_type === Person::CPF ? Cpf::format($record->document) : $record->document,
+                        'document_type' => $record->document_type === Person::CPF ? null : $record->document_type,
+                        'team_id' => $record->team_id,
+                        'profile_id' => $record->user ? app(AccessManager::class)->profileOf($record->user)?->getKey() : null,
                         'modules' => collect(static::modules())->map(fn (Module $module): array => $module->personData($record))->all(),
                     ])
-                    ->schema(fn (): array => [$this->profileField(), ...$this->moduleSections()])
-                    ->action(function (User $record, array $data): void {
-                        app(PeopleService::class)->saveModules($record, (array) ($data['modules'] ?? []));
-                        app(AccessManager::class)->rememberProfile($record, AccessProfile::query()->find($data['profile_id'] ?? null));
+                    ->schema(fn (Person $record): array => [
+                        Hidden::make('with_login'),
+                        TextInput::make('name')
+                            ->label(__('app.people.name'))
+                            ->required()
+                            ->maxLength(255)
+                            ->disabled($record->hasLogin())
+                            ->helperText($record->hasLogin() ? __('app.people.from_login') : null),
+                        ...$this->contactFields($record),
+                        ...$this->detailFields($record),
+                        $this->profileField()->visible($record->hasLogin() && ! $record->user->canManageTenant()),
+                        ...$this->moduleSections(),
+                    ])
+                    ->action(function (Person $record, array $data, Action $action): void {
+                        try {
+                            DB::transaction(function () use ($record, $data): void {
+                                app(PeopleService::class)->checkModules($record, array_merge($this->details($data), ['document' => $this->canSeeDocuments() ? ($data['document'] ?? null) : $record->document]), (array) ($data['modules'] ?? []), $record->hasLogin());
+                                app(PeopleService::class)->updateDetails($record, $this->details($data), $this->canSeeDocuments());
+                                app(PeopleService::class)->saveModules($record, (array) ($data['modules'] ?? []));
+                            });
+                        } catch (PersonRuleException $exception) {
+                            Notification::make()->danger()->title($exception->getMessage())->send();
+                            $action->halt();
+                        }
+
+                        if ($record->user !== null && ! $record->user->canManageTenant()) {
+                            app(AccessManager::class)->rememberProfile($record->user, AccessProfile::query()->find($data['profile_id'] ?? null));
+                        }
+
                         Notification::make()->success()->title(__('app.people.saved'))->send();
+                    }),
+                Action::make('grantLogin')
+                    ->label(__('app.people.grant_login'))
+                    ->icon(Heroicon::OutlinedKey)
+                    ->iconButton()
+                    ->visible(fn (Person $record): bool => $record->is_active && ! $record->hasLogin())
+                    ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
+                    ->modalDescription(__('app.people.grant_login_help'))
+                    ->fillForm(fn (Person $record): array => ['phone' => static::formatPhone($record->phone), 'email' => $record->email])
+                    ->schema([
+                        TextInput::make('phone')
+                            ->label(__('app.people.phone'))
+                            ->tel()
+                            ->helperText(__('app.people.phone_help'))
+                            ->required(fn (Get $get): bool => blank($get('email')))
+                            ->maxLength(30),
+                        TextInput::make('email')
+                            ->label(__('app.people.email'))
+                            ->email()
+                            ->maxLength(255),
+                    ])
+                    ->action(function (Person $record, array $data): void {
+                        try {
+                            $result = app(PeopleService::class)->grantLogin($this->tenant(), $record, $data['phone'] ?? null, $data['email'] ?? null, auth()->user());
+                        } catch (CoreValidationException $exception) {
+                            throw ValidationException::withMessages(collect($exception->errors)->mapWithKeys(fn ($messages, $field): array => ["mountedActions.0.data.{$field}" => $messages])->all());
+                        } catch (CoreUnavailableException) {
+                            Notification::make()->danger()->title(__('app.failed.core'))->send();
+
+                            return;
+                        }
+
+                        $this->statuses = app(PeopleService::class)->statuses($this->tenant());
+                        AccessNotice::send($this->tenant(), $result['user'], $result['invitation_url']);
                     }),
                 Action::make('access')
                     ->label(__('app.people.send_access'))
                     ->icon(Heroicon::OutlinedPaperAirplane)
                     ->iconButton()
-                    ->visible(fn (User $record): bool => $this->statusOf($record) === 'invited')
+                    ->visible(fn (Person $record): bool => $record->hasLogin() && $this->statusOf($record) === 'invited')
                     ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
                     ->requiresConfirmation()
                     ->modalDescription(__('app.people.send_access_help'))
-                    ->action(function (User $record): void {
+                    ->action(function (Person $record): void {
                         try {
-                            $url = app(PeopleService::class)->invitationLink($this->tenant(), $record, auth()->user());
+                            $url = app(PeopleService::class)->invitationLink($this->tenant(), $record->user, auth()->user());
                         } catch (CoreUnavailableException) {
                             Notification::make()->danger()->title(__('app.failed.core'))->send();
 
                             return;
                         }
 
-                        AccessNotice::send($this->tenant(), $record, $url);
+                        AccessNotice::send($this->tenant(), $record->user, $url);
                     }),
-                Action::make('remove')
-                    ->label(__('app.people.remove'))
+                Action::make('deactivate')
+                    ->label(__('app.people.deactivate'))
                     ->icon(Heroicon::OutlinedUserMinus)
                     ->iconButton()
                     ->color('danger')
-                    ->visible(fn (User $record): bool => $record->roleIn($tenant) === User::ROLE_MEMBER && ! $record->is(auth()->user()))
+                    ->visible(fn (Person $record): bool => $record->is_active
+                        && ($record->user === null || ($record->user->roleIn($tenant) === User::ROLE_MEMBER && ! $record->user->is(auth()->user()))))
                     ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
                     ->requiresConfirmation()
-                    ->modalDescription(__('app.people.remove_help'))
-                    ->action(function (User $record): void {
+                    ->modalDescription(__('app.people.deactivate_help'))
+                    ->action(function (Person $record): void {
                         try {
-                            app(PeopleService::class)->remove($this->tenant(), $record);
+                            app(PeopleService::class)->deactivate($this->tenant(), $record);
                         } catch (CoreUnavailableException) {
                             Notification::make()->danger()->title(__('app.failed.core'))->send();
 
                             return;
                         }
 
-                        Notification::make()->success()->title(__('app.people.removed'))->send();
+                        Notification::make()->success()->title(__('app.people.deactivated'))->send();
+                    }),
+                Action::make('reactivate')
+                    ->label(__('app.people.reactivate'))
+                    ->icon(Heroicon::OutlinedArrowUturnLeft)
+                    ->iconButton()
+                    ->visible(fn (Person $record): bool => ! $record->is_active)
+                    ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
+                    ->requiresConfirmation()
+                    ->modalDescription(__('app.people.reactivate_help'))
+                    ->action(function (Person $record): void {
+                        $record->forceFill(['is_active' => true])->save();
+                        Notification::make()->success()->title(__('app.people.saved'))->send();
                     }),
             ])
             ->emptyStateHeading(__('app.people.empty'));
+    }
+
+    /**
+     * Mobile and e-mail. With a login they come from the Core (changed by the person in their account).
+     *
+     * @return array<int, mixed>
+     */
+    protected function contactFields(?Person $person = null): array
+    {
+        $locked = $person?->hasLogin() ?? false;
+
+        return [
+            Grid::make(['default' => 1, 'sm' => 2])->components([
+                TextInput::make('phone')
+                    ->label(__('app.people.phone'))
+                    ->tel()
+                    ->helperText(fn (Get $get): string => $get('with_login') ? __('app.people.phone_help') : __('app.people.phone_help_no_login'))
+                    ->required(fn (Get $get): bool => ! $locked && (bool) $get('with_login') && blank($get('email')))
+                    ->disabled($locked)
+                    ->maxLength(30),
+                TextInput::make('email')
+                    ->label(__('app.people.email'))
+                    ->email()
+                    ->helperText(fn (Get $get): ?string => $get('with_login') ? __('app.people.email_help') : null)
+                    ->disabled($locked)
+                    ->maxLength(255),
+            ]),
+        ];
+    }
+
+    /**
+     * Document (CPF in Brazil, a generic one elsewhere; only for who may see it) and team.
+     *
+     * @return array<int, mixed>
+     */
+    protected function detailFields(?Person $person = null): array
+    {
+        $brazil = Country::isBrazil();
+
+        $document = $brazil
+            ? [TextInput::make('document')
+                ->label(__('app.people.cpf'))
+                ->placeholder('000.000.000-00')
+                ->rule(new Cpf)
+                ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($person): void {
+                    $taken = Person::query()->where('document_type', Person::CPF)->where('document', Cpf::digits((string) $value))
+                        ->when($person, fn (Builder $query) => $query->whereKeyNot($person->getKey()))->exists();
+
+                    if ($taken) {
+                        $fail(__('app.validation.cpf_taken'));
+                    }
+                })
+                ->maxLength(14)]
+            : [Grid::make(['default' => 1, 'sm' => 2])->components([
+                TextInput::make('document_type')
+                    ->label(__('app.people.document_type'))
+                    ->placeholder(__('app.people.document_type_placeholder'))
+                    ->maxLength(20),
+                TextInput::make('document')
+                    ->label(__('app.people.document'))
+                    ->maxLength(40),
+            ])];
+
+        return [
+            Grid::make(['default' => 1, 'sm' => 2])->components([
+                ...($this->canSeeDocuments() ? $document : []),
+                Select::make('team_id')
+                    ->label(__('app.teams.team'))
+                    ->options(fn (): array => Team::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all())
+                    ->searchable()
+                    ->createOptionForm([TextInput::make('name')->label(__('app.teams.name'))->required()->maxLength(80)])
+                    ->createOptionUsing(fn (array $data): int => Team::query()->firstOrCreate(['name' => trim($data['name'])])->getKey()),
+            ]),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{name: string, phone: ?string, email: ?string, document: ?string, document_type: ?string, team_id: ?int}
+     */
+    protected function details(array $data): array
+    {
+        return [
+            'name' => (string) ($data['name'] ?? ''),
+            'phone' => $data['phone'] ?? null,
+            'email' => $data['email'] ?? null,
+            'document' => $data['document'] ?? null,
+            'document_type' => $data['document_type'] ?? null,
+            'team_id' => filled($data['team_id'] ?? null) ? (int) $data['team_id'] : null,
+        ];
+    }
+
+    protected function canSeeDocuments(): bool
+    {
+        return app(PeopleService::class)->canSeeDocuments(auth()->user(), $this->tenant());
     }
 
     /**
@@ -277,25 +494,38 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
     }
 
     /**
-     * One section per system the company uses (e.g. "Frota: role, vehicles, driver's license").
+     * One section per system the company uses (e.g. "Frota: role, vehicles, driver's license"), only for who
+     * manages that system (owners and administrators see all). Sections that only make sense with a login
+     * (e.g. Frota) hide when the person has none.
      *
      * @return array<int, Section>
      */
     protected function moduleSections(): array
     {
+        $user = auth()->user();
+
         return collect(static::modules())
-            ->filter(fn (Module $module): bool => $module->personFields() !== [])
+            ->filter(fn (Module $module): bool => $module->personFields() !== [] && ($user->canManageTenant() || $module->managesPeople($user)))
             ->map(fn (Module $module, string $key): Section => Section::make($module->name())
                 ->icon($module->icon())
                 ->statePath("modules.{$key}")
+                ->visible(fn (Get $get): bool => ! $module->personNeedsLogin() || (bool) $get('with_login'))
                 ->components($module->personFields()))
             ->values()
             ->all();
     }
 
-    protected function statusOf(User $user): string
+    protected function statusOf(Person $person): string
     {
-        return $this->statuses[$user->core_id] ?? ($user->last_login_at !== null ? 'active' : 'invited');
+        if (! $person->is_active) {
+            return 'inactive';
+        }
+
+        if ($person->user === null) {
+            return 'no_login';
+        }
+
+        return $this->statuses[$person->user->core_id] ?? ($person->user->last_login_at !== null ? 'active' : 'invited');
     }
 
     protected function tenantCanWrite(): bool

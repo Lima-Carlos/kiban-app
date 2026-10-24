@@ -46,8 +46,12 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Rotinas passam uma chave `once` (tabela `notice_log`) para nunca repetir. Quem fez a ação não é avisado (`except`).
 
 ## Pessoas
-- Todos da empresa são cadastrados na tela **Pessoas** (`PeoplePage` + `App\People\PeopleService`), que pede ao Core para criar o login (permissão `team`). Celular é o principal; e-mail é opcional (nunca supor que existe). O acesso vai pelo WhatsApp (`AccessNotice`) ou e-mail.
-- Cada módulo acrescenta os próprios campos de pessoa (`personFields`/`savePerson`...). Ninguém precisa ir à Área do cliente para cadastrar funcionário.
+- Todos da empresa são cadastrados na tela **Pessoas** (`PeoplePage` + `App\People\PeopleService`). O cadastro central é `App\People\Person` (tabela `people`), e **o login é opcional** (`user_id`). Com login, o Core cria o usuário (permissão `team`); sem login, a pessoa existe só na casca e ganha o acesso depois (`grantLogin`), mantendo a ficha. Quem entra pelo Core ganha a ficha sozinho (`CoreSignIn` → `Person::forUser`).
+- Celular é o principal; e-mail é opcional (nunca supor que existe). Celular com o código do país da empresa: `App\Support\Country::phone()`. O acesso vai pelo WhatsApp (`AccessNotice`) ou e-mail.
+- Documento: CPF no Brasil (`App\Rules\Cpf`, único por empresa) e documento genérico (tipo + número) nos outros países (`Person::setDocument`). Só dono, administradores e quem o módulo permite (`seesPersonDocuments`, ex.: gestor do Ponto) veem documentos.
+- Os ganchos de pessoa dos módulos recebem a `Person`: `personFields`, `personData`, `checkPerson` (regras **antes** de criar o login no Core; recusa com `PersonRuleException`), `savePerson`, `removePerson`, `personGotLogin`, `personNeedsLogin` (ex.: Frota: sem login, sem papel), `personRoleLabel`. Cada seção só aparece para quem gerencia aquele módulo (`managesPeople`) ou para dono/admin.
+- "Remover" é **desligar** (`deactivate`): a ficha e o histórico ficam, inativos. Equipes compartilhadas: `App\Models\Team` (`TeamsPage`).
+- Peças compartilhadas (Ponto e Campo): `App\Support\Country`, `App\Support\Geo` (distância, link do OpenStreetMap), `App\Filament\Support\MapPoint` ("Usar minha localização"). Não copiar: reaproveitar.
 - Menus por papel: `shouldRegisterNavigation()` nas telas. O app é instalável (manifest + `public/sw.js`).
 
 ## Login (sem senhas aqui)
@@ -65,6 +69,12 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - As telas estendem `App\Filament\Support\ModuleResource`, e as páginas de lista estendem `ModuleRecordsPage` (que explica por que não dá para cadastrar).
 - **Primeiros passos:** cada `Step` diz se está feito olhando os dados reais, e de quais passos depende. Os modelos usam `ReportsFirstSteps` para avisar o Core depois de cada mudança.
 - O módulo `demo` (Tarefas) é o modelo a copiar.
+
+## Ponto (`app/Modules/TimeClock`, chave `ponto`)
+- Perfis de regras por país (`LaborProfile`): "Brasil (CLT)" completo (Portaria 671, AFD/AEJ, CPF obrigatório, PIS opcional) e "Personalizado" (outros países; a empresa informa as regras). O país e o perfil ficam em `TimeClockSetting`. Nada da lei brasileira pode valer para o perfil "Personalizado".
+- Funcionário = `Employee` ligado a uma `Person` (com ou sem login). Regras em `EmployeeService` (limite `employees` de funcionários ativos, CPF no Brasil, admissão, local ou "externo"). Funcionário externo não tem local nem raio.
+- Locais (`Workplace`) com fuso horário próprio (as batidas seguem o fuso do local), ponto no mapa e raio opcional (fora do raio: marca, nunca bloqueia).
+- Papéis (`TimeClockRole`): gestor (RH), funcionário (implícito para quem tem login e bate ponto) e consulta. Explicação para o dono: `docs/arquivos/ponto.md`.
 
 ## Frota (`app/Modules/Fleet`, chave `frota`)
 - Todo registro com km passa por `OdometerService::record()` (nunca alterar `odometer` direto). O km nunca volta; só o gestor corrige com `correct()`.

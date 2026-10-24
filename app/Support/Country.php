@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Support;
+
+use App\Tenancy\TenantContext;
+
+/**
+ * The company's country (from its registration in the Core) and what depends on it: the mobile number's
+ * country code and whether Brazilian rules apply (CPF, official time clock files...).
+ */
+class Country
+{
+    public const BRAZIL = 'BR';
+
+    /** International dialing codes of the countries we sell to first. */
+    public const CALLING_CODES = [
+        'BR' => '55', 'US' => '1', 'CA' => '1', 'PT' => '351', 'ES' => '34', 'MX' => '52', 'AR' => '54', 'CL' => '56',
+        'CO' => '57', 'PE' => '51', 'UY' => '598', 'PY' => '595', 'BO' => '591', 'EC' => '593', 'GB' => '44',
+        'FR' => '33', 'DE' => '49', 'IT' => '39',
+    ];
+
+    /** The current company's country (ISO code, e.g. "BR"). */
+    public static function current(): string
+    {
+        $tenant = app(TenantContext::class)->current();
+
+        return strtoupper((string) ($tenant?->license()->tenant('country') ?: self::BRAZIL));
+    }
+
+    public static function isBrazil(?string $country = null): bool
+    {
+        return strtoupper($country ?? static::current()) === self::BRAZIL;
+    }
+
+    public static function callingCode(?string $country = null): ?string
+    {
+        return self::CALLING_CODES[strtoupper($country ?? static::current())] ?? null;
+    }
+
+    /**
+     * Mobile as digits with the country code, like the Core keeps it. A number typed with "+" (or "00") is
+     * already international; otherwise it gets the company country's code (unless it already starts with it).
+     */
+    public static function phone(?string $phone, ?string $country = null): ?string
+    {
+        $typed = trim((string) $phone);
+        $digits = preg_replace('/\D/', '', $typed);
+
+        if ($digits === '') {
+            return null;
+        }
+
+        if (str_starts_with($typed, '+')) {
+            return $digits;
+        }
+
+        if (str_starts_with($digits, '00')) {
+            return substr($digits, 2);
+        }
+
+        $code = static::callingCode($country);
+
+        if ($code === null) {
+            return $digits;
+        }
+
+        // Brazil: 10 or 11 digits with the area code. Already with "55" in front: 12 or 13 digits.
+        if ($code === '55') {
+            return in_array(strlen($digits), [12, 13], true) && str_starts_with($digits, '55') ? $digits : '55'.$digits;
+        }
+
+        return str_starts_with($digits, $code) && strlen($digits) > 10 ? $digits : $code.$digits;
+    }
+}
