@@ -17,8 +17,10 @@ use App\Modules\TimeClock\Filament\Employees\Pages\ListEmployees;
 use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
 use App\Modules\TimeClock\Filament\Workplaces\Pages\ManageWorkplaces;
 use App\Modules\TimeClock\Models\Employee;
+use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Services\ScheduleService;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\TimeClockModule;
 use App\People\PeopleService;
@@ -68,8 +70,14 @@ class TimeClockEmployeesTest extends TestCase
             'name' => $name,
             'with_login' => false,
             'document' => self::CPF,
-            'modules' => ['ponto' => $ponto + ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'job_title' => 'Instalador', 'workplace_id' => $this->office->id]],
+            'modules' => ['ponto' => $ponto + ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'schedule_id' => $this->scheduleId(), 'job_title' => 'Instalador', 'workplace_id' => $this->office->id]],
         ];
+    }
+
+    /** A work schedule of the current company (required for someone who clocks in). */
+    protected function scheduleId(): int
+    {
+        return Schedule::query()->value('id') ?? Schedule::create(['name' => 'Comercial', 'type' => Schedule::WEEKLY, 'week' => ScheduleService::presets()['office']['week']])->id;
     }
 
     public function test_an_employee_without_a_login_who_gets_one_later(): void
@@ -139,8 +147,8 @@ class TimeClockEmployeesTest extends TestCase
     public function test_plan_limit_counts_active_employees(): void
     {
         $service = app(PeopleService::class);
-        $service->add($this->company, ['name' => 'Um', 'document' => '529.982.247-25'], ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'is_external' => true]], $this->owner, false);
-        $two = $service->add($this->company, ['name' => 'Dois', 'document' => '111.444.777-35'], ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'is_external' => true]], $this->owner, false);
+        $service->add($this->company, ['name' => 'Um', 'document' => '529.982.247-25'], ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'schedule_id' => $this->scheduleId(), 'is_external' => true]], $this->owner, false);
+        $two = $service->add($this->company, ['name' => 'Dois', 'document' => '111.444.777-35'], ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'schedule_id' => $this->scheduleId(), 'is_external' => true]], $this->owner, false);
 
         Livewire::test(PeoplePage::class)
             ->callAction('add', $this->employee('Três', [], ['document' => '935.411.347-80']))
@@ -224,7 +232,7 @@ class TimeClockEmployeesTest extends TestCase
                 'phone' => '912 345 678',
                 'document_type' => 'NIF',
                 'document' => '123456789',
-                'modules' => ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'is_external' => true]],
+                'modules' => ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'schedule_id' => $this->scheduleId(), 'is_external' => true]],
             ])
             ->assertHasNoActionErrors();
 
@@ -246,7 +254,7 @@ class TimeClockEmployeesTest extends TestCase
         $this->assertTrue($store->hasPoint());
 
         // A workplace with employees is not deleted.
-        app(PeopleService::class)->add($this->company, ['name' => 'Funcionária', 'document' => self::CPF], ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'workplace_id' => $store->id]], $this->owner, false);
+        app(PeopleService::class)->add($this->company, ['name' => 'Funcionária', 'document' => self::CPF], ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'schedule_id' => $this->scheduleId(), 'workplace_id' => $store->id]], $this->owner, false);
         $this->assertFalse($this->owner->can('delete', $store->fresh()));
         $this->assertTrue($this->owner->can('delete', Workplace::create(['name' => 'Vazio', 'timezone' => 'UTC'])));
 
@@ -255,7 +263,7 @@ class TimeClockEmployeesTest extends TestCase
         $team = Team::query()->where('name', 'Equipe Instalação')->sole();
         $person = Person::query()->where('name', 'Funcionária')->sole();
         Livewire::test(PeoplePage::class)
-            ->callTableAction('edit', $person, ['team_id' => $team->id, 'document' => self::CPF, 'modules' => ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'workplace_id' => $store->id]]])
+            ->callTableAction('edit', $person, ['team_id' => $team->id, 'document' => self::CPF, 'modules' => ['ponto' => ['clocks_in' => true, 'admitted_on' => '2026-10-01', 'schedule_id' => $this->scheduleId(), 'workplace_id' => $store->id]]])
             ->assertHasNoTableActionErrors();
         $this->assertSame($team->id, $person->fresh()->team_id);
 

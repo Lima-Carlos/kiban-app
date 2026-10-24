@@ -5,6 +5,7 @@ namespace App\Modules\TimeClock\Filament;
 use App\Modules\ModuleRegistry;
 use App\Modules\TimeClock\Enums\LaborProfile;
 use App\Modules\TimeClock\Models\TimeClockSetting;
+use App\Modules\TimeClock\Services\HolidayCalendar;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\TimeClockModule;
 use App\Support\Country;
@@ -13,12 +14,16 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Locale;
@@ -38,6 +43,12 @@ class TimeClockSettingsPage extends Page
 
     /** @var array<string, mixed>|null */
     public ?array $data = [];
+
+    /** Calculation rules on this page (used from part 4 on). */
+    public const RULE_FIELDS = [
+        'overtime_percent', 'rest_day_overtime_percent', 'night_start', 'night_end', 'night_percent', 'night_reduced_hour',
+        'tolerance_punch_minutes', 'tolerance_day_minutes', 'hour_bank', 'hour_bank_months',
+    ];
 
     public static function canAccess(): bool
     {
@@ -64,7 +75,11 @@ class TimeClockSettingsPage extends Page
     public function mount(): void
     {
         $settings = TimeClockSetting::current();
-        $this->form->fill(['country' => $settings->country, 'labor_profile' => $settings->labor_profile->value]);
+        $this->form->fill($settings->only(static::RULE_FIELDS) + [
+            'country' => $settings->country,
+            'labor_profile' => $settings->labor_profile->value,
+            'optional_holidays' => collect(HolidayCalendar::OPTIONAL)->map(fn (bool $default, string $key): bool => app(HolidayCalendar::class)->optionalIsOn($key, $settings))->all(),
+        ]);
     }
 
     /**
@@ -97,9 +112,65 @@ class TimeClockSettingsPage extends Page
                             ->label(__('timeclock.settings.labor_profile'))
                             ->options(collect(LaborProfile::cases())->mapWithKeys(fn (LaborProfile $profile): array => [$profile->value => $profile->getLabel()])->all())
                             ->descriptions(collect(LaborProfile::cases())->mapWithKeys(fn (LaborProfile $profile): array => [$profile->value => __('timeclock.enums.labor_profile_help.'.$profile->value)])->all())
+                            ->required()
+                            ->live(),
+                    ]),
+                Section::make(__('timeclock.settings.calculation'))
+                    ->description(fn (Get $get): string => $this->isBrazil($get) ? __('timeclock.settings.calculation_help_br') : __('timeclock.settings.calculation_help'))
+                    ->columns(['default' => 1, 'sm' => 2])
+                    ->components([
+                        $this->percent('overtime_percent', 'overtime_percent'),
+                        $this->percent('rest_day_overtime_percent', 'rest_day_overtime_percent'),
+                        TimePicker::make('night_start')->label(__('timeclock.settings.night_start'))->seconds(false)->format('H:i')->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
+                        TimePicker::make('night_end')->label(__('timeclock.settings.night_end'))->seconds(false)->format('H:i')->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
+                        $this->percent('night_percent', 'night_percent'),
+                        Toggle::make('night_reduced_hour')
+                            ->label(__('timeclock.settings.night_reduced_hour'))
+                            ->helperText(__('timeclock.settings.night_reduced_hour_help'))
+                            ->disabled(fn (Get $get): bool => $this->isBrazil($get)),
+                        TextInput::make('tolerance_punch_minutes')
+                            ->label(__('timeclock.settings.tolerance_punch'))
+                            ->integer()->minValue(0)->suffix('min')->required()
+                            ->maxValue(fn (Get $get): int => $this->isBrazil($get) ? TimeClockSetting::LEGAL['tolerance_punch_minutes'] : 60),
+                        TextInput::make('tolerance_day_minutes')
+                            ->label(__('timeclock.settings.tolerance_day'))
+                            ->integer()->minValue(0)->suffix('min')->required()
+                            ->maxValue(fn (Get $get): int => $this->isBrazil($get) ? TimeClockSetting::LEGAL['tolerance_day_minutes'] : 120),
+                        Toggle::make('hour_bank')
+                            ->label(__('timeclock.settings.hour_bank'))
+                            ->helperText(__('timeclock.settings.hour_bank_help'))
+                            ->live(),
+                        Select::make('hour_bank_months')
+                            ->label(__('timeclock.settings.hour_bank_months'))
+                            ->options(fn (Get $get): array => collect($this->isBrazil($get) ? [6, 12] : range(1, 12))->mapWithKeys(fn (int $months): array => [$months => trans_choice('timeclock.settings.months', $months, ['count' => $months])])->all())
+                            ->helperText(fn (Get $get): ?string => $this->isBrazil($get) ? __('timeclock.settings.hour_bank_months_help_br') : null)
+                            ->visible(fn (Get $get): bool => (bool) $get('hour_bank'))
                             ->required(),
                     ]),
+                Section::make(__('timeclock.settings.optional_holidays'))
+                    ->description(__('timeclock.settings.optional_holidays_help'))
+                    ->visible(fn (Get $get): bool => strtoupper((string) $get('country')) === 'BR')
+                    ->columns(['default' => 1, 'sm' => 3])
+                    ->components(collect(array_keys(HolidayCalendar::OPTIONAL))->map(fn (string $key) => Toggle::make('optional_holidays.'.$key)->label(__('timeclock.holidays.optional.'.$key)))->all()),
             ]);
+    }
+
+    /** A percentage; in Brazil (CLT) it cannot be below the law. */
+    protected function percent(string $field, string $label): TextInput
+    {
+        return TextInput::make($field)
+            ->label(__('timeclock.settings.'.$label))
+            ->integer()
+            ->suffix('%')
+            ->required()
+            ->maxValue(400)
+            ->minValue(fn (Get $get): int => $this->isBrazil($get) ? TimeClockSetting::LEGAL[$field] : 0)
+            ->helperText(fn (Get $get): ?string => $this->isBrazil($get) ? __('timeclock.settings.legal_minimum', ['value' => TimeClockSetting::LEGAL[$field]]) : null);
+    }
+
+    protected function isBrazil(Get $get): bool
+    {
+        return $get('labor_profile') === LaborProfile::BrazilClt->value;
     }
 
     public function content(Schema $schema): Schema
@@ -124,7 +195,18 @@ class TimeClockSettingsPage extends Page
 
         $state = $this->form->getState();
         $settings = TimeClockSetting::current();
-        $settings->fill(['country' => $state['country'], 'labor_profile' => $state['labor_profile']]);
+        $rules = collect($state)->only(static::RULE_FIELDS)->all();
+
+        // Brazil (CLT): night hours and the reduced hour are the law's.
+        if ($state['labor_profile'] === LaborProfile::BrazilClt->value) {
+            $rules = ['night_start' => TimeClockSetting::LEGAL['night_start'], 'night_end' => TimeClockSetting::LEGAL['night_end'], 'night_reduced_hour' => true] + $rules;
+        }
+
+        $settings->fill($rules + [
+            'country' => $state['country'],
+            'labor_profile' => $state['labor_profile'],
+            'optional_holidays' => array_map('boolval', (array) ($state['optional_holidays'] ?? [])) + (array) $settings->optional_holidays,
+        ]);
         $settings->forceFill(['configured_at' => $settings->configured_at ?? now()])->save();
 
         Notification::make()->success()->title(__('timeclock.settings.saved'))->send();

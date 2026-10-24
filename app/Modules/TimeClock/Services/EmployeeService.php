@@ -3,6 +3,7 @@
 namespace App\Modules\TimeClock\Services;
 
 use App\Modules\TimeClock\Models\Employee;
+use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\TimeClockModule;
@@ -48,6 +49,14 @@ class EmployeeService
 
         if (blank($data['admitted_on'] ?? null)) {
             throw new PersonRuleException(__('timeclock.errors.admission_required'));
+        }
+
+        if (blank($data['schedule_id'] ?? null) || ! Schedule::query()->whereKey($data['schedule_id'])->exists()) {
+            throw new PersonRuleException(__('timeclock.errors.schedule_required'));
+        }
+
+        if (filled($data['schedule_from'] ?? null) && (string) $data['schedule_from'] < (string) $data['admitted_on']) {
+            throw new PersonRuleException(__('timeclock.errors.schedule_before_admission'));
         }
 
         if (! ($data['is_external'] ?? false) && (blank($data['workplace_id'] ?? null) || ! Workplace::query()->whereKey($data['workplace_id'])->exists())) {

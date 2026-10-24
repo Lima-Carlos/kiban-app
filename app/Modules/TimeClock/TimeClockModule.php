@@ -9,12 +9,19 @@ use App\Modules\Module;
 use App\Modules\Step;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Filament\Employees\EmployeeResource;
+use App\Modules\TimeClock\Filament\Holidays\HolidayResource;
+use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
+use App\Modules\TimeClock\Filament\Schedules\ScheduleResource;
 use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
 use App\Modules\TimeClock\Filament\Workplaces\WorkplaceResource;
 use App\Modules\TimeClock\Models\Employee;
+use App\Modules\TimeClock\Models\Holiday;
+use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\Policies\EmployeePolicy;
+use App\Modules\TimeClock\Policies\HolidayPolicy;
+use App\Modules\TimeClock\Policies\SchedulePolicy;
 use App\Modules\TimeClock\Policies\WorkplacePolicy;
 use App\Modules\TimeClock\Services\EmployeeService;
 use App\Modules\TimeClock\Services\TimeClockAccess;
@@ -67,10 +74,18 @@ class TimeClockModule extends Module
                 url: fn (): string => WorkplaceResource::getUrl('index'),
             ),
             new Step(
+                key: 'schedule',
+                labelKey: 'timeclock.steps.schedule',
+                descriptionKey: 'timeclock.steps.schedule_help',
+                requires: ['rules'],
+                done: fn (Tenant $tenant): bool => Schedule::query()->exists(),
+                url: fn (): string => ScheduleResource::getUrl('index'),
+            ),
+            new Step(
                 key: 'employees',
                 labelKey: 'timeclock.steps.employees',
                 descriptionKey: 'timeclock.steps.employees_help',
-                requires: ['rules'],
+                requires: ['rules', 'schedule'],
                 done: fn (Tenant $tenant): bool => Employee::query()->active()->exists(),
                 url: fn (): string => PeoplePage::getUrl(['add' => 1]),
             ),
@@ -79,7 +94,12 @@ class TimeClockModule extends Module
 
     public function resources(): array
     {
-        return [EmployeeResource::class, WorkplaceResource::class];
+        return [EmployeeResource::class, ScheduleResource::class, WorkplaceResource::class, HolidayResource::class];
+    }
+
+    public function widgets(): array
+    {
+        return [NationalHolidaysWidget::class];
     }
 
     public function pages(): array
@@ -151,6 +171,8 @@ class TimeClockModule extends Module
         return [
             Workplace::class => WorkplacePolicy::class,
             Employee::class => EmployeePolicy::class,
+            Schedule::class => SchedulePolicy::class,
+            Holiday::class => HolidayPolicy::class,
         ];
     }
 }

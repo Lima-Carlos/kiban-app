@@ -6,11 +6,13 @@ use App\Access\AccessManager;
 use App\Models\ModuleAccess;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Models\Employee;
+use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\TimeClockModule;
 use App\People\PeopleForm;
 use App\People\Person;
+use Carbon\CarbonImmutable;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -64,6 +66,14 @@ class TimeClockPeople
                         ->helperText(__('timeclock.helpers.is_external'))
                         ->live()
                         ->columnSpanFull(),
+                    Select::make('schedule_id')
+                        ->label(__('timeclock.fields.schedule'))
+                        ->options(fn (): array => Schedule::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all())
+                        ->required($clocksIn)
+                        ->helperText(fn (): ?string => Schedule::query()->exists() ? null : __('timeclock.helpers.no_schedule')),
+                    DatePicker::make('schedule_from')
+                        ->label(__('timeclock.fields.schedule_from'))
+                        ->helperText(__('timeclock.helpers.schedule_from')),
                     Select::make('workplace_id')
                         ->label(__('timeclock.fields.workplace'))
                         ->options(fn (): array => Workplace::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all())
@@ -87,6 +97,7 @@ class TimeClockPeople
     public function data(Person $person): array
     {
         $employee = Employee::query()->where('person_id', $person->getKey())->first();
+        $current = $employee ? app(ScheduleService::class)->current($employee) : null;
         // The role given on purpose (an employee without a role still clocks in: that comes from the record).
         $role = $person->user ? ModuleAccess::query()->where('user_id', $person->user_id)->where('module', TimeClockModule::KEY)->value('role') : null;
 
@@ -98,6 +109,8 @@ class TimeClockPeople
             'pis' => $employee?->pis,
             'is_external' => (bool) $employee?->is_external,
             'workplace_id' => $employee?->workplace_id,
+            'schedule_id' => $current?->schedule_id,
+            'schedule_from' => $current?->starts_on?->toDateString(),
             'role' => $role ?? TimeClockRole::None->value,
         ];
     }
@@ -108,7 +121,12 @@ class TimeClockPeople
     public function save(Person $person, array $data): void
     {
         if ($data['clocks_in'] ?? false) {
-            $this->employees->save($person, $data);
+            $isNew = ! Employee::query()->where('person_id', $person->getKey())->exists();
+            $employee = $this->employees->save($person, $data);
+
+            // The schedule counts from the chosen day; empty: from the hiring date (new) or from today (a change).
+            $from = filled($data['schedule_from'] ?? null) ? CarbonImmutable::parse($data['schedule_from']) : ($isNew ? CarbonImmutable::parse($employee->admitted_on->toDateString()) : CarbonImmutable::today());
+            app(ScheduleService::class)->assign($employee, Schedule::query()->findOrFail($data['schedule_id']), $from);
         } else {
             $this->employees->deactivate($person);
         }

@@ -7,6 +7,7 @@ use App\Filament\Support\ModuleResource;
 use App\Models\Team;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\TimeClockPeople;
 use App\Modules\TimeClock\TimeClockModule;
 use App\People\PersonRuleException;
@@ -77,6 +78,12 @@ class EmployeeResource extends ModuleResource
                     ->state(fn (Employee $record): ?string => $record->is_external ? __('timeclock.fields.external_short') : $record->workplace?->name)
                     ->badge()
                     ->color(fn (Employee $record): string => $record->is_external ? 'warning' : 'gray'),
+                TextColumn::make('schedule')
+                    ->label(__('timeclock.fields.schedule'))
+                    ->state(fn (Employee $record): ?string => app(ScheduleCalendar::class)->scheduleOn($record, today())?->name)
+                    ->placeholder(__('timeclock.employees.no_schedule'))
+                    ->color(fn (?string $state): ?string => $state ? null : 'danger')
+                    ->visibleFrom('md'),
                 TextColumn::make('admitted_on')
                     ->label(__('timeclock.fields.admitted_on'))
                     ->date(__('app.date_format'))
@@ -103,6 +110,16 @@ class EmployeeResource extends ModuleResource
                     ->options(fn (): array => Workplace::query()->orderBy('name')->pluck('name', 'id')->all()),
             ])
             ->recordActions([
+                Action::make('month')
+                    ->label(__('timeclock.employees.see_month'))
+                    ->icon(Heroicon::OutlinedCalendarDays)
+                    ->iconButton()
+                    ->modalHeading(fn (Employee $record): string => __('timeclock.employees.month_title', ['name' => $record->person->name, 'month' => ucfirst(now()->translatedFormat('F Y'))]))
+                    ->modalContent(fn (Employee $record) => view('timeclock.employee-month', [
+                        'days' => app(ScheduleCalendar::class)->period($record, now()->startOfMonth(), now()->endOfMonth()),
+                    ]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel(__('timeclock.employees.close')),
                 Action::make('edit')
                     ->label(__('app.people.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)

@@ -49,7 +49,8 @@ Dono e administradores são sempre gestores. O perfil sugerido **"RH"** (Ponto c
 ### Primeiros passos
 1. Confirme o país e as regras.
 2. Cadastre o local de trabalho.
-3. Cadastre os funcionários.
+3. Cadastre os horários de trabalho (parte 2).
+4. Cadastre os funcionários.
 
 ## Arquivos (parte 1)
 - `app/Modules/TimeClock/TimeClockModule.php`: o módulo (código `ponto`, limite `employees`, passos, telas, papéis e a parte do Ponto na tela Pessoas).
@@ -69,3 +70,74 @@ Dono e administradores são sempre gestores. O perfil sugerido **"RH"** (Ponto c
 - Tabelas `tc_settings`, `tc_workplaces` e `tc_employees`, em `database/migrations/2026_10_24_110000_create_time_clock_tables.php`.
 - Textos: `lang/*/timeclock.php`.
 - Testes: `tests/Feature/TimeClockEmployeesTest.php`.
+
+## Parte 2 (P2): horários de trabalho e feriados
+
+### Horários de trabalho (Ponto → Horários de trabalho)
+- **Comece por um modelo pronto:**
+  - Comercial (seg–sex, 8h–18h);
+  - Comercial com sábado;
+  - Noturno (22h–6h);
+  - 12x36 diurno e noturno;
+  - 6x1.
+
+  O formulário se preenche e dá para ajustar tudo.
+- **Dois tipos:**
+  - **Semanal:** cada dia da semana com a entrada, o intervalo (opcional) e a saída. Uma saída antes da entrada vira o dia seguinte (turno da noite).
+  - **Escala:** trabalha alguns dias e folga outros, sem olhar o dia da semana (ex.: 12x36 = 1 dia de trabalho e 1 de folga; 6x1). Ela é contada a partir de "um dia de trabalho da escala".
+- **Total por semana:** o formulário mostra as horas da semana enquanto você preenche. O 12x36 dá uma média de 38h30.
+- **Conferências:** pelo menos um dia de trabalho; entrada e saída preenchidas; o intervalo dentro do horário.
+- **Um horário que já foi dado a alguém não é alterado nem apagado**, porque mudaria os dias que já passaram. Use **Duplicar**, ajuste a cópia e troque o horário das pessoas a partir de uma data.
+
+### O horário de cada funcionário
+- Em **Pessoas** (parte "Ponto"), o funcionário ganha o **horário de trabalho** e a data **"Horário vale a partir de"**.
+  - Vazio: desde a admissão (funcionário novo) ou a partir de hoje (troca).
+  - **Os dias antes da troca continuam com o horário antigo** (fica um histórico).
+- **Quem bate ponto precisa de um horário.** O horário não pode começar antes da admissão.
+- Na lista de **Funcionários**:
+  - a coluna **Horário** mostra o de hoje;
+  - o botão **"Ver escala do mês"** mostra cada dia: horário e horas, folga ou feriado, e o total previsto no mês.
+
+### Feriados (Ponto → Feriados)
+- **Brasil:** os **feriados nacionais são calculados sozinhos** para qualquer ano, incluindo os que dependem da Páscoa. Não é preciso cadastrar nada. A lista do ano aparece no topo da tela, com setas para ver outros anos.
+  - O Dia da Consciência Negra (20/11) é nacional desde 2024.
+- **Feriados opcionais** (em Configurações do ponto):
+  - **Sexta-feira Santa:** ligada por padrão;
+  - **Carnaval** (segunda e terça) e **Corpus Christi:** desligados por padrão.
+
+  Ligados, contam como feriado para todos.
+- **Feriados da empresa:** os do estado, da cidade e os próprios.
+  - Uma vez só ou **"repete todo ano"**.
+  - Para **toda a empresa** ou **só um local de trabalho** (ex.: o aniversário da cidade de uma filial).
+- **Outros países:** a empresa cadastra os feriados do país dela. Listas prontas de outros países podem vir depois.
+- **No dia de feriado ninguém é esperado no trabalho.** Quem trabalhar, terá as horas calculadas na parte 4.
+
+### Regras de cálculo (Configurações do ponto)
+São usadas no cálculo das horas a partir da parte 4:
+- hora extra (%) e hora extra em folga e feriado (%);
+- horário e % do adicional noturno, e a hora noturna reduzida (52min30s);
+- tolerância por batida e por dia;
+- banco de horas (sim ou não) e o prazo para compensar.
+
+**Brasil (CLT):** os valores já vêm com o mínimo da lei, e a empresa pode melhorar, mas não ficar abaixo:
+- hora extra de pelo menos 50%, e 100% em folga e feriado;
+- noturno das 22h às 5h, com pelo menos 20% e a hora reduzida (estes não mudam);
+- tolerância de até 5 minutos por batida e 10 por dia;
+- banco de horas de 6 meses (acordo individual por escrito) ou 12 meses (acordo coletivo).
+
+**Personalizado:** a empresa informa tudo, do jeito do país dela.
+
+## Arquivos (parte 2)
+- Tabelas `tc_schedules` (horários), `tc_employee_schedules` (o horário de cada funcionário a partir de uma data) e `tc_holidays` (feriados da empresa), mais as regras de cálculo em `tc_settings`: `database/migrations/2026_10_25_100000_create_time_clock_schedule_tables.php`.
+- `app/Modules/TimeClock/Models/`: `Schedule`, `EmployeeSchedule`, `Holiday`; `TimeClockSetting` ganhou as regras e os mínimos da lei (`LEGAL`).
+- `app/Modules/TimeClock/Services/`:
+  - `ScheduleService` (modelos prontos, conferências, duplicar, trocar o horário a partir de uma data);
+  - `ScheduleCalendar` (o que cada dia espera: horas, intervalo, folga ou feriado; o mês de um funcionário);
+  - `HolidayCalendar` (feriados nacionais calculados, a Páscoa, os opcionais e os da empresa).
+- `app/Modules/TimeClock/Policies/`: `SchedulePolicy` (horário em uso não muda), `HolidayPolicy`.
+- Telas:
+  - `app/Modules/TimeClock/Filament/Schedules/` (horários);
+  - `Holidays/` (feriados + `NationalHolidaysWidget`, com `resources/views/timeclock/national-holidays.blade.php`);
+  - `TimeClockSettingsPage.php` (regras e feriados opcionais);
+  - o mês do funcionário: `resources/views/timeclock/employee-month.blade.php`.
+- Testes: `tests/Feature/TimeClockSchedulesTest.php`.

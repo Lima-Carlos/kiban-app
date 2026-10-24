@@ -19,6 +19,7 @@
 | `FleetReportsTest` | Frota: planilhas com os números do painel, ficha em PDF, quem pode baixar, limpeza de fotos antigas (dados ficam) com aviso antes |
 | `FleetMaintenanceTest` | Frota: pedido do motorista → agenda → manutenção, próxima troca de óleo/revisão, lavagens, despesas, menus de cada papel, painel com todos os gastos |
 | `PeopleTest` | Pessoas: adicionar pelo celular, editar, novo link, desligar (a ficha fica), menus por papel, app instalável |
+| `TimeClockSchedulesTest` | Ponto (P2): horários semanais e noturnos, 12x36 e 6x1, histórico do horário do funcionário, feriados nacionais (Páscoa), opcionais e da empresa, regras de cálculo com os mínimos da CLT |
 | `TimeClockEmployeesTest` | Ponto (P1): pessoa sem login que ganha login depois, CPF (válido, único, obrigatório no Brasil), documento e celular de outro país, limite de funcionários, quem vê o CPF, locais com ponto no mapa, equipes, separação entre empresas |
 | `AccessProfilesTest` | Um sistema com vários módulos: sem acesso por padrão, perfis sugeridos e editáveis, Início com os resumos |
 | `LocaleTest` | Troca de idioma no sistema e nas páginas simples |
