@@ -541,4 +541,32 @@ return [
     'console' => [
         'ran' => 'Ponto: :notices avisos, :removed fotos antigas apagadas.',
     ],
+    'dashboard' => [
+        'title' => 'Painel',
+        'month' => 'Mês',
+        'month_heading' => 'Resumo de :month',
+        'missing_punches' => '{0} Nenhum dia com batida faltando|{1} 1 dia com batida faltando|[2,*] :count dias com batida faltando',
+        'bank_help' => 'Saldo de todos os funcionários',
+        'closed' => ':closed de :total fechados',
+        'signed' => ':count assinados',
+        'now' => 'Agora',
+        'now_help' => ':working trabalhando · :expected com horário hoje',
+        'states' => [
+            'working' => 'Trabalhando',
+            'late' => 'Atrasados (sem batida)',
+            'break' => 'No intervalo',
+            'later' => 'Entram mais tarde',
+            'done' => 'Já saíram',
+        ],
+        'late_by' => 'entrada :start · :time',
+        'since' => 'desde :time',
+        'nobody' => 'Ninguém',
+        'excused' => 'Abonados hoje: :names',
+        'ranking' => 'Quem mais',
+        'rankings' => [
+            'extra' => 'Horas extras',
+            'absences' => 'Faltas e atrasos',
+            'bank' => 'Banco de horas',
+        ],
+    ],
 ];

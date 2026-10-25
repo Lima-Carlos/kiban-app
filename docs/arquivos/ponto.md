@@ -333,3 +333,37 @@ São usadas no cálculo das horas a partir da parte 4:
 - Rotina: `app/Console/Commands/RunTimeClockTasks.php` (agendada em `routes/console.php`).
 - CNPJ: `app/Rules/Cnpj.php`.
 - Testes: `tests/Feature/TimeClockClosingTest.php`.
+
+## Parte 6 (P6): painel do Ponto
+
+### Ponto → Painel (gestor e consulta)
+- **Agora** (atualiza sozinho a cada minuto), cada nome abre o mês da pessoa:
+  - **Trabalhando**, desde que horas;
+  - **Atrasados**: tinham horário, passou a entrada mais a tolerância e não há batida;
+  - **No intervalo**;
+  - **Entram mais tarde**;
+  - **Já saíram**;
+  - quem está **abonado** hoje, e as batidas **fora do local** hoje.
+- **Resumo do mês** (escolha o mês no alto; mês fechado usa a cópia congelada):
+  - horas extras, extras em folga e feriado, atrasos e saídas antes;
+  - faltas (e dias com batida faltando), noturno;
+  - o **saldo do banco de horas** de todos (e quanto venceu);
+  - quantos meses estão **fechados e assinados** (abre o Fechamento do mês).
+- **Quem mais**: as 5 pessoas com mais horas extras, com mais faltas e atrasos e com o maior saldo do banco de horas (positivo ou negativo).
+
+### Início
+- O gestor e a consulta veem no Início os quadros **"Agora"** e **"Resumo do mês"**.
+- O funcionário continua vendo o botão "Bater ponto" e as batidas de hoje.
+
+### Ponto e Frota juntos
+- A pessoa é a mesma na tela Pessoas. Um motorista pode bater ponto e usar a Frota com o mesmo login, e o perfil sugerido **"Motorista"** já dá os dois (motorista na Frota e funcionário no Ponto).
+- Os números de cada sistema ficam no seu painel.
+
+## Arquivos (parte 6)
+- `app/Modules/TimeClock/Services/TimeClockReports.php` (agora, o mês e os rankings).
+- `app/Modules/TimeClock/Filament/Dashboard/`:
+  - `TimeClockDashboard` (a página);
+  - `NowWidget`, `MonthStatsWidget`, `MonthRankingWidget` (os quadros);
+  - `ReadsTimeClockFilters` (o mês escolhido).
+- Telas dos quadros: `resources/views/timeclock/dashboard/now.blade.php` e `ranking.blade.php`.
+- Testes: `tests/Feature/TimeClockDashboardTest.php`.

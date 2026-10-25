@@ -541,4 +541,32 @@ return [
     'console' => [
         'ran' => 'Time clock: :notices warnings, :removed old photos deleted.',
     ],
+    'dashboard' => [
+        'title' => 'Dashboard',
+        'month' => 'Month',
+        'month_heading' => 'Summary of :month',
+        'missing_punches' => '{0} No day with a missing punch|{1} 1 day with a missing punch|[2,*] :count days with a missing punch',
+        'bank_help' => 'Balance of all employees',
+        'closed' => ':closed of :total closed',
+        'signed' => ':count signed',
+        'now' => 'Now',
+        'now_help' => ':working working · :expected scheduled today',
+        'states' => [
+            'working' => 'Working',
+            'late' => 'Late (no punch)',
+            'break' => 'On a break',
+            'later' => 'Start later',
+            'done' => 'Already left',
+        ],
+        'late_by' => 'start :start · :time',
+        'since' => 'since :time',
+        'nobody' => 'Nobody',
+        'excused' => 'Excused today: :names',
+        'ranking' => 'Who has the most',
+        'rankings' => [
+            'extra' => 'Overtime',
+            'absences' => 'Absences and late',
+            'bank' => 'Hour bank',
+        ],
+    ],
 ];

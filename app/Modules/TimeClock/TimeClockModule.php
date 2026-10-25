@@ -10,6 +10,9 @@ use App\Modules\Step;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Filament\Adjustments\AdjustmentResource;
 use App\Modules\TimeClock\Filament\ClosingsPage;
+use App\Modules\TimeClock\Filament\Dashboard\MonthStatsWidget;
+use App\Modules\TimeClock\Filament\Dashboard\NowWidget;
+use App\Modules\TimeClock\Filament\Dashboard\TimeClockDashboard;
 use App\Modules\TimeClock\Filament\Employees\EmployeeResource;
 use App\Modules\TimeClock\Filament\Holidays\HolidayResource;
 use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
@@ -120,7 +123,7 @@ class TimeClockModule extends Module
 
     public function pages(): array
     {
-        return [PunchPage::class, TimesheetPage::class, ClosingsPage::class, TimeClockSettingsPage::class];
+        return [TimeClockDashboard::class, PunchPage::class, TimesheetPage::class, ClosingsPage::class, TimeClockSettingsPage::class];
     }
 
     public function showsSetupTo(User $user): bool
@@ -150,6 +153,12 @@ class TimeClockModule extends Module
                 'url' => PunchPage::getUrl(),
             ],
         ];
+    }
+
+    /** Managers and viewers: who is working now and the month's numbers on the start page. */
+    public function homeWidgets(User $user): array
+    {
+        return in_array(app(TimeClockAccess::class)->role($user), [TimeClockRole::Manager, TimeClockRole::Viewer], true) ? [NowWidget::class, MonthStatsWidget::class] : [];
     }
 
     public function attention(User $user): array

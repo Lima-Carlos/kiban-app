@@ -541,4 +541,32 @@ return [
     'console' => [
         'ran' => 'Asistencia: :notices avisos, :removed fotos antiguas borradas.',
     ],
+    'dashboard' => [
+        'title' => 'Panel',
+        'month' => 'Mes',
+        'month_heading' => 'Resumen de :month',
+        'missing_punches' => '{0} Ningún día con marcación faltante|{1} 1 día con marcación faltante|[2,*] :count días con marcación faltante',
+        'bank_help' => 'Saldo de todos los empleados',
+        'closed' => ':closed de :total cerrados',
+        'signed' => ':count firmados',
+        'now' => 'Ahora',
+        'now_help' => ':working trabajando · :expected con horario hoy',
+        'states' => [
+            'working' => 'Trabajando',
+            'late' => 'Atrasados (sin marcación)',
+            'break' => 'En el descanso',
+            'later' => 'Entran más tarde',
+            'done' => 'Ya salieron',
+        ],
+        'late_by' => 'entrada :start · :time',
+        'since' => 'desde :time',
+        'nobody' => 'Nadie',
+        'excused' => 'Justificados hoy: :names',
+        'ranking' => 'Quién tiene más',
+        'rankings' => [
+            'extra' => 'Horas extra',
+            'absences' => 'Faltas y atrasos',
+            'bank' => 'Banco de horas',
+        ],
+    ],
 ];
