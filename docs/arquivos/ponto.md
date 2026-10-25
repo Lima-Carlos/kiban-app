@@ -205,3 +205,54 @@ São usadas no cálculo das horas a partir da parte 4:
 - Comprovante: `app/Http/Controllers/TimeClock/ReceiptController.php` + `resources/views/timeclock/receipt.blade.php` e `receipt-pdf.blade.php`.
 - Biblioteca nova: `bacon/bacon-qr-code` (QR code).
 - Testes: `tests/Feature/TimeClockPunchesTest.php`.
+
+## Parte 4 (P4): cálculo do dia e banco de horas
+
+### Apuração (gestor) e Meu ponto (funcionário)
+- Menu **Ponto → Apuração** (gestor e consulta, com escolha do funcionário) ou **Meu ponto** (o funcionário vê só o dele).
+- Mostra o mês **dia a dia**:
+  - o previsto e as batidas (a letra **"I"** marca a batida incluída por correção);
+  - o trabalhado, a hora extra, o que faltou e o noturno;
+  - os avisos: **falta**, **batida faltando**, **intervalo curto**, **descanso menor que 11h**, abono e pedido esperando.
+- **Totais do mês:** previsto, trabalhado, horas extras, extras em folga e feriado, atrasos e saídas antes, noturno, faltas e o **banco de horas**.
+- O cálculo **nunca fica guardado**: sai sempre das batidas, das correções aprovadas, do horário e das regras, então uma correção aparece na hora. O mês fechado (parte 5) guarda a própria cópia.
+
+### Como cada dia é calculado
+- **De que dia é a batida:** de meia-noite a meia-noite. Depois de um turno que passa da meia-noite, o dia vira **4 horas depois do fim do turno** (no máximo ao meio-dia). Assim, a saída das 6h do turno da noite conta para a noite em que ele começou.
+- As batidas formam **pares** (entrada e saída). Número ímpar = **batida faltando**: contam só os pares completos e o dia fica marcado.
+- **Tolerância (CLT, art. 58):** se cada batida ficou até 5 minutos do horário previsto e a soma do dia até 10, **o dia conta exatamente como o previsto**. Passou disso, **contam todos os minutos**, não só o excesso.
+- **Dia normal:** a diferença vira **hora extra** ou **minutos que faltaram** (atraso ou saída antes).
+- **Dia sem nenhuma batida:** **falta**, a não ser que haja abono.
+- **Folga ou feriado trabalhado:** todos os minutos são extra com o **% de folga e feriado** (100% no Brasil).
+- **Hoje** entra no previsto, mas só fica com falta ou atraso quando o dia termina.
+- **Noturno:** os minutos dentro do horário noturno (22h às 5h no Brasil), já com a **hora reduzida** de 52min30s quando a regra usa.
+- **Avisos do Brasil** (só avisos, nada é descontado):
+  - **intervalo curto:** menos de 1 hora de intervalo para quem trabalhou mais de 6 horas, ou menos de 15 minutos para quem trabalhou de 4 a 6 horas;
+  - **descanso menor que 11h** entre um dia e outro.
+
+### Correções (a batida original nunca muda)
+- **O funcionário pede** em Meu ponto (o lápis do dia):
+  - **"Esqueci de bater"** (o horário; "foi no dia seguinte" para quem sai de madrugada);
+  - **"Batida errada"** (escolhe qual desconsiderar);
+  - **"Abono"** (alguns minutos ou o dia inteiro, com o atestado anexo, que é opcional).
+
+  O **motivo é obrigatório**. O gestor recebe o aviso no sino.
+- **O gestor aprova ou recusa** em **Ponto → Correções** (recusar pede uma resposta), e o funcionário recebe o aviso. A correção que o próprio gestor faz na Apuração vale na hora.
+- Não dá para corrigir um dia que ainda não chegou, nem um dia antes da admissão, nem um **mês fechado** (parte 5).
+
+### Banco de horas (quando a empresa usa)
+- A **hora extra dos dias normais** vira crédito. **Atrasos e saídas antes** saem do banco, sempre do crédito mais antigo.
+- O **crédito não usado dentro do prazo** (6 ou 12 meses no Brasil) **vence e precisa ser pago** como hora extra. A tela mostra quanto venceu.
+- Para ficar simples e claro: **faltas do dia inteiro não saem do banco** (aparecem à parte) e **extra em folga ou feriado é pago**, não vai para o banco.
+
+## Arquivos (parte 4)
+- Tabela `tc_adjustments` (correções, à parte das batidas): `database/migrations/2026_10_25_300000_create_time_clock_adjustments_table.php`. Modelo: `app/Modules/TimeClock/Models/Adjustment.php`.
+- `app/Modules/TimeClock/Services/`:
+  - `DayCalculator` (o cálculo de cada dia e os totais);
+  - `HourBank` (o banco de horas);
+  - `AdjustmentService` (pedir, corrigir, aprovar, recusar, avisos);
+  - `MonthClosing` (o mês fechado, completado na parte 5).
+- Telas:
+  - `app/Modules/TimeClock/Filament/TimesheetPage.php` + `resources/views/timeclock/timesheet-page.blade.php` (Apuração / Meu ponto);
+  - `Adjustments/` (Correções).
+- Testes: `tests/Feature/TimeClockCalculationTest.php`.

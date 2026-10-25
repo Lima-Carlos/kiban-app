@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Modules\Module;
 use App\Modules\Step;
 use App\Modules\TimeClock\Enums\TimeClockRole;
+use App\Modules\TimeClock\Filament\Adjustments\AdjustmentResource;
 use App\Modules\TimeClock\Filament\Employees\EmployeeResource;
 use App\Modules\TimeClock\Filament\Holidays\HolidayResource;
 use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
@@ -16,7 +17,9 @@ use App\Modules\TimeClock\Filament\Punches\PunchResource;
 use App\Modules\TimeClock\Filament\PunchPage;
 use App\Modules\TimeClock\Filament\Schedules\ScheduleResource;
 use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
+use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Filament\Workplaces\WorkplaceResource;
+use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Holiday;
 use App\Modules\TimeClock\Models\Kiosk;
@@ -24,6 +27,7 @@ use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Policies\AdjustmentPolicy;
 use App\Modules\TimeClock\Policies\EmployeePolicy;
 use App\Modules\TimeClock\Policies\HolidayPolicy;
 use App\Modules\TimeClock\Policies\KioskPolicy;
@@ -104,7 +108,7 @@ class TimeClockModule extends Module
 
     public function resources(): array
     {
-        return [PunchResource::class, EmployeeResource::class, ScheduleResource::class, WorkplaceResource::class, HolidayResource::class, KioskResource::class];
+        return [PunchResource::class, AdjustmentResource::class, EmployeeResource::class, ScheduleResource::class, WorkplaceResource::class, HolidayResource::class, KioskResource::class];
     }
 
     public function widgets(): array
@@ -114,7 +118,7 @@ class TimeClockModule extends Module
 
     public function pages(): array
     {
-        return [PunchPage::class, TimeClockSettingsPage::class];
+        return [PunchPage::class, TimesheetPage::class, TimeClockSettingsPage::class];
     }
 
     public function showsSetupTo(User $user): bool
@@ -208,6 +212,7 @@ class TimeClockModule extends Module
             Schedule::class => SchedulePolicy::class,
             Holiday::class => HolidayPolicy::class,
             Punch::class => PunchPolicy::class,
+            Adjustment::class => AdjustmentPolicy::class,
             Kiosk::class => KioskPolicy::class,
         ];
     }
