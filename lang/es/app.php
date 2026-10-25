@@ -197,6 +197,7 @@ return [
     ],
     'validation' => [
         'cpf' => 'CPF inválido. Revise los números.',
+        'cnpj' => 'CNPJ inválido. Revise los números.',
         'cpf_taken' => 'Este CPF ya pertenece a otra persona de la empresa.',
     ],
 ];

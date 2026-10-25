@@ -3,9 +3,11 @@
     use App\Modules\TimeClock\Services\ScheduleCalendar;
     $h = fn (int $minutes): string => $minutes === 0 ? '—' : ScheduleCalendar::hours($minutes);
     $employee = $this->employee();
-    $days = $this->days();
-    $totals = $this->totals($days);
-    $bank = $this->bank();
+    $data = $this->monthData();
+    $days = $data['days'];
+    $totals = $data['totals'];
+    $bank = $data['bank'];
+    $closing = $data['closing'];
     $cell = 'padding:6px 8px;border-bottom:1px solid rgba(127,127,127,.18);vertical-align:top';
 @endphp
 
@@ -33,6 +35,23 @@
             <p style="opacity:.75">{{ __('timeclock.employees.empty') }}</p>
         </x-filament::section>
     @else
+        @if ($closing)
+            <x-filament::section compact>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                    <x-filament::badge :color="match ($closing->status()) { 'signed' => 'success', 'disputed' => 'danger', default => 'info' }">{{ __('timeclock.closing.statuses.'.$closing->status()) }}</x-filament::badge>
+                    <span style="font-size:14px">
+                        @if ($closing->signed_at)
+                            {{ __('timeclock.closing.signed_on', ['date' => $closing->signed_at->timezone(\Filament\Support\Facades\FilamentTimezone::get())->translatedFormat(__('app.datetime_format'))]) }}
+                        @elseif ($closing->disputed_at)
+                            {{ __('timeclock.closing.disputed_on', ['date' => $closing->disputed_at->timezone(\Filament\Support\Facades\FilamentTimezone::get())->translatedFormat(__('app.date_format'))]) }} {{ $closing->dispute_reason }}
+                        @else
+                            {{ $this->isOwn() ? __('timeclock.closing.waiting_you') : __('timeclock.closing.waiting_employee') }}
+                        @endif
+                    </span>
+                </div>
+            </x-filament::section>
+        @endif
+
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
             @foreach ([
                 'expected' => $totals['expected'], 'worked' => $totals['worked'], 'extra' => $totals['extra'],

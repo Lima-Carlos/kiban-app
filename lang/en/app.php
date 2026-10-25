@@ -197,6 +197,7 @@ return [
     ],
     'validation' => [
         'cpf' => 'Invalid CPF. Check the numbers.',
+        'cnpj' => 'Invalid CNPJ. Check the numbers.',
         'cpf_taken' => 'This CPF already belongs to another person of the company.',
     ],
 ];

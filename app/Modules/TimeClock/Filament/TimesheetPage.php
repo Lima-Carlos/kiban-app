@@ -5,18 +5,21 @@ namespace App\Modules\TimeClock\Filament;
 use App\Modules\ModuleRegistry;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Models\Adjustment;
+use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\AdjustmentService;
 use App\Modules\TimeClock\Services\DayCalculator;
-use App\Modules\TimeClock\Services\HourBank;
+use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\TimeClockAccess;
+use App\Modules\TimeClock\Services\TimesheetDocument;
 use App\Modules\TimeClock\TimeClockModule;
 use App\People\PersonRuleException;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -29,6 +32,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Url;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The month of an employee, day by day: expected hours, punches (added ones marked "I", left-out ones
@@ -110,37 +114,79 @@ class TimesheetPage extends Page
     }
 
     /**
-     * @return array<string, array<string, mixed>>
+     * The month shown: the frozen copy when closed, otherwise the calculation of now.
+     *
+     * @return array{days: array<string, array<string, mixed>>, totals: array<string, int>, bank: ?array, closing: ?Closing}
      */
-    public function days(): array
+    public function monthData(): array
     {
         $employee = $this->employee();
 
-        return $employee ? app(DayCalculator::class)->period($employee, $this->start(), $this->start()->endOfMonth()) : [];
+        return $employee ? app(TimesheetDocument::class)->month($employee, $this->start()) : ['days' => [], 'totals' => [], 'bank' => null, 'closing' => null];
     }
 
-    /**
-     * @return array<string, int>
-     */
-    public function totals(array $days): array
-    {
-        return app(DayCalculator::class)->totals($days);
-    }
-
-    /**
-     * @return array{balance: int, credits: int, debits: int, expired: int}|null
-     */
-    public function bank(): ?array
+    public function closing(): ?Closing
     {
         $employee = $this->employee();
 
-        if ($employee === null || ! app(HourBank::class)->enabled()) {
-            return null;
+        return $employee ? app(MonthClosing::class)->current($employee, $this->start()) : null;
+    }
+
+    public function isOwn(): bool
+    {
+        $own = app(TimeClockAccess::class)->employeeFor(auth()->user());
+
+        return $own !== null && $own->getKey() === $this->employeeId;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('pdf')
+                ->label(__('timeclock.closing.pdf'))
+                ->icon(Heroicon::OutlinedDocumentArrowDown)
+                ->color('gray')
+                ->visible(fn (): bool => $this->employeeId !== null)
+                ->action(function (): StreamedResponse {
+                    $employee = $this->employee() ?? abort(404);
+                    $document = app(TimesheetDocument::class);
+
+                    return response()->streamDownload(fn () => print ($document->pdf($employee, $this->start())), $document->fileName($employee, $this->start()), ['Content-Type' => 'application/pdf']);
+                }),
+            Action::make('dispute')
+                ->label(__('timeclock.closing.dispute'))
+                ->icon(Heroicon::OutlinedHandRaised)
+                ->color('gray')
+                ->visible(fn (): bool => $this->isOwn() && ($closing = $this->closing()) !== null && ! $closing->isSigned() && $closing->disputed_at === null)
+                ->modalDescription(__('timeclock.closing.dispute_help'))
+                ->schema([Textarea::make('reason')->label(__('timeclock.closing.dispute_reason'))->rows(3)->required()])
+                ->action(function (array $data, Action $action): void {
+                    $this->attempt(fn () => app(MonthClosing::class)->dispute($this->closing() ?? abort(404), auth()->user(), (string) $data['reason']), $action, __('timeclock.closing.disputed'));
+                }),
+            Action::make('sign')
+                ->label(__('timeclock.closing.sign'))
+                ->icon(Heroicon::OutlinedPencil)
+                ->visible(fn (): bool => $this->isOwn() && ($closing = $this->closing()) !== null && ! $closing->isSigned())
+                ->modalHeading(fn (): string => __('timeclock.closing.sign_title', ['month' => app(MonthClosing::class)->monthLabel($this->start())]))
+                ->modalDescription(__('timeclock.closing.sign_help'))
+                ->schema([Checkbox::make('agree')->label(__('timeclock.closing.sign_agree'))->accepted()])
+                ->modalSubmitActionLabel(__('timeclock.closing.sign'))
+                ->action(function (Action $action): void {
+                    $this->attempt(fn () => app(MonthClosing::class)->sign($this->closing() ?? abort(404), auth()->user(), request()->ip(), request()->userAgent()), $action, __('timeclock.closing.signed'));
+                }),
+        ];
+    }
+
+    protected function attempt(callable $callback, Action $action, string $success): void
+    {
+        try {
+            $callback();
+        } catch (PersonRuleException $exception) {
+            Notification::make()->danger()->title($exception->getMessage())->send();
+            $action->halt();
         }
 
-        $end = $this->start()->endOfMonth();
-
-        return app(HourBank::class)->balance($employee, $end->isFuture() ? CarbonImmutable::today() : $end);
+        Notification::make()->success()->title($success)->send();
     }
 
     /**
@@ -183,7 +229,7 @@ class TimesheetPage extends Page
             ->label(fn (): string => $this->canCorrect() ? __('timeclock.adjustments.correct') : __('timeclock.adjustments.ask'))
             ->icon(Heroicon::OutlinedPencilSquare)
             ->iconButton()
-            ->visible(fn (): bool => $this->canCorrect() || $this->canAsk())
+            ->visible(fn (): bool => ($this->canCorrect() || $this->canAsk()) && $this->closing() === null)
             ->modalHeading(fn (array $arguments): string => __('timeclock.adjustments.modal_title', ['date' => CarbonImmutable::parse($arguments['date'])->translatedFormat(__('app.date_format'))]))
             ->schema(fn (array $arguments): array => [
                 ToggleButtons::make('type')

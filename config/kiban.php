@@ -59,6 +59,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Kiban Ponto: official files (Brazil, Portaria 671)
+    |--------------------------------------------------------------------------
+    |
+    | The developer of the program (Kiban) in the AFD file: CNPJ or CPF and the INPI registration of the
+    | program (REP-P). Empty until the registration exists; the file is then a preview.
+    |
+    */
+
+    'timeclock' => [
+        'developer_document' => preg_replace('/\D/', '', (string) env('KIBAN_PONTO_DEVELOPER_DOCUMENT', '')),
+        'inpi_registration' => (string) env('KIBAN_PONTO_INPI_REGISTRATION', ''),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Suggested access profiles
     |--------------------------------------------------------------------------
     |

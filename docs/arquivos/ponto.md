@@ -256,3 +256,80 @@ São usadas no cálculo das horas a partir da parte 4:
   - `app/Modules/TimeClock/Filament/TimesheetPage.php` + `resources/views/timeclock/timesheet-page.blade.php` (Apuração / Meu ponto);
   - `Adjustments/` (Correções).
 - Testes: `tests/Feature/TimeClockCalculationTest.php`.
+
+## Parte 5 (P5): fechamento do mês, espelho e arquivos
+
+### Fechamento do mês (gestor)
+- Menu **Ponto → Fechamento do mês**. Abre no mês que acabou de terminar; as setas trocam o mês.
+- Cada funcionário aparece com os totais do mês e a **situação**:
+  - **Aberto**;
+  - **Fechado, esperando assinatura**;
+  - **Assinado**;
+  - **Não concorda** (com o motivo).
+- **"Fechar o mês de todos"** ou **"Fechar o mês"** em uma pessoa:
+  - só depois que o mês termina: a partir do **meio-dia do dia 1º**, para o turno da noite do último dia ficar completo;
+  - quem tem **correção esperando resposta** fica de fora até o gestor responder (a tela mostra o nome e o motivo).
+- **Fechar congela o mês:**
+  - o sistema guarda uma **cópia de todos os dias e dos totais**, com um código (SHA-256) que mostra se alguém mexeu na cópia;
+  - dali em diante, a tela e o PDF mostram sempre essa cópia, mesmo que as regras mudem depois;
+  - **não entram mais correções naquele mês**.
+- **Reabrir** (com motivo) só **antes da assinatura**. O fechamento anterior fica guardado no histórico; depois de corrigir, fecha-se de novo.
+
+### Espelho de ponto e assinatura (funcionário)
+- Quando o mês fecha, o funcionário recebe o aviso no sino e vê em **Meu ponto**:
+  - **"Assinar o espelho"**: marca "Conferi e concordo". Fica registrado quem, quando, o endereço de internet (IP) e o aparelho, com um código da assinatura;
+  - **"Não concordo"**, com o que está errado: o gestor recebe o aviso e pode reabrir para corrigir.
+- **Espelho (PDF)** em Meu ponto, na Apuração e no Fechamento:
+  - empresa, funcionário, cada dia com as batidas e as horas, os totais e o banco de horas;
+  - os percentuais das regras;
+  - quem fechou e a assinatura eletrônica com os códigos.
+
+  Mês ainda aberto sai marcado como **"Prévia"**. Sem assinatura eletrônica, o PDF traz as linhas para assinar no papel (para quem não tem login).
+
+### Planilha para o contador (Excel)
+- Botão no Fechamento do mês. Duas abas:
+  - **Resumo do mês**, uma linha por funcionário: documento, PIS, cargo, local, situação, previsto, trabalhado, extras (com o %), extras de folga e feriado, atrasos, faltas, abonos, noturno, dias com batida faltando e o banco de horas;
+  - **Dia a dia**.
+- As horas vão como **horas de verdade do Excel** (dá para somar). O banco de horas vai em **horas decimais** (ex.: −3,25), porque pode ser negativo.
+
+### Arquivo AFD (Brasil) — **prévia**
+- Botão **"Arquivo AFD (prévia)"** no Fechamento do mês, só para o gestor e só no perfil "Brasil (CLT)".
+- Segue a Portaria 671 (REP-P):
+  - cabeçalho;
+  - uma linha por batida original, com o NSR, a data e hora com fuso, o CPF e a corrente SHA-256 (refeita desde a primeira batida da empresa);
+  - o rodapé.
+- **Ainda é uma prévia, a validar** com o leiaute oficial e o validador do Ministério antes de entregar a um fiscal. Faltam:
+  - os registros de mudança da empresa e dos funcionários (tipos 2 e 5);
+  - a **assinatura digital com certificado ICP-Brasil** (.p7s);
+  - o **AEJ**.
+
+  A tela avisa o que está faltando: CNPJ e razão social da empresa (em **Configurações do ponto → Empregador nos arquivos oficiais**), o registro do programa no INPI (providência da Kiban, no `.env`: `KIBAN_PONTO_INPI_REGISTRATION` e `KIBAN_PONTO_DEVELOPER_DOCUMENT`) e quem está sem CPF válido.
+
+### Avisos (sino, nunca por e-mail) e quadro "Atenção"
+- **Rotina de hora em hora** (`kiban:timeclock`, aos 20 minutos de cada hora), cada aviso uma vez só:
+  - **ao funcionário:** "Faltou uma batida em (data)", no dia seguinte, depois do meio-dia;
+  - **aos gestores:** o resumo do dia anterior (faltas e batidas faltando);
+  - **aos gestores:** "o mês ainda não foi fechado", a partir do dia 3;
+  - **aos gestores:** as fotos que vão ser apagadas no próximo mês.
+- **Na hora:** mês fechado (para o funcionário assinar), discordância (para os gestores) e reabertura (para o funcionário).
+- **Quadro "Atenção" do Início:**
+  - **gestor:** correções esperando resposta, quem não concorda com o espelho, o mês anterior sem fechar (a partir do dia 3) e as batidas fora do local hoje;
+  - **funcionário:** espelho para assinar e batida faltando nos últimos 7 dias (some quando pede a correção).
+
+### Fotos antigas
+- As **fotos das batidas são apagadas depois de 12 meses**; a batida continua (hora, local, número, corrente).
+- Os **anexos das correções** (atestados) **ficam guardados**.
+
+## Arquivos (parte 5)
+- Tabela `tc_closings` e os dados do empregador em `tc_settings`: `database/migrations/2026_10_25_400000_create_time_clock_closings_table.php`. Modelo: `app/Modules/TimeClock/Models/Closing.php`.
+- `app/Modules/TimeClock/Services/`:
+  - `MonthClosing` (fechar, congelar, assinar, discordar, reabrir);
+  - `TimesheetDocument` (o mês: cópia congelada ou cálculo, e o PDF);
+  - `TimeClockExporter` (planilha do contador);
+  - `AfdFile` (AFD, prévia);
+  - `TimeClockNotices` (avisos e "Atenção");
+  - `TimeClockCleanup` (fotos antigas).
+- Telas: `app/Modules/TimeClock/Filament/ClosingsPage.php`; a `TimesheetPage` ganhou o PDF, "Assinar" e "Não concordo". PDF: `resources/views/timeclock/pdf/timesheet.blade.php`.
+- Rotina: `app/Console/Commands/RunTimeClockTasks.php` (agendada em `routes/console.php`).
+- CNPJ: `app/Rules/Cnpj.php`.
+- Testes: `tests/Feature/TimeClockClosingTest.php`.

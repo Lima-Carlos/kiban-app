@@ -9,6 +9,7 @@ use App\Modules\Module;
 use App\Modules\Step;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Filament\Adjustments\AdjustmentResource;
+use App\Modules\TimeClock\Filament\ClosingsPage;
 use App\Modules\TimeClock\Filament\Employees\EmployeeResource;
 use App\Modules\TimeClock\Filament\Holidays\HolidayResource;
 use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
@@ -37,6 +38,7 @@ use App\Modules\TimeClock\Policies\WorkplacePolicy;
 use App\Modules\TimeClock\Services\EmployeeService;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\TimeClockAccess;
+use App\Modules\TimeClock\Services\TimeClockNotices;
 use App\Modules\TimeClock\Services\TimeClockPeople;
 use App\People\Person;
 use Carbon\CarbonImmutable;
@@ -118,7 +120,7 @@ class TimeClockModule extends Module
 
     public function pages(): array
     {
-        return [PunchPage::class, TimesheetPage::class, TimeClockSettingsPage::class];
+        return [PunchPage::class, TimesheetPage::class, ClosingsPage::class, TimeClockSettingsPage::class];
     }
 
     public function showsSetupTo(User $user): bool
@@ -148,6 +150,11 @@ class TimeClockModule extends Module
                 'url' => PunchPage::getUrl(),
             ],
         ];
+    }
+
+    public function attention(User $user): array
+    {
+        return app(TimeClockNotices::class)->attention($user);
     }
 
     public function roles(): array
