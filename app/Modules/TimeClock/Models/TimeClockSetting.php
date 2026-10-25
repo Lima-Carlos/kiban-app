@@ -56,6 +56,7 @@ class TimeClockSetting extends Model
             'hour_bank' => 'boolean',
             'hour_bank_months' => 'integer',
             'optional_holidays' => 'array',
+            'last_nsr' => 'integer',
         ];
     }
 

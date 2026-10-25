@@ -26,6 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'locale' => SetLocale::class,
         ]);
 
+        // The time clock tablet stays on the same screen for hours: its two actions are protected by the tablet's
+        // secret (and a short ticket), not by the form token that expires with the session.
+        $middleware->validateCsrfTokens(except: ['relogio/pin', 'relogio/bater']);
+
         // Not signed in: go through the Core sign-in of the company.
         $middleware->redirectGuestsTo(fn (): string => route('login'));
     })

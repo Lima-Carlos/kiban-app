@@ -75,6 +75,7 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Funcionário = `Employee` ligado a uma `Person` (com ou sem login). Regras em `EmployeeService` (limite `employees` de funcionários ativos, CPF no Brasil, admissão, local ou "externo"). Funcionário externo não tem local nem raio.
 - Locais (`Workplace`) com fuso horário próprio (as batidas seguem o fuso do local), ponto no mapa e raio opcional (fora do raio: marca, nunca bloqueia).
 - Horários (`Schedule`: semanal ou escala tipo 12x36) e o horário de cada funcionário a partir de uma data (`EmployeeSchedule`, histórico). Horário em uso nunca muda (duplicar). O que cada dia espera vem de `ScheduleCalendar`; feriados de `HolidayCalendar` (nacionais do Brasil calculados, opcionais, da empresa por local). Regras de cálculo em `TimeClockSetting` (no Brasil, nunca abaixo de `LEGAL`).
+- Batidas só por `PunchService` (hora do servidor, NSR e corrente de hash por empresa, nunca bloqueia: só marca `outside_radius`/`no_location`/`no_photo`). `Punch` nunca muda nem é apagada (só `photo_path` pode virar vazio). Tablet: `KioskService` (segredo no cookie, PIN gerado pelo sistema, guardado como HMAC) e `KioskController` (sem login). Comprovante: `ReceiptService` (código HMAC, endereço assinado relativo ao endereço da empresa).
 - Papéis (`TimeClockRole`): gestor (RH), funcionário (implícito para quem tem login e bate ponto) e consulta. Explicação para o dono: `docs/arquivos/ponto.md`.
 
 ## Frota (`app/Modules/Fleet`, chave `frota`)

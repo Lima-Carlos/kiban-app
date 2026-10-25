@@ -7,6 +7,7 @@ use App\Filament\Support\ModuleResource;
 use App\Models\Team;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Services\KioskService;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\TimeClockPeople;
 use App\Modules\TimeClock\TimeClockModule;
@@ -120,6 +121,23 @@ class EmployeeResource extends ModuleResource
                     ]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel(__('timeclock.employees.close')),
+                Action::make('pin')
+                    ->label(fn (Employee $record): string => $record->hasPin() ? __('timeclock.employees.new_pin') : __('timeclock.employees.create_pin'))
+                    ->icon(Heroicon::OutlinedKey)
+                    ->iconButton()
+                    ->authorize('update')
+                    ->visible(fn (Employee $record): bool => $record->is_active)
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (Employee $record): string => $record->hasPin() ? __('timeclock.employees.new_pin_help') : __('timeclock.employees.create_pin_help'))
+                    ->action(function (Employee $record): void {
+                        $pin = app(KioskService::class)->newPin($record);
+                        Notification::make()
+                            ->success()
+                            ->persistent()
+                            ->title(__('timeclock.employees.pin_ready', ['name' => $record->person->name]))
+                            ->body(__('timeclock.employees.pin_body', ['pin' => $pin]))
+                            ->send();
+                    }),
                 Action::make('edit')
                     ->label(__('app.people.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)

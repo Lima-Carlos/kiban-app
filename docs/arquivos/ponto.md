@@ -141,3 +141,67 @@ São usadas no cálculo das horas a partir da parte 4:
   - `TimeClockSettingsPage.php` (regras e feriados opcionais);
   - o mês do funcionário: `resources/views/timeclock/employee-month.blade.php`.
 - Testes: `tests/Feature/TimeClockSchedulesTest.php`.
+
+## Parte 3 (P3): bater o ponto
+
+### Pelo celular (quem tem login e bate ponto)
+- Menu **Ponto → Bater ponto**, ou o botão grande no quadro **"Meu ponto hoje"** da página Início.
+- A tela abre a **câmera ao vivo** (selfie na hora, não uma foto da galeria) e pede a **localização**.
+- O botão **"Registrar ponto agora"** grava a batida com a **hora do servidor**, nunca a do celular.
+- **Nada bloqueia a batida.** Ela só fica marcada para o gestor quando:
+  - está **fora do local** (fora do raio do local de trabalho);
+  - está **sem localização**;
+  - está **sem foto**.
+- O funcionário **externo** (que trabalha na rua) não tem raio: grava só a localização.
+- Dois toques no mesmo minuto valem como **uma batida só**.
+- Embaixo aparecem as batidas de hoje e as últimas, cada uma com o **comprovante**.
+
+### Pelo tablet da empresa (com ou sem login)
+1. O gestor cadastra o tablet em **Ponto → Relógios (tablets)**, escolhendo o local onde ele fica.
+2. **No próprio tablet**, o gestor entra no sistema e toca em **"Usar este aparelho como relógio"**.
+   - O tablet guarda um **segredo** (aqui fica só uma "impressão" dele).
+   - **A sessão do gestor é encerrada no tablet**, que nunca fica aberto com o login dele.
+3. O tablet passa a mostrar o **relógio de ponto** (`endereço-da-empresa/relogio`). O funcionário:
+   - digita o **código pessoal (PIN)** de 6 números;
+   - olha para a câmera e toca em **"Registrar ponto"**.
+
+   Aparece o comprovante com um **QR code**: apontando o celular para ele, a pessoa guarda o comprovante, mesmo sem ter login.
+- **PIN:** criado pelo gestor em **Funcionários → ícone da chave** ("Criar código (PIN)").
+  - O sistema escolhe o número, então duas pessoas nunca têm o mesmo.
+  - **Ele aparece uma vez só**: o gestor entrega à pessoa. Se ela perder, gera-se outro e o antigo para de valer.
+- **Segurança:** 10 códigos errados em 1 minuto fazem o tablet esperar. Depois de digitar o PIN, a pessoa tem 3 minutos para tirar a foto.
+- **Tablet perdido ou trocado:** "Desativar" faz ele parar na hora.
+
+### A batida nunca muda
+- Cada batida recebe um **número em sequência na empresa (NSR)** e guarda a **"impressão digital" da anterior** (uma corrente). Qualquer alteração apareceria.
+- Uma batida **nunca é alterada nem apagada**. As correções entram na parte 4, sempre à parte e com o motivo. A única coisa que pode sair é a foto antiga, pela limpeza automática da parte 5.
+
+### O comprovante
+- Traz:
+  - a empresa e o funcionário (com CPF ou documento);
+  - a data e a hora no fuso do local;
+  - o NSR, por onde foi registrado e o local;
+  - um **código de verificação**, feito com a chave secreta do sistema: um comprovante copiado ou mudado não bate.
+- Fica num **endereço assinado**: funciona sem login, mas qualquer mudança no endereço é recusada. Há a página e o **PDF**.
+
+### Telas do gestor
+- **Ponto → Batidas:** todas as batidas, com a foto, quando (hora do local) e o NSR, quem, por onde, a distância do local (com link para o mapa) e os avisos. Filtros: funcionário, período e "só com avisos". É só leitura.
+- **Ponto → Relógios (tablets):** cadastrar, ativar, desativar e ver o último uso.
+
+## Arquivos (parte 3)
+- Tabelas `tc_punches` (batidas), `tc_kiosks` (tablets) e o PIN do funcionário, mais o último NSR e a última "impressão" da empresa em `tc_settings`: `database/migrations/2026_10_25_200000_create_time_clock_punch_tables.php`.
+- `app/Modules/TimeClock/Models/`: `Punch` (nunca muda, só a foto pode sair), `Kiosk`.
+- `app/Modules/TimeClock/Services/`:
+  - `PunchService` (registrar, avisos, NSR, corrente e a conferência dela);
+  - `PunchPhotoStore` (guardar a foto da câmera);
+  - `KioskService` (ativar e desativar tablets, PIN);
+  - `ReceiptService` (comprovante, código, endereço assinado, PDF, QR code).
+- Telas:
+  - `app/Modules/TimeClock/Filament/PunchPage.php` + `resources/views/timeclock/punch-page.blade.php` (Bater ponto);
+  - `Punches/` (batidas);
+  - `Kiosks/` (tablets);
+  - `resources/views/timeclock/home/employee.blade.php` (quadro "Meu ponto hoje").
+- Relógio do tablet: `app/Http/Controllers/TimeClock/KioskController.php` + `resources/views/timeclock/kiosk.blade.php`. As duas ações do relógio não usam a "senha do formulário" do Laravel (`bootstrap/app.php`), porque o tablet fica horas na mesma tela; elas são protegidas pelo segredo do tablet.
+- Comprovante: `app/Http/Controllers/TimeClock/ReceiptController.php` + `resources/views/timeclock/receipt.blade.php` e `receipt-pdf.blade.php`.
+- Biblioteca nova: `bacon/bacon-qr-code` (QR code).
+- Testes: `tests/Feature/TimeClockPunchesTest.php`.

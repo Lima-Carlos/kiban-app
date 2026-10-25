@@ -5,6 +5,8 @@ use App\Http\Controllers\CentralController;
 use App\Http\Controllers\Fleet\StationCheckController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManifestController;
+use App\Http\Controllers\TimeClock\KioskController;
+use App\Http\Controllers\TimeClock\ReceiptController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +29,15 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     // Frota: page for the fuel station (no login). Few attempts per minute: codes cannot be guessed.
     Route::get('/posto', [StationCheckController::class, 'show'])->name('fleet.station');
     Route::post('/posto', [StationCheckController::class, 'check'])->middleware('throttle:10,1')->name('fleet.station.check');
+
+    // Ponto: the company tablet as a time clock (no login; only a tablet activated by the manager).
+    Route::get('/relogio', [KioskController::class, 'show'])->name('timeclock.kiosk');
+    Route::post('/relogio/pin', [KioskController::class, 'pin'])->name('timeclock.kiosk.pin');
+    Route::post('/relogio/bater', [KioskController::class, 'punch'])->name('timeclock.kiosk.punch');
+
+    // Ponto: receipt of a punch at a signed address (works without a login, e.g. from the QR code on the tablet).
+    Route::get('/ponto/comprovante/{punch}', [ReceiptController::class, 'show'])->middleware('signed:relative')->whereNumber('punch')->name('timeclock.receipt');
+    Route::get('/ponto/comprovante/{punch}/pdf', [ReceiptController::class, 'pdf'])->middleware('signed:relative')->whereNumber('punch')->name('timeclock.receipt.pdf');
 });
 
 // Language switch (works on the central address and on every company address).
