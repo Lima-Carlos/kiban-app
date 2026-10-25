@@ -30,7 +30,7 @@ class PunchService
     public function __construct(protected TenantContext $context) {}
 
     /**
-     * @param  array{latitude?: ?float, longitude?: ?float, accuracy?: ?int, photo_path?: ?string, device?: ?string}  $data
+     * @param  array{latitude?: ?float, longitude?: ?float, accuracy?: ?int, photo_path?: ?string, photo_declined?: bool, device?: ?string}  $data
      */
     public function punch(Employee $employee, array $data, ?User $user = null, ?Kiosk $kiosk = null): Punch
     {
@@ -72,7 +72,7 @@ class PunchService
         }
 
         if (blank($data['photo_path'] ?? null)) {
-            $flags[] = Punch::NO_PHOTO;
+            $flags[] = ($data['photo_declined'] ?? false) ? Punch::PHOTO_DECLINED : Punch::NO_PHOTO;
         }
 
         return DB::transaction(function () use ($employee, $data, $user, $kiosk, $workplace, $latitude, $longitude, $accuracy, $distance, $flags): Punch {

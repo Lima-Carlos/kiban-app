@@ -30,6 +30,9 @@ class Punch extends Model
 
     public const NO_PHOTO = 'no_photo';
 
+    /** Without a photo by the person's choice ("Punch without photo"). */
+    public const PHOTO_DECLINED = 'photo_declined';
+
     protected $table = 'tc_punches';
 
     protected $guarded = ['*'];

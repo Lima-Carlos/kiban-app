@@ -7,6 +7,7 @@ use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Support\Str;
 use OpenSpout\Common\Entity\Cell;
 use OpenSpout\Common\Entity\Row;
@@ -39,7 +40,7 @@ class TimeClockExporter
             __('timeclock.export.extra_rest', ['percent' => $settings->rest_day_overtime_percent]),
             __('timeclock.timesheet.totals.deficit'), __('timeclock.timesheet.totals.absences'), __('timeclock.export.absence_hours'),
             __('timeclock.export.excused'), __('timeclock.export.night', ['percent' => $settings->night_percent]),
-            __('timeclock.export.missing_punches'), __('timeclock.export.bank'), __('timeclock.export.bank_expired'),
+            __('timeclock.export.missing_punches'), __('timeclock.export.bank'), __('timeclock.export.bank_expired'), __('timeclock.privacy.column'),
         ]];
         $daily = [[
             __('timeclock.fields.name'), __('timeclock.fields.date'), __('timeclock.timesheet.expected'), __('timeclock.timesheet.punches'),
@@ -60,6 +61,7 @@ class TimeClockExporter
                 $this->time($totals['excused']), $this->time($totals['night_reduced']), $totals['missing_punches'],
                 $data['bank'] === null ? null : round($data['bank']['balance'] / 60, 2),
                 $data['bank'] === null ? null : round($data['bank']['expired'] / 60, 2),
+                app(PhotoNoticeService::class)->status($employee, FilamentTimezone::get()),
             ];
 
             foreach ($data['days'] as $day) {

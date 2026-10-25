@@ -44,6 +44,29 @@
                 }, 15000);
             })();
         </script>
+    @elseif ($step === 'notice')
+        <h1>{{ __('timeclock.kiosk.hello', ['name' => $employee->person->name]) }}</h1>
+        <h2 style="font-size:18px;margin:8px 0">{{ __('timeclock.privacy.title') }}</h2>
+        @foreach ($paragraphs as $paragraph)
+            <p style="text-align:left">{{ $paragraph }}</p>
+        @endforeach
+
+        <form method="post" action="{{ url('/relogio/ciente') }}">
+            <input type="hidden" name="ticket" value="{{ $ticket }}">
+            <button type="submit" style="font-size:18px;padding:16px">{{ __('timeclock.privacy.acknowledge') }}</button>
+        </form>
+        @if ($withoutPhoto)
+            <form method="post" action="{{ url('/relogio/bater') }}">
+                <input type="hidden" name="ticket" value="{{ $ticket }}">
+                <input type="hidden" name="without_photo" value="1">
+                <button type="submit" class="secondary" style="background:#f4f5f7;color:#39383A">{{ __('timeclock.privacy.without_photo') }}</button>
+            </form>
+            <p class="muted">{{ __('timeclock.privacy.without_photo_help') }}</p>
+        @endif
+        <a href="{{ url('/relogio') }}" class="button secondary">{{ __('timeclock.kiosk.cancel') }}</a>
+        <script>
+            setTimeout(function () { window.location.href = @js(url('/relogio')); }, {{ \App\Http\Controllers\TimeClock\KioskController::TICKET_MINUTES * 60 * 1000 }});
+        </script>
     @elseif ($step === 'photo')
         <h1>{{ __('timeclock.kiosk.hello', ['name' => $employee->person->name]) }}</h1>
         <p>{{ __('timeclock.kiosk.photo_help') }}</p>
@@ -57,6 +80,13 @@
             <button type="submit" id="punch-button" style="font-size:20px;padding:18px">{{ __('timeclock.kiosk.punch') }}</button>
             <a href="{{ url('/relogio') }}" class="button secondary">{{ __('timeclock.kiosk.cancel') }}</a>
         </form>
+        @if ($withoutPhoto)
+            <form method="post" action="{{ url('/relogio/bater') }}">
+                <input type="hidden" name="ticket" value="{{ $ticket }}">
+                <input type="hidden" name="without_photo" value="1">
+                <button type="submit" style="background:#f4f5f7;color:#39383A;font-size:14px">{{ __('timeclock.privacy.without_photo') }}</button>
+            </form>
+        @endif
         <script>
             (function () {
                 var video = document.getElementById('camera');

@@ -11,6 +11,7 @@ use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\AdjustmentService;
 use App\Modules\TimeClock\Services\DayCalculator;
 use App\Modules\TimeClock\Services\MonthClosing;
+use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\Services\TimesheetDocument;
 use App\Modules\TimeClock\TimeClockModule;
@@ -29,7 +30,9 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Support\Facades\FilamentTimezone;
 use Filament\Support\Icons\Heroicon;
 use Livewire\Attributes\Url;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -153,6 +156,18 @@ class TimesheetPage extends Page
 
                     return response()->streamDownload(fn () => print ($document->pdf($employee, $this->start())), $document->fileName($employee, $this->start()), ['Content-Type' => 'application/pdf']);
                 }),
+            Action::make('photoNotice')
+                ->label(__('timeclock.privacy.title'))
+                ->icon(Heroicon::OutlinedCamera)
+                ->color('gray')
+                ->visible(fn (): bool => $this->employeeId !== null)
+                ->modalHeading(__('timeclock.privacy.title'))
+                ->modalDescription(fn (): string => implode("\n\n", app(PhotoNoticeService::class)->paragraphs()))
+                ->schema(fn (): array => [
+                    Text::make(fn (): string => app(PhotoNoticeService::class)->status($this->employee() ?? abort(404), FilamentTimezone::get()))->weight('bold'),
+                ])
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel(__('timeclock.privacy.close')),
             Action::make('dispute')
                 ->label(__('timeclock.closing.dispute'))
                 ->icon(Heroicon::OutlinedHandRaised)

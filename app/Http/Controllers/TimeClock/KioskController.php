@@ -5,7 +5,9 @@ namespace App\Http\Controllers\TimeClock;
 use App\Http\Controllers\Controller;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Kiosk;
+use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\KioskService;
+use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\PunchPhotoStore;
 use App\Modules\TimeClock\Services\PunchService;
 use App\Modules\TimeClock\Services\ReceiptService;
@@ -57,10 +59,35 @@ class KioskController extends Controller
 
         RateLimiter::clear($key);
 
+        return $this->photoStep($kiosk, $employee);
+    }
+
+    /** "I am aware" of the privacy notice of the photos, then the photo. */
+    public function acknowledge(Request $request, PhotoNoticeService $notices): View
+    {
+        $kiosk = $this->kiosk($request) ?? abort(403);
+        $employee = $this->ticketEmployee((string) $request->input('ticket'), $kiosk);
+
+        if ($employee === null) {
+            return view('timeclock.kiosk', ['kiosk' => $kiosk, 'step' => 'pin', 'error' => __('timeclock.kiosk.expired')]);
+        }
+
+        $notices->record($employee, Punch::KIOSK, null, $kiosk, $request->ip(), (string) $request->userAgent());
+
+        return $this->photoStep($kiosk, $employee);
+    }
+
+    /** The photo, or first the privacy notice when it was not read yet. */
+    protected function photoStep(Kiosk $kiosk, Employee $employee): View
+    {
+        $notices = app(PhotoNoticeService::class);
+
         return view('timeclock.kiosk', [
             'kiosk' => $kiosk,
-            'step' => 'photo',
+            'step' => $notices->acknowledged($employee) ? 'photo' : 'notice',
             'employee' => $employee,
+            'paragraphs' => $notices->paragraphs(),
+            'withoutPhoto' => $notices->allowsWithoutPhoto(),
             // Who typed the PIN, for this tablet, for a few minutes (nothing to change in the page).
             'ticket' => Crypt::encryptString(json_encode(['employee' => $employee->getKey(), 'kiosk' => $kiosk->getKey(), 'until' => now()->addMinutes(self::TICKET_MINUTES)->getTimestamp()])),
         ]);
@@ -75,9 +102,15 @@ class KioskController extends Controller
             return view('timeclock.kiosk', ['kiosk' => $kiosk, 'step' => 'pin', 'error' => __('timeclock.kiosk.expired')]);
         }
 
+        // Without the acknowledgement of the notice no photo is stored; "without photo" only when the company allows it.
+        $notices = app(PhotoNoticeService::class);
+        $declined = $request->boolean('without_photo') && $notices->allowsWithoutPhoto();
+        $photo = $declined || ! $notices->acknowledged($employee) ? null : (string) $request->input('photo');
+
         try {
             $punch = $punches->punch($employee, [
-                'photo_path' => app(PunchPhotoStore::class)->fromDataUrl((string) $request->input('photo')),
+                'photo_declined' => $declined,
+                'photo_path' => app(PunchPhotoStore::class)->fromDataUrl($photo),
                 'device' => (string) $request->userAgent(),
             ], null, $kiosk);
         } catch (PersonRuleException $exception) {

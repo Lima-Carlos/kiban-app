@@ -3,6 +3,8 @@
     use App\Modules\TimeClock\Services\ScheduleCalendar;
     $plan = $this->todayPlan();
     $today = $this->today();
+    $needsNotice = $this->needsPhotoNotice();
+    $withoutPhoto = $this->allowsWithoutPhoto();
 @endphp
 
 <x-filament-panels::page>
@@ -14,18 +16,14 @@
                 wire:ignore
                 x-data="{
                     stream: null,
+                    notice: @js($needsNotice),
                     camera: 'waiting',
                     location: 'waiting',
                     coords: null,
                     busy: false,
                     init() {
-                        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 } }, audio: false })
-                                .then((stream) => { this.stream = stream; this.$refs.video.srcObject = stream; this.camera = 'ok'; })
-                                .catch(() => { this.camera = 'denied'; });
-                        } else {
-                            this.camera = 'denied';
-                        }
+                        // The camera opens only after the privacy notice of the photos was acknowledged.
+                        if (!this.notice) { this.startCamera(); }
 
                         if (navigator.geolocation) {
                             navigator.geolocation.getCurrentPosition(
@@ -35,6 +33,33 @@
                             );
                         } else {
                             this.location = 'denied';
+                        }
+                    },
+                    startCamera() {
+                        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 } }, audio: false })
+                                .then((stream) => { this.stream = stream; this.$refs.video.srcObject = stream; this.camera = 'ok'; })
+                                .catch(() => { this.camera = 'denied'; });
+                        } else {
+                            this.camera = 'denied';
+                        }
+                    },
+                    async acknowledge() {
+                        this.busy = true;
+                        try {
+                            await $wire.acknowledgePhotoNotice();
+                            this.notice = false;
+                            this.startCamera();
+                        } finally {
+                            this.busy = false;
+                        }
+                    },
+                    async punchWithoutPhoto() {
+                        this.busy = true;
+                        try {
+                            await $wire.punch(null, this.coords?.latitude ?? null, this.coords?.longitude ?? null, this.coords?.accuracy ?? null, true);
+                        } finally {
+                            this.busy = false;
                         }
                     },
                     selfie() {
@@ -58,9 +83,19 @@
                 }"
                 style="display:flex;flex-direction:column;gap:12px;align-items:stretch"
             >
-                <video x-ref="video" autoplay playsinline muted x-show="camera === 'ok'" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;background:#000"></video>
+                <div x-show="notice" style="display:flex;flex-direction:column;gap:10px">
+                    <strong style="font-size:16px">{{ __('timeclock.privacy.title') }}</strong>
+                    @foreach (app(\App\Modules\TimeClock\Services\PhotoNoticeService::class)->paragraphs() as $paragraph)
+                        <p style="font-size:14px;margin:0">{{ $paragraph }}</p>
+                    @endforeach
+                    <x-filament::button icon="heroicon-o-check" x-on:click="acknowledge()" x-bind:disabled="busy">
+                        {{ __('timeclock.privacy.acknowledge') }}
+                    </x-filament::button>
+                </div>
 
-                <div style="font-size:13px;display:flex;flex-direction:column;gap:4px">
+                <video x-ref="video" autoplay playsinline muted x-show="!notice && camera === 'ok'" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;background:#000"></video>
+
+                <div x-show="!notice" style="font-size:13px;display:flex;flex-direction:column;gap:4px">
                     <span x-show="camera === 'waiting'">{{ __('timeclock.punches.camera_waiting') }}</span>
                     <span x-show="camera === 'denied'" style="color:#b45309">{{ __('timeclock.punches.camera_denied') }}</span>
                     <span x-show="location === 'waiting'">{{ __('timeclock.punches.location_waiting') }}</span>
@@ -68,9 +103,20 @@
                     <span x-show="location === 'denied'" style="color:#b45309">{{ __('timeclock.punches.location_denied') }}</span>
                 </div>
 
-                <x-filament::button size="xl" icon="heroicon-o-finger-print" x-on:click="punch()" x-bind:disabled="busy" style="padding:18px;font-size:18px">
-                    {{ __('timeclock.punches.punch_button') }}
-                </x-filament::button>
+                <div x-show="!notice">
+                    <x-filament::button size="xl" icon="heroicon-o-finger-print" x-on:click="punch()" x-bind:disabled="busy" style="padding:18px;font-size:18px;width:100%">
+                        {{ __('timeclock.punches.punch_button') }}
+                    </x-filament::button>
+                </div>
+
+                @if ($withoutPhoto)
+                    <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                        <x-filament::button color="gray" size="sm" icon="heroicon-o-no-symbol" x-on:click="punchWithoutPhoto()" x-bind:disabled="busy">
+                            {{ __('timeclock.privacy.without_photo') }}
+                        </x-filament::button>
+                        <span style="font-size:12px;opacity:.7;text-align:center">{{ __('timeclock.privacy.without_photo_help') }}</span>
+                    </div>
+                @endif
             </div>
         </x-filament::section>
 

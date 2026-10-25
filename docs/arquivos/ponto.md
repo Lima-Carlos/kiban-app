@@ -367,3 +367,41 @@ São usadas no cálculo das horas a partir da parte 4:
   - `ReadsTimeClockFilters` (o mês escolhido).
 - Telas dos quadros: `resources/views/timeclock/dashboard/now.blade.php` e `ranking.blade.php`.
 - Testes: `tests/Feature/TimeClockDashboardTest.php`.
+
+## Aviso de privacidade das fotos (LGPD)
+
+### Como funciona
+- Na **primeira batida com foto**, pelo celular ou pelo tablet, **antes de a câmera ligar**, a pessoa lê o aviso "Sobre a foto no ponto". Ele explica:
+  - por que a foto é tirada: confirmar quem bateu e evitar fraude no controle de jornada;
+  - quem vê: o RH e os administradores;
+  - por quanto tempo fica guardada: 12 meses, depois é apagada sozinha e a batida continua;
+  - que não há reconhecimento facial;
+  - com quem falar sobre os dados.
+- O botão é **"Estou ciente"**. É **ciência, não consentimento**, por decisão do dono: no emprego, o consentimento não seria livre.
+- Fica registrado:
+  - quem, quando, por onde (celular ou qual tablet), o IP e o aparelho;
+  - a **versão do aviso**.
+
+  O registro nunca muda nem é apagado.
+- **Sem a ciência, nenhuma foto é gravada** (mesmo que chegue uma).
+- **Aviso novo**, quando muda o texto, o prazo ou o contato: todos leem e dão ciência de novo, uma vez.
+
+### "Bater sem foto"
+- O botão aparece no aviso e embaixo do botão de bater. A batida vale do mesmo jeito e fica marcada **"Sem foto (escolha da pessoa)"** para o RH.
+- A empresa escolhe em **Configurações do ponto → Fotos e privacidade** se o botão aparece (padrão: aparece).
+- Desligado, não há o botão. Mesmo assim, **a batida nunca é bloqueada**: se a câmera não abrir, ela vale, marcada "Sem foto".
+
+### Onde se consulta
+- **Configurações do ponto → Fotos e privacidade:** o botão "Bater sem foto" e o **contato para dúvidas**, que é opcional (sem ele, o aviso diz "fale com o RH da sua empresa").
+- **Meu ponto / Apuração:** botão **"Sobre a foto no ponto"**, com o texto e a ciência da pessoa.
+- **Funcionários:** coluna **"Aviso das fotos"** (ciente em... ou ainda não lido).
+- **Planilha do contador:** a mesma coluna no resumo.
+
+### Arquivos
+- Tabela `tc_photo_notices` e os campos `allow_punch_without_photo` e `privacy_contact` em `tc_settings`: `database/migrations/2026_10_25_500000_create_time_clock_photo_notices_table.php`.
+- Modelo `app/Modules/TimeClock/Models/PhotoNotice.php`.
+- Regras em `app/Modules/TimeClock/Services/PhotoNoticeService.php`. Para mudar o texto, suba `REVISION`.
+- Telas:
+  - celular: `PunchPage` e `punch-page.blade.php`;
+  - tablet: `KioskController` (rota `/relogio/ciente`) e `kiosk.blade.php`.
+- Testes: `tests/Feature/TimeClockPhotoNoticeTest.php`.

@@ -84,6 +84,8 @@ class TimeClockSettingsPage extends Page
             'employer_document_type' => $settings->employer_document_type ?? 'cnpj',
             'employer_document' => $settings->employer_document,
             'employer_name' => $settings->employer_name,
+            'allow_punch_without_photo' => (bool) $settings->allow_punch_without_photo,
+            'privacy_contact' => $settings->privacy_contact,
         ]);
     }
 
@@ -157,6 +159,19 @@ class TimeClockSettingsPage extends Page
                     ->visible(fn (Get $get): bool => strtoupper((string) $get('country')) === 'BR')
                     ->columns(['default' => 1, 'sm' => 3])
                     ->components(collect(array_keys(HolidayCalendar::OPTIONAL))->map(fn (string $key) => Toggle::make('optional_holidays.'.$key)->label(__('timeclock.holidays.optional.'.$key)))->all()),
+                Section::make(__('timeclock.settings.photos'))
+                    ->description(__('timeclock.settings.photos_help'))
+                    ->columns(['default' => 1, 'sm' => 2])
+                    ->components([
+                        Toggle::make('allow_punch_without_photo')
+                            ->label(__('timeclock.settings.allow_without_photo'))
+                            ->helperText(__('timeclock.settings.allow_without_photo_help')),
+                        TextInput::make('privacy_contact')
+                            ->label(__('timeclock.settings.privacy_contact'))
+                            ->placeholder(__('timeclock.settings.privacy_contact_placeholder'))
+                            ->helperText(__('timeclock.settings.privacy_contact_help'))
+                            ->maxLength(150),
+                    ]),
                 Section::make(__('timeclock.settings.employer'))
                     ->description(__('timeclock.settings.employer_help'))
                     ->visible(fn (Get $get): bool => $this->isBrazil($get))
@@ -229,6 +244,12 @@ class TimeClockSettingsPage extends Page
             'country' => $state['country'],
             'labor_profile' => $state['labor_profile'],
             'optional_holidays' => array_map('boolval', (array) ($state['optional_holidays'] ?? [])) + (array) $settings->optional_holidays,
+        ]);
+
+        // Photos and privacy (a new contact changes the notice: everyone reads it again).
+        $settings->forceFill([
+            'allow_punch_without_photo' => (bool) ($state['allow_punch_without_photo'] ?? true),
+            'privacy_contact' => filled($state['privacy_contact'] ?? null) ? trim((string) $state['privacy_contact']) : null,
         ]);
 
         if ($state['labor_profile'] === LaborProfile::BrazilClt->value) {

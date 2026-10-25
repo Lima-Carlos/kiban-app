@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\Services\KioskService;
+use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\TimeClockPeople;
 use App\Modules\TimeClock\TimeClockModule;
@@ -15,6 +16,7 @@ use App\People\PersonRuleException;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Filament\Support\Facades\FilamentTimezone;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -90,6 +92,13 @@ class EmployeeResource extends ModuleResource
                     ->date(__('app.date_format'))
                     ->sortable()
                     ->visibleFrom('md'),
+                TextColumn::make('photo_notice')
+                    ->label(__('timeclock.privacy.column'))
+                    ->state(fn (Employee $record): string => app(PhotoNoticeService::class)->status($record, FilamentTimezone::get()))
+                    ->color(fn (Employee $record): ?string => app(PhotoNoticeService::class)->acknowledged($record) ? null : 'warning')
+                    ->size('sm')
+                    ->wrap()
+                    ->visibleFrom('lg'),
                 IconColumn::make('login')
                     ->label(__('timeclock.fields.login'))
                     ->state(fn (Employee $record): bool => $record->person?->hasLogin() ?? false)

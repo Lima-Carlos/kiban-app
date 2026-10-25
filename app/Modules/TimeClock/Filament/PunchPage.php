@@ -5,6 +5,7 @@ namespace App\Modules\TimeClock\Filament;
 use App\Modules\ModuleRegistry;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
+use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\PunchPhotoStore;
 use App\Modules\TimeClock\Services\PunchService;
 use App\Modules\TimeClock\Services\ReceiptService;
@@ -111,13 +112,42 @@ class PunchPage extends Page
         return app(ReceiptService::class)->url($punch);
     }
 
-    /** Called by the page with the selfie (data URL) and the location (when the phone gives them). */
-    public function punch(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?float $accuracy = null): void
+    /** The privacy notice of the photos still has to be read (first time, or a new version). */
+    public function needsPhotoNotice(): bool
+    {
+        return ! app(PhotoNoticeService::class)->acknowledged($this->employee());
+    }
+
+    public function allowsWithoutPhoto(): bool
+    {
+        return app(PhotoNoticeService::class)->allowsWithoutPhoto();
+    }
+
+    /** "I am aware": recorded, then the page opens the camera. */
+    public function acknowledgePhotoNotice(): void
     {
         abort_unless(static::canAccess(), 403);
 
+        app(PhotoNoticeService::class)->record($this->employee(), Punch::PHONE, auth()->user(), null, request()->ip(), (string) request()->userAgent());
+    }
+
+    /**
+     * Called by the page with the selfie (data URL) and the location (when the phone gives them).
+     * Without the acknowledgement of the notice, no photo is stored.
+     */
+    public function punch(?string $photo = null, ?float $latitude = null, ?float $longitude = null, ?float $accuracy = null, bool $withoutPhoto = false): void
+    {
+        abort_unless(static::canAccess(), 403);
+
+        $declined = $withoutPhoto && $this->allowsWithoutPhoto();
+
+        if ($declined || $this->needsPhotoNotice()) {
+            $photo = null;
+        }
+
         try {
             $punch = app(PunchService::class)->punch($this->employee(), [
+                'photo_declined' => $declined,
                 'photo_path' => app(PunchPhotoStore::class)->fromDataUrl($photo),
                 'latitude' => $latitude,
                 'longitude' => $longitude,

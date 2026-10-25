@@ -79,6 +79,7 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Cálculo só por `DayCalculator` (nunca guardado; dia vira 4h depois do fim de turno noturno; tolerância CLT; folga/feriado = extra de folga; avisos de intervalo e interjornada só no Brasil) e `HourBank` (FIFO com vencimento; faltas inteiras não saem do banco). Correções só por `AdjustmentService` (à parte das batidas, com motivo; funcionário pede, gestor aprova; nunca em mês fechado: `MonthClosing`).
 - Fechamento do mês só por `MonthClosing` (cópia congelada com SHA-256; reabrir só antes da assinatura; mês fechado não aceita correção). A tela e o PDF leem o mês por `TimesheetDocument` (nunca recalcular um mês fechado). AFD (`AfdFile`) é PRÉVIA a validar (faltam tipos 2/5, .p7s e o AEJ). Rotina `kiban:timeclock` (avisos uma vez só e fotos de batida com 12 meses).
 - Painel do Ponto: números só por `TimeClockReports` (agora e o mês, que usa a cópia congelada dos meses fechados). Quadros do Início do gestor: `NowWidget` e `MonthStatsWidget`.
+- Fotos das batidas (LGPD): antes da primeira foto, aviso com ciência registrada por `PhotoNoticeService` (versão = REVISION + prazo + contato; sem ciência, nenhuma foto é gravada). "Bater sem foto" só se `allow_punch_without_photo` (flag `photo_declined`); a batida nunca é bloqueada.
 - Papéis (`TimeClockRole`): gestor (RH), funcionário (implícito para quem tem login e bate ponto) e consulta. Explicação para o dono: `docs/arquivos/ponto.md`.
 
 ## Frota (`app/Modules/Fleet`, chave `frota`)

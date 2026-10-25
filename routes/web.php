@@ -34,6 +34,7 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::get('/relogio', [KioskController::class, 'show'])->name('timeclock.kiosk');
     Route::post('/relogio/pin', [KioskController::class, 'pin'])->name('timeclock.kiosk.pin');
     Route::post('/relogio/bater', [KioskController::class, 'punch'])->name('timeclock.kiosk.punch');
+    Route::post('/relogio/ciente', [KioskController::class, 'acknowledge'])->name('timeclock.kiosk.acknowledge');
 
     // Ponto: receipt of a punch at a signed address (works without a login, e.g. from the QR code on the tablet).
     Route::get('/ponto/comprovante/{punch}', [ReceiptController::class, 'show'])->middleware('signed:relative')->whereNumber('punch')->name('timeclock.receipt');

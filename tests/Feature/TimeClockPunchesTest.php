@@ -76,8 +76,9 @@ class TimeClockPunchesTest extends TestCase
         $user = $employee->person->user;
         $this->actingAs($user);
 
-        // Inside the radius (about 50 m away), with selfie: no warnings.
+        // Inside the radius (about 50 m away), with selfie (after the photo notice): no warnings.
         Livewire::test(PunchPage::class)
+            ->call('acknowledgePhotoNotice')
             ->call('punch', $this->selfie(), -23.5509, -46.6333, 12.0)
             ->assertNotified();
 
@@ -164,6 +165,9 @@ class TimeClockPunchesTest extends TestCase
 
         $this->post($this->company->url('/relogio/pin'), ['pin' => '000000'])->assertSee(__('timeclock.kiosk.wrong_pin'));
         $page = $this->post($this->company->url('/relogio/pin'), ['pin' => $pin])->assertOk()->assertSee(__('timeclock.kiosk.hello', ['name' => 'Bia']));
+        // First time: the photo notice, then the photo.
+        preg_match('/name="ticket" value="([^"]+)"/', $page->getContent(), $match);
+        $page = $this->post($this->company->url('/relogio/ciente'), ['ticket' => html_entity_decode($match[1])])->assertOk()->assertSee(__('timeclock.kiosk.photo_help'));
         preg_match('/name="ticket" value="([^"]+)"/', $page->getContent(), $match);
 
         $this->post($this->company->url('/relogio/bater'), ['ticket' => html_entity_decode($match[1]), 'photo' => $this->selfie()])
