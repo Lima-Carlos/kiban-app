@@ -20,20 +20,21 @@
         .preview { background: #fff4d6; border: 1px solid #e0b84c; padding: 4px 6px; margin-bottom: 6px; }
         table.days { width: 100%; border-collapse: collapse; }
         table.days th { background: #044299; color: #fff; text-align: left; padding: 3px 4px; font-weight: bold; }
-        table.days td { border-bottom: 1px solid #ddd; padding: 2px 4px; vertical-align: top; }
+        table.days td { border-bottom: 1px solid #ddd; padding: 1px 4px; vertical-align: top; }
         table.days .off td { background: #f3f3f3; }
-        .num { text-align: right; white-space: nowrap; }
+        .num, table.days th.num { text-align: right; white-space: nowrap; }
         .totals { width: 100%; border-collapse: collapse; margin-top: 8px; }
         .totals td { border: 1px solid #ccc; padding: 3px 5px; }
         .totals .label { color: #777; font-size: 7px; }
         .totals .value { font-size: 10px; font-weight: bold; }
-        .sign { width: 100%; margin-top: 26px; }
+        .sign { width: 100%; margin-top: 18px; }
         .sign td { width: 50%; text-align: center; padding: 0 30px; }
         .line { border-top: 1px solid #39383A; padding-top: 2px; }
         .code { font-family: "DejaVu Sans Mono", monospace; font-size: 7px; }
     </style>
 </head>
 <body>
+    <div style="float:right" class="muted">{{ __('timeclock.closing.pdf_generated', ['date' => $generatedAt->translatedFormat(__('app.datetime_format'))]) }} · Kiban Ponto</div>
     <h1>{{ __('timeclock.closing.pdf_title') }} · {{ $monthLabel }}</h1>
     <table class="head">
         <tr>
@@ -133,6 +134,5 @@
         </table>
     @endif
 
-    <p class="muted" style="margin-top:8px">{{ __('timeclock.closing.pdf_generated', ['date' => $generatedAt->translatedFormat(__('app.datetime_format'))]) }} · Kiban Ponto</p>
 </body>
 </html>
