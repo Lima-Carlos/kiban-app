@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Access\AccessManager;
+use App\Access\CurrentModule;
 use App\Http\Responses\LogoutResponse;
 use App\Licensing\CoreClient;
 use App\Licensing\LicenseManager;
@@ -18,9 +19,14 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Single address (app.../<company>/...): files (images, styles, scripts) are the same for every company,
+        // at the root of the app, never under a company's path (set here, before the panel builds its logo).
+        URL::useAssetOrigin((string) config('app.url'));
+
         // One current company and one copy of each service per request.
         $this->app->scoped(TenantContext::class);
         $this->app->scoped(AccessManager::class);
+        $this->app->scoped(CurrentModule::class);
         $this->app->singleton(ModuleRegistry::class);
         $this->app->singleton(CoreClient::class);
         $this->app->singleton(LicenseVerifier::class);
@@ -31,10 +37,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Single address (app.../<company>/...): files (images, styles, scripts) are the same for every company,
-        // at the root of the app, never under a company's path.
-        URL::useAssetOrigin((string) config('app.url'));
-
         // Access rules of each module (license, read-only, first steps, limits).
         foreach (app(ModuleRegistry::class)->all() as $module) {
             foreach ($module->policies() as $model => $policy) {

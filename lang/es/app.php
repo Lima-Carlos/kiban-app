@@ -5,6 +5,8 @@ return [
     'datetime_format' => 'd/m/Y \\a \\l\\a\\s H:i',
     'menu' => [
         'account' => 'Mi cuenta Kiban',
+        'company' => 'Empresa',
+        'systems' => 'Sistemas',
     ],
     'home' => [
         'no_access' => 'Aún no tiene acceso a ningún sistema',

@@ -2,7 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament\Dashboard;
 
-use App\Modules\ModuleRegistry;
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\Services\TimeClockReports;
@@ -22,6 +22,10 @@ use Filament\Support\Icons\Heroicon;
  */
 class TimeClockDashboard extends Dashboard
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = TimeClockModule::KEY;
+
     use HasFiltersForm;
 
     protected static string $routePath = 'ponto/painel';
@@ -42,11 +46,6 @@ class TimeClockDashboard extends Dashboard
         return $tenant !== null
             && $tenant->license()->hasModule(TimeClockModule::KEY)
             && in_array(app(TimeClockAccess::class)->role(), [TimeClockRole::Manager, TimeClockRole::Viewer], true);
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(TimeClockModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string

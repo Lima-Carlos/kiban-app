@@ -2,7 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament;
 
-use App\Modules\ModuleRegistry;
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Closing;
@@ -48,6 +48,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = TimeClockModule::KEY;
+
     use InteractsWithActions, InteractsWithSchemas, InteractsWithTable;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLockClosed;
@@ -73,11 +77,6 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
     public static function canManage(): bool
     {
         return app(TimeClockAccess::class)->isManager() && app(TenantContext::class)->get()->license()->canWrite(TimeClockModule::KEY);
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(TimeClockModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string

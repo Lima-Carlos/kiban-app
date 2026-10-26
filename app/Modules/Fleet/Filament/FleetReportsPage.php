@@ -2,12 +2,12 @@
 
 namespace App\Modules\Fleet\Filament;
 
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\FleetExporter;
-use App\Modules\ModuleRegistry;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -29,6 +29,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class FleetReportsPage extends Page
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = FleetModule::KEY;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
     protected static ?int $navigationSort = 9;
@@ -45,11 +49,6 @@ class FleetReportsPage extends Page
         return $tenant !== null
             && $tenant->license()->hasModule(FleetModule::KEY)
             && in_array(app(FleetAccess::class)->fleetRole(), [FleetRole::Manager, FleetRole::Viewer], true);
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(FleetModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string

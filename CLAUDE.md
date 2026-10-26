@@ -52,7 +52,8 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Os ganchos de pessoa dos módulos recebem a `Person`: `personFields`, `personData`, `checkPerson` (regras **antes** de criar o login no Core; recusa com `PersonRuleException`), `savePerson`, `removePerson`, `personGotLogin`, `personNeedsLogin` (ex.: Frota: sem login, sem papel), `personRoleLabel`. Cada seção só aparece para quem gerencia aquele módulo (`managesPeople`) ou para dono/admin.
 - "Remover" é **desligar** (`deactivate`): a ficha e o histórico ficam, inativos. Equipes compartilhadas: `App\Models\Team` (`TeamsPage`).
 - Peças compartilhadas (Ponto e Campo): `App\Support\Country`, `App\Support\Geo` (distância, link do OpenStreetMap), `App\Filament\Support\MapPoint` ("Usar minha localização"). Não copiar: reaproveitar.
-- Menus por papel: `shouldRegisterNavigation()` nas telas. O app é instalável (manifest + `public/sw.js`).
+- Menus por papel: `shouldRegisterNavigation()` nas telas. O app é instalável (manifest + `public/sw.js`, um app para todas as empresas).
+- Seletor de sistemas: o menu e o Início mostram só o sistema atual (`App\Access\CurrentModule`, lembrado em `tenant_user.current_module`; `?sistema=` ou a tela aberta trocam). Toda tela de módulo usa `InModuleMenu` (os `ModuleResource` já usam) e nunca define grupo no menu. Pessoas, Perfis e Equipes ficam no grupo "Empresa". Ícones em `ModuleSwitcher` (render hook `SIDEBAR_NAV_START`).
 
 ## Login (sem senhas aqui)
 - Todo login passa pelo Core (OAuth2 + PKCE), em `App\Http\Controllers\Auth\SingleSignOnController`. O retorno é sempre `/auth/callback` (sem empresa). Um login vale para todas as empresas da pessoa; cada empresa confere a sua participação (`RevalidateMembership`, por empresa). Página central `/entrar`: login sem saber a empresa, última empresa lembrada (cookie `kiban_empresa`).

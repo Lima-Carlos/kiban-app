@@ -36,8 +36,13 @@ class TeamsPage extends Page implements HasActions, HasSchemas, HasTable
 
     protected static ?string $slug = 'equipes';
 
-    /** Opened from the "People" screen (button "Teams"). */
-    protected static bool $shouldRegisterNavigation = false;
+    protected static ?int $navigationSort = -3;
+
+    /** Fixed at the end of every system's menu ("Company"). */
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.menu.company');
+    }
 
     public static function canAccess(): bool
     {

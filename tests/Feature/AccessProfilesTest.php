@@ -82,9 +82,12 @@ class AccessProfilesTest extends TestCase
 
     public function test_owner_sees_every_module_and_the_summaries(): void
     {
+        // Every system as an icon at the top of the menu; the start page shows the one chosen.
         $this->get($this->company->url('/'))->assertOk()
-            ->assertSee(__('fleet.dashboard.summary'))
-            ->assertSee(__('demo.module'));
+            ->assertSee(__('app.menu.systems'))
+            ->assertSee(__('demo.module'))
+            ->assertSee(__('fleet.module'));
+        $this->get($this->company->url('/?sistema=frota'))->assertOk()->assertSee(__('fleet.dashboard.summary'));
     }
 
     /**
@@ -97,13 +100,13 @@ class AccessProfilesTest extends TestCase
         $member = User::factory()->memberOf($this->company, 'member')->create();
         $this->actingAs($member);
         $this->coreMember($this->company, $member);
-        $this->get($this->company->url('/'))->assertOk()->assertDontSee(__('fleet.dashboard.summary'))->assertDontSee(__('fleet.module'));
+        $this->get($this->company->url('/'))->assertOk()->assertDontSee(__('fleet.dashboard.summary'))->assertDontSee(__('fleet.module'))->assertDontSee(__('app.menu.systems'));
         $this->get($this->company->url('/frota/veiculos'))->assertForbidden();
         $this->get($this->company->url('/frota/painel'))->assertForbidden();
 
         // Given "viewer" in the Frota: sees it, with the summary, but cannot change.
         app(AccessManager::class)->set($member, 'frota', 'viewer');
-        $this->get($this->company->url('/'))->assertSee(__('fleet.dashboard.summary'));
+        $this->get($this->company->url('/?sistema=frota'))->assertSee(__('fleet.dashboard.summary'));
         $this->get($this->company->url('/frota/veiculos'))->assertOk();
 
         // Profiles page: only owners and administrators.

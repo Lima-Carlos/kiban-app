@@ -69,6 +69,8 @@ class AppPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => view('filament.pwa-head'))
+            // The systems of the person as icons at the top of the menu (only with two or more).
+            ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('filament.module-switcher'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.install-hint'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.license-notice'))
             ->middleware([

@@ -66,6 +66,12 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
     /** Status of each login in the Core (invited / active / blocked), by Core user id. */
     public array $statuses = [];
 
+    /** Fixed at the end of every system's menu ("Company"). */
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.menu.company');
+    }
+
     public static function canAccess(): bool
     {
         $tenant = app(TenantContext::class)->current();

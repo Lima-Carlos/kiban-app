@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Access\AccessManager;
+use App\Access\CurrentModule;
 use App\Models\Tenant;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
@@ -47,8 +47,8 @@ class Home extends Page
         $tenant = $this->tenant();
         $user = auth()->user();
 
-        // Only the modules this person can open (one system, many modules).
-        return collect(app(AccessManager::class)->modulesFor($user, $tenant))
+        // Only the system chosen at the top of the menu (one system, many modules).
+        return collect(array_filter([app(CurrentModule::class)->get()]))
             ->map(function (Module $module) use ($tenant, $user): array {
                 // First steps only for who sets the module up; the others get their own block (e.g. driver buttons).
                 $steps = $module->showsSetupTo($user) ? $module->progress($tenant) : [];
@@ -77,7 +77,7 @@ class Home extends Page
      */
     public function getAttention(): array
     {
-        return collect(app(AccessManager::class)->modulesFor(auth()->user(), $this->tenant()))
+        return collect(array_filter([app(CurrentModule::class)->get()]))
             ->flatMap(fn (Module $module): array => $module->attention(auth()->user()))
             ->values()
             ->all();

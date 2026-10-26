@@ -44,6 +44,12 @@ class AccessProfilesPage extends Page implements HasActions, HasSchemas, HasTabl
 
     protected static ?string $slug = 'perfis-de-acesso';
 
+    /** Fixed at the end of every system's menu ("Company"). */
+    public static function getNavigationGroup(): ?string
+    {
+        return __('app.menu.company');
+    }
+
     public static function canAccess(): bool
     {
         $tenant = app(TenantContext::class)->current();

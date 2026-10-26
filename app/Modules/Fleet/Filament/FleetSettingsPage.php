@@ -2,11 +2,11 @@
 
 namespace App\Modules\Fleet\Filament;
 
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\Fleet\Enums\InspectionFrequency;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Services\FleetAccess;
-use App\Modules\ModuleRegistry;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -27,6 +27,10 @@ use Filament\Support\Icons\Heroicon;
  */
 class FleetSettingsPage extends Page
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = FleetModule::KEY;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static ?int $navigationSort = 90;
@@ -41,11 +45,6 @@ class FleetSettingsPage extends Page
         $tenant = app(TenantContext::class)->current();
 
         return $tenant !== null && $tenant->license()->canWrite(FleetModule::KEY) && app(FleetAccess::class)->isManager();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(FleetModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string

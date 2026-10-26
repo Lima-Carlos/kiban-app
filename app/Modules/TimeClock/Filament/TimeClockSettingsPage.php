@@ -2,7 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament;
 
-use App\Modules\ModuleRegistry;
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\TimeClock\Enums\LaborProfile;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Services\HolidayCalendar;
@@ -37,6 +37,10 @@ use Locale;
  */
 class TimeClockSettingsPage extends Page
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = TimeClockModule::KEY;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static ?int $navigationSort = 90;
@@ -57,11 +61,6 @@ class TimeClockSettingsPage extends Page
         $tenant = app(TenantContext::class)->current();
 
         return $tenant !== null && $tenant->license()->canWrite(TimeClockModule::KEY) && app(TimeClockAccess::class)->isManager();
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(TimeClockModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string

@@ -2,12 +2,12 @@
 
 namespace App\Modules\Fleet\Filament\Dashboard;
 
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\FleetReports;
-use App\Modules\ModuleRegistry;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Forms\Components\Select;
@@ -24,6 +24,10 @@ use Filament\Support\Icons\Heroicon;
  */
 class FleetDashboard extends Dashboard
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = FleetModule::KEY;
+
     use HasFiltersForm;
 
     protected static string $routePath = 'frota/painel';
@@ -44,11 +48,6 @@ class FleetDashboard extends Dashboard
         return $tenant !== null
             && $tenant->license()->hasModule(FleetModule::KEY)
             && in_array(app(FleetAccess::class)->fleetRole(), [FleetRole::Manager, FleetRole::Viewer], true);
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(FleetModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string

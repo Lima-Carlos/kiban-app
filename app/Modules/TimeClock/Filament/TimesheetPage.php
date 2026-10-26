@@ -2,7 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament;
 
-use App\Modules\ModuleRegistry;
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Closing;
@@ -45,6 +45,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class TimesheetPage extends Page
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = TimeClockModule::KEY;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
     protected static ?int $navigationSort = 2;
@@ -70,11 +74,6 @@ class TimesheetPage extends Page
     public static function seesEveryone(): bool
     {
         return in_array(app(TimeClockAccess::class)->role(), [TimeClockRole::Manager, TimeClockRole::Viewer], true);
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(TimeClockModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string

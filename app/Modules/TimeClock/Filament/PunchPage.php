@@ -2,7 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament;
 
-use App\Modules\ModuleRegistry;
+use App\Modules\Concerns\InModuleMenu;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\PhotoNoticeService;
@@ -31,6 +31,10 @@ use Illuminate\Support\Collection;
  */
 class PunchPage extends Page
 {
+    use InModuleMenu;
+
+    protected static string $moduleKey = TimeClockModule::KEY;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFingerPrint;
 
     protected static ?int $navigationSort = 1;
@@ -47,11 +51,6 @@ class PunchPage extends Page
             && $tenant->license()->canWrite(TimeClockModule::KEY)
             && auth()->check()
             && app(TimeClockAccess::class)->employeeFor(auth()->user()) !== null;
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return app(ModuleRegistry::class)->get(TimeClockModule::KEY)->name();
     }
 
     public static function getNavigationLabel(): string
