@@ -8,6 +8,8 @@ use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Services\HolidayCalendar;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\TimeClockModule;
+use App\Rules\Cnpj;
+use App\Rules\Cpf;
 use App\Support\Country;
 use App\Tenancy\TenantContext;
 use BackedEnum;
@@ -79,6 +81,11 @@ class TimeClockSettingsPage extends Page
             'country' => $settings->country,
             'labor_profile' => $settings->labor_profile->value,
             'optional_holidays' => collect(HolidayCalendar::OPTIONAL)->map(fn (bool $default, string $key): bool => app(HolidayCalendar::class)->optionalIsOn($key, $settings))->all(),
+            'employer_document_type' => $settings->employer_document_type ?? 'cnpj',
+            'employer_document' => $settings->employer_document,
+            'employer_name' => $settings->employer_name,
+            'allow_punch_without_photo' => (bool) $settings->allow_punch_without_photo,
+            'privacy_contact' => $settings->privacy_contact,
         ]);
     }
 
@@ -152,6 +159,37 @@ class TimeClockSettingsPage extends Page
                     ->visible(fn (Get $get): bool => strtoupper((string) $get('country')) === 'BR')
                     ->columns(['default' => 1, 'sm' => 3])
                     ->components(collect(array_keys(HolidayCalendar::OPTIONAL))->map(fn (string $key) => Toggle::make('optional_holidays.'.$key)->label(__('timeclock.holidays.optional.'.$key)))->all()),
+                Section::make(__('timeclock.settings.photos'))
+                    ->description(__('timeclock.settings.photos_help'))
+                    ->columns(['default' => 1, 'sm' => 2])
+                    ->components([
+                        Toggle::make('allow_punch_without_photo')
+                            ->label(__('timeclock.settings.allow_without_photo'))
+                            ->helperText(__('timeclock.settings.allow_without_photo_help')),
+                        TextInput::make('privacy_contact')
+                            ->label(__('timeclock.settings.privacy_contact'))
+                            ->placeholder(__('timeclock.settings.privacy_contact_placeholder'))
+                            ->helperText(__('timeclock.settings.privacy_contact_help'))
+                            ->maxLength(150),
+                    ]),
+                Section::make(__('timeclock.settings.employer'))
+                    ->description(__('timeclock.settings.employer_help'))
+                    ->visible(fn (Get $get): bool => $this->isBrazil($get))
+                    ->columns(['default' => 1, 'sm' => 3])
+                    ->components([
+                        Radio::make('employer_document_type')
+                            ->label(__('timeclock.settings.employer_document_type'))
+                            ->options(['cnpj' => 'CNPJ', 'cpf' => 'CPF'])
+                            ->inline()
+                            ->live(),
+                        TextInput::make('employer_document')
+                            ->label(fn (Get $get): string => $get('employer_document_type') === 'cpf' ? 'CPF' : 'CNPJ')
+                            ->rule(fn (Get $get) => $get('employer_document_type') === 'cpf' ? new Cpf : new Cnpj)
+                            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? preg_replace('/\D/', '', $state) : null),
+                        TextInput::make('employer_name')
+                            ->label(__('timeclock.settings.employer_name'))
+                            ->maxLength(150),
+                    ]),
             ]);
     }
 
@@ -207,6 +245,20 @@ class TimeClockSettingsPage extends Page
             'labor_profile' => $state['labor_profile'],
             'optional_holidays' => array_map('boolval', (array) ($state['optional_holidays'] ?? [])) + (array) $settings->optional_holidays,
         ]);
+
+        // Photos and privacy (a new contact changes the notice: everyone reads it again).
+        $settings->forceFill([
+            'allow_punch_without_photo' => (bool) ($state['allow_punch_without_photo'] ?? true),
+            'privacy_contact' => filled($state['privacy_contact'] ?? null) ? trim((string) $state['privacy_contact']) : null,
+        ]);
+
+        if ($state['labor_profile'] === LaborProfile::BrazilClt->value) {
+            $settings->forceFill([
+                'employer_document_type' => filled($state['employer_document'] ?? null) ? ($state['employer_document_type'] ?? 'cnpj') : null,
+                'employer_document' => $state['employer_document'] ?? null,
+                'employer_name' => filled($state['employer_name'] ?? null) ? trim((string) $state['employer_name']) : null,
+            ]);
+        }
         $settings->forceFill(['configured_at' => $settings->configured_at ?? now()])->save();
 
         Notification::make()->success()->title(__('timeclock.settings.saved'))->send();

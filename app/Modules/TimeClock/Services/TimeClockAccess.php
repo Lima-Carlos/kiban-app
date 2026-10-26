@@ -9,6 +9,7 @@ use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\TimeClockModule;
 use App\People\Person;
 use App\Tenancy\TenantContext;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -34,6 +35,20 @@ class TimeClockAccess
     public function isManager(?User $user = null): bool
     {
         return $this->role($user) === TimeClockRole::Manager;
+    }
+
+    /**
+     * People of the company with one of these time clock roles (owners and administrators are managers).
+     *
+     * @param  array<int, TimeClockRole>  $roles
+     * @return Collection<int, User>
+     */
+    public function people(array $roles): Collection
+    {
+        return $this->context->get()->users()->get()
+            ->filter(fn (User $user): bool => in_array($this->role($user), $roles, true))
+            ->values()
+            ->toBase();
     }
 
     /** The active employee record of this login, if they clock in. */

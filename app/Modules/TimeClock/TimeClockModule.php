@@ -8,25 +8,44 @@ use App\Models\User;
 use App\Modules\Module;
 use App\Modules\Step;
 use App\Modules\TimeClock\Enums\TimeClockRole;
+use App\Modules\TimeClock\Filament\Adjustments\AdjustmentResource;
+use App\Modules\TimeClock\Filament\ClosingsPage;
+use App\Modules\TimeClock\Filament\Dashboard\MonthStatsWidget;
+use App\Modules\TimeClock\Filament\Dashboard\NowWidget;
+use App\Modules\TimeClock\Filament\Dashboard\TimeClockDashboard;
 use App\Modules\TimeClock\Filament\Employees\EmployeeResource;
 use App\Modules\TimeClock\Filament\Holidays\HolidayResource;
 use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
+use App\Modules\TimeClock\Filament\Kiosks\KioskResource;
+use App\Modules\TimeClock\Filament\Punches\PunchResource;
+use App\Modules\TimeClock\Filament\PunchPage;
 use App\Modules\TimeClock\Filament\Schedules\ScheduleResource;
 use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
+use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Filament\Workplaces\WorkplaceResource;
+use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Holiday;
+use App\Modules\TimeClock\Models\Kiosk;
+use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Policies\AdjustmentPolicy;
 use App\Modules\TimeClock\Policies\EmployeePolicy;
 use App\Modules\TimeClock\Policies\HolidayPolicy;
+use App\Modules\TimeClock\Policies\KioskPolicy;
+use App\Modules\TimeClock\Policies\PunchPolicy;
 use App\Modules\TimeClock\Policies\SchedulePolicy;
 use App\Modules\TimeClock\Policies\WorkplacePolicy;
 use App\Modules\TimeClock\Services\EmployeeService;
+use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\TimeClockAccess;
+use App\Modules\TimeClock\Services\TimeClockNotices;
 use App\Modules\TimeClock\Services\TimeClockPeople;
 use App\People\Person;
+use Carbon\CarbonImmutable;
+use Filament\Support\Facades\FilamentTimezone;
 
 /**
  * Kiban Ponto (time clock): employees, workplaces and, in the next parts, schedules, punches on the phone
@@ -94,7 +113,7 @@ class TimeClockModule extends Module
 
     public function resources(): array
     {
-        return [EmployeeResource::class, ScheduleResource::class, WorkplaceResource::class, HolidayResource::class];
+        return [PunchResource::class, AdjustmentResource::class, EmployeeResource::class, ScheduleResource::class, WorkplaceResource::class, HolidayResource::class, KioskResource::class];
     }
 
     public function widgets(): array
@@ -104,12 +123,47 @@ class TimeClockModule extends Module
 
     public function pages(): array
     {
-        return [TimeClockSettingsPage::class];
+        return [TimeClockDashboard::class, PunchPage::class, TimesheetPage::class, ClosingsPage::class, TimeClockSettingsPage::class];
     }
 
     public function showsSetupTo(User $user): bool
     {
         return app(TimeClockAccess::class)->isManager($user);
+    }
+
+    /** Someone who clocks in: the big "Clock in" button and today's punches on the start page. */
+    public function personalHome(User $user): ?array
+    {
+        $employee = app(TimeClockAccess::class)->employeeFor($user);
+
+        if ($employee === null || ! PunchPage::canAccess()) {
+            return null;
+        }
+
+        $today = CarbonImmutable::now($employee->workplace?->timezone ?? FilamentTimezone::get());
+
+        return [
+            'view' => 'timeclock.home.employee',
+            'data' => [
+                'today' => $today,
+                'day' => app(ScheduleCalendar::class)->period($employee, $today, $today)[$today->toDateString()],
+                'punches' => Punch::query()->where('employee_id', $employee->getKey())
+                    ->whereBetween('punched_at', [$today->startOfDay()->utc(), $today->endOfDay()->utc()])
+                    ->orderBy('punched_at')->get(),
+                'url' => PunchPage::getUrl(),
+            ],
+        ];
+    }
+
+    /** Managers and viewers: who is working now and the month's numbers on the start page. */
+    public function homeWidgets(User $user): array
+    {
+        return in_array(app(TimeClockAccess::class)->role($user), [TimeClockRole::Manager, TimeClockRole::Viewer], true) ? [NowWidget::class, MonthStatsWidget::class] : [];
+    }
+
+    public function attention(User $user): array
+    {
+        return app(TimeClockNotices::class)->attention($user);
     }
 
     public function roles(): array
@@ -173,6 +227,9 @@ class TimeClockModule extends Module
             Employee::class => EmployeePolicy::class,
             Schedule::class => SchedulePolicy::class,
             Holiday::class => HolidayPolicy::class,
+            Punch::class => PunchPolicy::class,
+            Adjustment::class => AdjustmentPolicy::class,
+            Kiosk::class => KioskPolicy::class,
         ];
     }
 }

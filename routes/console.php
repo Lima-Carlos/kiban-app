@@ -10,3 +10,6 @@ Schedule::command('kiban:fleet')->hourlyAt(15)->withoutOverlapping();
 
 // Warnings of the bell older than 90 days are removed.
 Schedule::command('kiban:notices-cleanup')->dailyAt('03:30');
+
+// Ponto: the warnings of the bell (forgotten punches, month not closed) and the removal of old punch photos.
+Schedule::command('kiban:timeclock')->hourlyAt(20)->withoutOverlapping();

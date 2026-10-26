@@ -33,7 +33,7 @@ class TimeClockSetting extends Model
     protected $attributes = [
         'overtime_percent' => 50, 'rest_day_overtime_percent' => 100, 'night_start' => '22:00', 'night_end' => '05:00',
         'night_percent' => 20, 'night_reduced_hour' => true, 'tolerance_punch_minutes' => 5, 'tolerance_day_minutes' => 10,
-        'hour_bank' => false, 'hour_bank_months' => 6,
+        'hour_bank' => false, 'hour_bank_months' => 6, 'allow_punch_without_photo' => true,
     ];
 
     protected $fillable = [
@@ -56,6 +56,8 @@ class TimeClockSetting extends Model
             'hour_bank' => 'boolean',
             'hour_bank_months' => 'integer',
             'optional_holidays' => 'array',
+            'last_nsr' => 'integer',
+            'allow_punch_without_photo' => 'boolean',
         ];
     }
 
