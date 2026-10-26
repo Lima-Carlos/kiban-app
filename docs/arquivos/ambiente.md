@@ -15,16 +15,16 @@
 As portas são diferentes das do Core (8080, 5432, 6379), então os dois rodam juntos.
 
 ## Endereços
-- **Central:** http://localhost:8090/entrar. A pessoa digita o endereço da empresa. É também para onde o Core devolve a pessoa depois do login.
-- **Empresa:** http://padaria.localhost:8090. Na produção será padaria.kibancore.com.br.
+- **Endereço único** (todas as empresas): http://localhost:8090. Na produção, https://app.kibancore.com.br.
+- **Central:** http://localhost:8090/entrar: entrar com a conta Kiban, ou digitar o nome da empresa. É também para onde o Core devolve a pessoa depois do login (`/auth/callback`).
+- **Empresa:** http://localhost:8090/padaria. Na produção, https://app.kibancore.com.br/padaria.
 - A casca fala com o Core por `KIBAN_CORE_INTERNAL_URL` (dentro do Docker é `host.docker.internal:8080`). O navegador usa `KIBAN_CORE_URL` (`localhost:8080`).
 
 ## Configuração (`.env`, nunca vai para o GitHub)
 - `KIBAN_CORE_CLIENT_ID` / `KIBAN_CORE_CLIENT_SECRET`: identificação e segredo da casca. Ficam no Core em **Configurações → Sistemas conectados**.
-- `KIBAN_TENANT_DOMAIN`: domínio das empresas (`localhost` aqui; `kibancore.com.br` na produção).
 - `KIBAN_CORE_PUBLIC_KEY` (opcional, recomendado na produção): a chave pública do Core fixada aqui.
 - `TRUSTED_PROXIES` (opcional): quem pode avisar que a pessoa chegou com cadeado e por qual porta (o Caddy no teste externo, o proxy da VPS). Padrão `*`.
-- **Teste no celular de verdade:** o comando `teste-externo ligar` / `desligar`, que fica no Core (veja `kiban-core/docs/arquivos/teste-externo.md`), troca `APP_URL`, `KIBAN_TENANT_DOMAIN`, `KIBAN_CORE_URL` e `APP_DEBUG` daqui junto com os do Core.
+- **Teste no celular de verdade:** o comando `teste-externo ligar` / `desligar`, que fica no Core (veja `kiban-core/docs/arquivos/teste-externo.md`), troca `APP_URL`, `KIBAN_CORE_URL` e `APP_DEBUG` daqui junto com os do Core.
 
 ## Agendador (`routes/console.php`)
 - `kiban:licenses`, a cada 5 minutos: renova as licenças e envia os primeiros passos ao Core.

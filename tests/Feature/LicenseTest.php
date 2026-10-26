@@ -29,7 +29,7 @@ class LicenseTest extends TestCase
     {
         $this->coreLicenses['padaria'] = $this->licenseToken('padaria');
 
-        $this->get('http://padaria.kiban.test/')->assertRedirect('http://padaria.kiban.test/auth/login');
+        $this->get('http://app.kiban.test/padaria/')->assertRedirect('http://app.kiban.test/padaria/auth/login');
 
         $tenant = Tenant::sole();
         $this->assertSame('padaria', $tenant->subdomain);
@@ -37,17 +37,17 @@ class LicenseTest extends TestCase
         $this->assertTrue($tenant->license()->hasModule('demo'));
 
         // Unknown address: friendly 404, and the Core is asked at most once a minute.
-        $this->get('http://nao-existe.kiban.test/')->assertNotFound()->assertSee(__('app.not_found.title'));
-        $this->get('http://nao-existe.kiban.test/')->assertNotFound();
+        $this->get('http://app.kiban.test/nao-existe/')->assertNotFound()->assertSee(__('app.not_found.title'));
+        $this->get('http://app.kiban.test/nao-existe/')->assertNotFound();
         Http::assertSentCount(4); // token + key + padaria + nao-existe (once)
 
         // The central address is not a company.
         $this->get('http://app.kiban.test/')->assertRedirect(route('central.home'));
-        $this->get(route('central.go', ['company' => 'padaria']))->assertRedirect('http://padaria.kiban.test/');
+        $this->get('http://app.kiban.test/entrar/ir?company=padaria')->assertRedirect('http://app.kiban.test/padaria');
 
         // Core down: a new address says "try again", never "does not exist".
         $this->coreDown = true;
-        $this->get('http://oficina.kiban.test/')->assertStatus(503)->assertSee(__('app.failed.core'));
+        $this->get('http://app.kiban.test/oficina/')->assertStatus(503)->assertSee(__('app.failed.core'));
         $this->get('http://app.kiban.test/entrar/ir?company=oficina')->assertStatus(503);
     }
 

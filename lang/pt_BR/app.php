@@ -34,12 +34,16 @@ return [
     ],
     'central' => [
         'title' => 'Entrar no sistema',
-        'intro' => 'Digite o endereço da sua empresa.',
-        'address' => 'Endereço da empresa',
+        'intro' => 'Entre com a sua conta Kiban: o sistema encontra as suas empresas.',
+        'login' => 'Entrar com a minha conta Kiban',
+        'or_company' => 'Ou digite o nome da empresa no endereço',
+        'address' => 'Nome da empresa',
         'placeholder' => 'suaempresa',
-        'not_found' => 'Não encontramos uma empresa com esse endereço.',
+        'not_found' => 'Não encontramos uma empresa com esse nome.',
+        'choose' => 'Escolha a empresa',
+        'choose_intro' => 'Você faz parte destas empresas:',
         'go' => 'Continuar',
-        'account' => 'Não sabe o endereço? Veja em <a href=":url">Minha conta Kiban</a>.',
+        'account' => 'Não sabe o nome? Veja em <a href=":url">Minha conta Kiban</a>.',
     ],
     'not_found' => [
         'title' => 'Empresa não encontrada',
@@ -56,6 +60,7 @@ return [
     'no_access' => [
         'title' => 'Sem acesso a esta empresa',
         'body' => 'Sua conta não faz parte da equipe de :company. Peça ao responsável pela empresa para convidar você.',
+        'body_none' => 'Sua conta ainda não faz parte de nenhuma empresa que usa os sistemas da Kiban. Peça ao responsável pela empresa para convidar você.',
         'signed_as' => 'Você entrou como :email.',
         'account' => 'Ir para Minha conta Kiban',
         'retry' => 'Tentar de novo',

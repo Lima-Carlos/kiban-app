@@ -55,13 +55,22 @@ class CoreSignIn
         return $this->store($member, $tenant);
     }
 
-    public function login(User $user, Store $session): void
+    /** Signs the person in; the companies just checked with the Core are not asked again for a while. */
+    public function login(User $user, Store $session, Tenant ...$checked): void
     {
         $session->regenerate();
         Auth::login($user, remember: true);
         $user->forceFill(['last_login_at' => now()])->save();
 
-        $session->put(self::SESSION_CHECKED, now()->getTimestamp());
+        foreach ($checked as $tenant) {
+            $session->put(self::checkedKey($tenant), now()->getTimestamp());
+        }
+    }
+
+    /** When the membership in this company was last confirmed with the Core (one sign-in, many companies). */
+    public static function checkedKey(Tenant $tenant): string
+    {
+        return self::SESSION_CHECKED.'.'.$tenant->getKey();
     }
 
     /**

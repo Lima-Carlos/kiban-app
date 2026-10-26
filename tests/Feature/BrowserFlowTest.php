@@ -46,7 +46,7 @@ class BrowserFlowTest extends TestCase
         app(TenantContext::class)->forget();
         app(LivewireManager::class)->flushState();
 
-        return $this->withHeaders(['X-Livewire' => 'true'])->postJson($host.'/'.ltrim(parse_url(route('default-livewire.update'), PHP_URL_PATH), '/'), [
+        return $this->withHeaders(['X-Livewire' => 'true'])->postJson(route('default-livewire.update'), [
             'components' => [[
                 'snapshot' => $snapshot,
                 'updates' => $updates,

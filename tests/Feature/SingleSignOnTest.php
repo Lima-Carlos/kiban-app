@@ -77,17 +77,14 @@ class SingleSignOnTest extends TestCase
         $this->assertSame('S256', $flow['query']['code_challenge_method']);
         $this->assertSame('code', $flow['query']['response_type']);
 
-        // The Core sends the person back to the central address with a code.
-        $handoff = $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])
-            ->assertRedirect()->headers->get('Location');
-        $this->assertStringStartsWith($this->padaria->url('/auth/handoff?ticket='), $handoff);
+        // The Core sends the person back to the app's fixed address with a code: signed in, back to the company.
+        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])
+            ->assertRedirect($this->padaria->url('/'));
 
         // PKCE: the app proved it started this sign-in (verifier matches the challenge sent before).
         $verifier = $this->tokenRequests[0]['code_verifier'];
         $this->assertSame($flow['challenge'], strtr(rtrim(base64_encode(hash('sha256', $verifier, true)), '='), '+/', '-_'));
         $this->assertSame('test-secret', $this->tokenRequests[0]['client_secret']);
-
-        $this->get($handoff)->assertRedirect(rtrim($this->padaria->url('/'), '/'));
 
         $user = User::sole();
         $this->assertSame(4321, $user->core_id);
@@ -95,26 +92,23 @@ class SingleSignOnTest extends TestCase
         $this->assertSame('admin', $user->roleIn($this->padaria));
         $this->assertTrue(Auth::user()->is($user));
         $this->get($this->padaria->url('/'))->assertOk()->assertSee('Padaria');
-
-        // A ticket works only once.
-        Auth::logout();
-        $this->get($handoff)->assertStatus(400)->assertSee(__('app.failed.expired'));
     }
 
     public function test_sign_in_links_cannot_be_reused_or_finished_in_another_browser(): void
     {
         $this->coreKnowsPerson([['uuid' => $this->padaria->uuid, 'name' => 'Padaria', 'subdomain' => 'padaria', 'role' => 'member']]);
 
-        $flow = $this->startSignIn();
-        $handoff = $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->headers->get('Location');
-
-        // Same state again: refused.
-        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->assertStatus(400);
-
         // Another browser (no sign-in started there): refused, nobody signed in.
+        $flow = $this->startSignIn();
         session()->forget('kiban.sso_nonce');
-        $this->get($handoff)->assertStatus(400);
+        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->assertStatus(400)->assertSee(__('app.failed.expired'));
         $this->assertGuest();
+
+        // Same state again (already used): refused.
+        $flow = $this->startSignIn();
+        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->assertRedirect($this->padaria->url('/'));
+        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->assertStatus(400);
+        Auth::logout();
 
         // A code already used in the Core.
         $flow = $this->startSignIn();
@@ -134,10 +128,39 @@ class SingleSignOnTest extends TestCase
         // Signed in at the Core, but not part of this company.
         $this->coreKnowsPerson([['uuid' => '11111111-2222-3333-4444-555555555555', 'name' => 'Outra', 'subdomain' => 'outra', 'role' => 'owner']]);
         $flow = $this->startSignIn();
-        $handoff = $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->headers->get('Location');
-
-        $this->get($handoff)->assertForbidden()->assertSee(__('app.no_access.title'))->assertSee('maria@padaria.test');
+        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])
+            ->assertForbidden()->assertSee(__('app.no_access.title'))->assertSee('maria@padaria.test');
         $this->assertGuest();
+    }
+
+    public function test_sign_in_from_the_central_page(): void
+    {
+        $oficina = $this->tenant('oficina');
+        $this->coreKnowsPerson([
+            ['uuid' => $this->padaria->uuid, 'name' => 'Padaria', 'subdomain' => 'padaria', 'role' => 'member'],
+            ['uuid' => $oficina->uuid, 'name' => 'Oficina', 'subdomain' => 'oficina', 'role' => 'admin'],
+        ]);
+
+        // One address for everybody: the person signs in without knowing the company's name.
+        $this->get('http://app.kiban.test/')->assertRedirect('http://app.kiban.test/entrar');
+        $this->get('http://app.kiban.test/entrar')->assertOk()->assertSee(__('app.central.login'));
+        $location = $this->get('http://app.kiban.test/entrar/conta')->assertRedirect()->headers->get('Location');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+        // Two companies: both added, then the choice.
+        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$query['state'])->assertRedirect('http://app.kiban.test/entrar');
+        $user = User::sole();
+        $this->assertSame(['member', 'admin'], [$user->roleIn($this->padaria), $user->roleIn($oficina)]);
+        $this->get('http://app.kiban.test/entrar')->assertOk()->assertSee(__('app.central.choose'))->assertSee('Padaria')->assertSee('Oficina');
+
+        // The same sign-in opens both companies; the last one used opens next time.
+        $this->get($oficina->url('/'))->assertOk();
+        $this->get($this->padaria->url('/'))->assertOk()->assertCookie('kiban_empresa', 'padaria');
+        $this->withCookie('kiban_empresa', 'padaria')->get('http://app.kiban.test/entrar')->assertRedirect($this->padaria->url('/'));
+
+        // Typing the name (or pasting the address) also works.
+        Auth::logout();
+        $this->get('http://app.kiban.test/entrar/ir?company=app.kiban.test/oficina/frota')->assertRedirect($oficina->url('/'));
     }
 
     public function test_removed_from_the_team_in_the_core_loses_access(): void
@@ -157,11 +180,12 @@ class SingleSignOnTest extends TestCase
         $user->forgetRoles();
         $this->assertSame('admin', $user->roleIn($this->padaria));
 
-        // Removed from the company in the Core: signed out at the next check (asked with the app's own access).
+        // Removed from the company in the Core: out of it at the next check (asked with the app's own access).
+        // The person stays signed in for the other companies they belong to.
         $this->travel(11)->minutes();
         unset($this->coreMembers['padaria'][$user->core_id]);
         $this->get($this->padaria->url('/'))->assertForbidden()->assertSee(__('app.no_access.title'));
-        $this->assertGuest();
+        $this->assertAuthenticated();
         $this->assertNull($user->fresh()->roleIn($this->padaria));
     }
 
@@ -169,10 +193,10 @@ class SingleSignOnTest extends TestCase
     {
         $this->coreKnowsPerson([['uuid' => $this->padaria->uuid, 'name' => 'Padaria', 'subdomain' => 'padaria', 'role' => 'member']]);
         $flow = $this->startSignIn();
-        $handoff = $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state'])->headers->get('Location');
+        $response = $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$flow['state']);
 
         // "Remember me" cookie, valid for 30 days.
-        $cookie = collect($this->get($handoff)->headers->getCookies())->first(fn ($cookie): bool => str_starts_with($cookie->getName(), 'remember_web_'));
+        $cookie = collect($response->headers->getCookies())->first(fn ($cookie): bool => str_starts_with($cookie->getName(), 'remember_web_'));
         $this->assertNotNull($cookie);
         $this->assertEqualsWithDelta(now()->addDays(30)->getTimestamp(), $cookie->getExpiresTime(), 120);
     }

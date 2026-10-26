@@ -2,25 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tenant;
-use App\Tenancy\TenantResolver;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
- * Web app manifest: lets the phone "install" the system with the Kiban icon, named after the company,
- * opening straight on its start page.
+ * Web app manifest: lets the phone "install" the system with the Kiban icon. One app for every company (single
+ * address): it opens on the last company used on the device.
  */
 class ManifestController extends Controller
 {
-    public function __invoke(Request $request, TenantResolver $resolver): JsonResponse
+    public function __invoke(): JsonResponse
     {
-        $subdomain = $resolver->subdomain($request->getHost());
-        $tenant = $subdomain !== null ? Tenant::query()->where('subdomain', $subdomain)->first() : null;
-        $name = $tenant ? $tenant->name : config('app.name');
+        $name = (string) config('app.name');
 
         return response()->json([
-            'name' => $tenant ? config('app.name').' · '.$name : $name,
+            'name' => $name,
             'short_name' => mb_strimwidth($name, 0, 12, '…'),
             'start_url' => '/',
             'scope' => '/',

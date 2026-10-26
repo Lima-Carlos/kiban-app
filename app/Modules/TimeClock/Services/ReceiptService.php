@@ -32,7 +32,8 @@ class ReceiptService
     /** Signed address of the receipt on the company's address (works without a login). */
     public function url(Punch $punch): string
     {
-        return $this->context->get()->url(ltrim(URL::signedRoute('timeclock.receipt', ['punch' => $punch->getKey()], absolute: false), '/'));
+        // The company is in the address (single address), so the signature covers it too.
+        return URL::signedRoute('timeclock.receipt', ['punch' => $punch->getKey()]);
     }
 
     /**

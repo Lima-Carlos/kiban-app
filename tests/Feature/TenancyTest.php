@@ -104,6 +104,16 @@ class TenancyTest extends TestCase
         $this->signIn($padaria);
 
         $this->get($padaria->url('/'))->assertOk();
-        $this->get($oficina->url('/'))->assertForbidden()->assertSee(__('app.no_access.title'));
+
+        // Another company on the same address: its sign-in checks with the Core, which says no.
+        $this->get($oficina->url('/'))->assertRedirect($oficina->url('/auth/login'));
+        $location = $this->get($oficina->url('/auth/login'))->assertRedirect()->headers->get('Location');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+        $this->get('http://app.kiban.test/auth/callback?code=good-code&state='.$query['state'])
+            ->assertForbidden()->assertSee(__('app.no_access.title'));
+        $this->assertFalse(auth()->user()->belongsToTenant($oficina));
+
+        // Still signed in for the own company.
+        $this->get($padaria->url('/'))->assertOk();
     }
 }

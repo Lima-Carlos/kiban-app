@@ -34,12 +34,16 @@ return [
     ],
     'central' => [
         'title' => 'Sign in',
-        'intro' => 'Type your company address.',
-        'address' => 'Company address',
+        'intro' => 'Sign in with your Kiban account: the system finds your companies.',
+        'login' => 'Sign in with my Kiban account',
+        'or_company' => 'Or type the company name in the address',
+        'address' => 'Company name',
         'placeholder' => 'yourcompany',
-        'not_found' => 'We could not find a company with this address.',
+        'not_found' => 'We could not find a company with this name.',
+        'choose' => 'Choose the company',
+        'choose_intro' => 'You belong to these companies:',
         'go' => 'Continue',
-        'account' => 'Not sure of the address? See it in <a href=":url">My Kiban account</a>.',
+        'account' => 'Not sure of the name? See it in <a href=":url">My Kiban account</a>.',
     ],
     'not_found' => [
         'title' => 'Company not found',
@@ -56,6 +60,7 @@ return [
     'no_access' => [
         'title' => 'No access to this company',
         'body' => 'Your account is not part of the :company team. Ask the person in charge of the company to invite you.',
+        'body_none' => 'Your account is not part of any company using the Kiban systems yet. Ask the person in charge of the company to invite you.',
         'signed_as' => 'You signed in as :email.',
         'account' => 'Go to My Kiban account',
         'retry' => 'Try again',

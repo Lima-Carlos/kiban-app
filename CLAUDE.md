@@ -1,6 +1,6 @@
 # Kiban App (a "casca")
 
-Sistema que os clientes da Kiban usam: uma "casca" única com os módulos (Frota, Ponto...). Cada empresa entra pelo próprio endereço (`padaria.kibancore.com.br`). O login, as licenças e a cobrança ficam no **Kiban Core** (`C:\Projetos\kiban-core`).
+Sistema que os clientes da Kiban usam: uma "casca" única com os módulos (Frota, Ponto...). Todas as empresas usam um endereço só, com a empresa no caminho (`app.kibancore.com.br/padaria/...`). O login, as licenças e a cobrança ficam no **Kiban Core** (`C:\Projetos\kiban-core`).
 
 ## Ambiente
 - Tudo roda no Docker Compose. O PHP **não** está instalado no Windows e não deve ser instalado lá.
@@ -9,7 +9,7 @@ Sistema que os clientes da Kiban usam: uma "casca" única com os módulos (Frota
 - Subir tudo: `docker compose --profile full up -d` (o worker e o scheduler estão no perfil `full`).
 - Endereços (desenvolvimento):
   - central: http://localhost:8090/entrar
-  - empresa: http://{endereço}.localhost:8090 (o Chrome entende `*.localhost` sozinho)
+  - empresa: http://localhost:8090/{empresa} (a empresa no caminho; `App\Http\Kernel` + `App\Tenancy\TenantPath` a separam do resto do endereço)
   - o Core precisa estar ligado em http://localhost:8080
 - Portas próprias (não batem com as do Core): site 8090, banco 5433, Redis 6380.
 - Testes: `docker compose exec app php artisan test` (usam o banco separado `kiban_app_test` e um Core simulado, nunca o real).
@@ -55,7 +55,8 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Menus por papel: `shouldRegisterNavigation()` nas telas. O app é instalável (manifest + `public/sw.js`).
 
 ## Login (sem senhas aqui)
-- Todo login passa pelo Core (OAuth2 + PKCE), em `App\Http\Controllers\Auth\SingleSignOnController`. O retorno é sempre no endereço central (`/auth/callback`), e um bilhete de uso único leva a pessoa para o endereço da empresa.
+- Todo login passa pelo Core (OAuth2 + PKCE), em `App\Http\Controllers\Auth\SingleSignOnController`. O retorno é sempre `/auth/callback` (sem empresa). Um login vale para todas as empresas da pessoa; cada empresa confere a sua participação (`RevalidateMembership`, por empresa). Página central `/entrar`: login sem saber a empresa, última empresa lembrada (cookie `kiban_empresa`).
+- Endereço único: nunca montar endereço de empresa à mão; usar `Tenant::url()`, `url()`/`route()` (já levam a empresa) e `asset()` (raiz). Nomes reservados em `TenantResolver::RESERVED` (o Core também bloqueia).
 - A cada 10 minutos, `RevalidateMembership` pergunta ao Core (acesso do sistema, `CoreClient::member`) se a pessoa ainda faz parte da empresa. Se o Core estiver fora, a pessoa continua trabalhando. Login fica lembrado por 30 dias.
 
 ## Licença

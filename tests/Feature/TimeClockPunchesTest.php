@@ -217,13 +217,13 @@ class TimeClockPunchesTest extends TestCase
         $punch = app(PunchService::class)->punch($employee, ['photo_path' => 'a.jpg']);
         $receipts = app(ReceiptService::class);
         $url = $receipts->url($punch);
-        $this->assertStringStartsWith('http://instaladora.kiban.test/ponto/comprovante/'.$punch->id.'?', $url);
+        $this->assertStringStartsWith('http://app.kiban.test/instaladora/ponto/comprovante/'.$punch->id.'?', $url);
 
         auth()->logout();
         $this->get($url)->assertOk()->assertSee($receipts->verificationCode($punch))->assertSee('Paulo')->assertSee('CPF 529.982.247-25');
         $this->get(str_replace('signature=', 'signature=x', $url))->assertForbidden();
 
-        $pdf = $this->get($this->company->url(ltrim(URL::signedRoute('timeclock.receipt.pdf', ['punch' => $punch->id], absolute: false), '/')));
+        $pdf = $this->get(URL::signedRoute('timeclock.receipt.pdf', ['punch' => $punch->id]));
         $pdf->assertOk()->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', $pdf->getContent());
         $this->assertMatchesRegularExpression('/^[0-9A-F]{4}(-[0-9A-F]{4}){3}$/', $receipts->verificationCode($punch));

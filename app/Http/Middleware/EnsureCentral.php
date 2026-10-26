@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Pages that only exist on the central address (APP_URL), never on a company address.
+ * Pages of the app itself (no company in the address), never inside a company's address.
  */
 class EnsureCentral
 {
@@ -16,7 +16,7 @@ class EnsureCentral
 
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($this->resolver->isCentral($request->getHost()), 404);
+        abort_unless($this->resolver->isCentral($request), 404);
 
         return $next($request);
     }

@@ -7,6 +7,7 @@ use App\Modules\TimeClock\Models\Kiosk;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\Services\KioskService;
 use App\Modules\TimeClock\TimeClockModule;
+use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -101,7 +102,7 @@ class KioskResource extends ModuleResource
                     ->modalDescription(__('timeclock.kiosks.activate_help'))
                     ->action(function (Kiosk $record, $livewire): void {
                         $secret = app(KioskService::class)->activate($record);
-                        Cookie::queue(Cookie::make(KioskService::COOKIE, $secret, KioskService::COOKIE_MINUTES, secure: request()->isSecure(), httpOnly: true, sameSite: 'lax'));
+                        Cookie::queue(Cookie::make(KioskService::COOKIE, $secret, KioskService::COOKIE_MINUTES, path: '/'.app(TenantContext::class)->get()->subdomain, secure: request()->isSecure(), httpOnly: true, sameSite: 'lax'));
 
                         // The tablet never stays open with the manager's login.
                         Auth::guard('web')->logout();

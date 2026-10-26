@@ -56,11 +56,9 @@ class Tenant extends Model
         $this->license = null;
     }
 
+    /** The company's address on the single address of the app: app.kibancore.com.br/<company>/<path>. */
     public function url(string $path = '/'): string
     {
-        $base = parse_url((string) config('app.url'));
-        $port = isset($base['port']) ? ':'.$base['port'] : '';
-
-        return ($base['scheme'] ?? 'https').'://'.$this->subdomain.'.'.config('kiban.tenant_domain').$port.'/'.ltrim($path, '/');
+        return rtrim(rtrim((string) config('app.url'), '/').'/'.$this->subdomain.'/'.ltrim($path, '/'), '/');
     }
 }

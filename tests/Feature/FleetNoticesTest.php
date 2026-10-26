@@ -127,8 +127,8 @@ class FleetNoticesTest extends TestCase
         $notice = $this->driver->notifications()->sole();
         $this->assertSame(__('fleet.notices.request_rejected', ['plate' => 'CAR1A11', 'kind' => __('fleet.enums.service_kind.wash')]), $notice->data['title']);
         $this->assertStringContainsString('Já foi lavado ontem', $notice->data['body']);
-        // The button opens the company's own address (only the path is kept).
-        $this->assertSame('/frota/solicitacoes', $notice->data['actions'][0]['url']);
+        // The button opens the company's own address (only the path, with the company, is kept).
+        $this->assertSame('/transportes/frota/solicitacoes', $notice->data['actions'][0]['url']);
     }
 
     public function test_each_person_reads_in_their_language(): void

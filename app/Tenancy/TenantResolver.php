@@ -2,34 +2,50 @@
 
 namespace App\Tenancy;
 
+use Illuminate\Http\Request;
+
 /**
- * Reads the company address from the host name: padaria.kibancore.com.br → "padaria".
- * The central address (APP_URL, e.g. app.kibancore.com.br) is not a company.
+ * Reads the company from the first part of the path, on the single address of the app:
+ * app.kibancore.com.br/padaria/ponto/apuracao → "padaria" (the rest of the app sees /ponto/apuracao).
+ * Addresses without a company (the app's own pages and files) are "central".
  */
 class TenantResolver
 {
-    public function isCentral(string $host): bool
+    /** The request attribute with the company of the path (set by TenantPath). */
+    public const ATTRIBUTE = 'kiban_tenant_path';
+
+    /**
+     * First parts of the path that belong to the app itself, never to a company (the Core blocks them as company
+     * names too).
+     */
+    public const RESERVED = [
+        'entrar', 'auth', 'idioma', 'manifest.webmanifest', 'sw.js', 'livewire', 'storage', 'css', 'js', 'fonts',
+        'images', 'build', 'filament', 'vendor', 'favicon.ico', 'robots.txt', 'up', 'api',
+    ];
+
+    /** The company name in a path ("/padaria/ponto" → "padaria"), or null. */
+    public function slugFromPath(string $path): ?string
     {
-        return mb_strtolower($host) === mb_strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+        $first = mb_strtolower(explode('/', ltrim($path, '/'))[0] ?? '');
+
+        if ($first === '' || in_array($first, self::RESERVED, true) || str_starts_with($first, 'livewire')) {
+            return null;
+        }
+
+        // Same format the Core accepts for a company's address.
+        return preg_match('/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/', $first) === 1 ? $first : null;
     }
 
-    public function subdomain(string $host): ?string
+    /** The company of the current request (after TenantPath), or null on the app's own pages. */
+    public function slug(Request $request): ?string
     {
-        $host = mb_strtolower($host);
+        $slug = $request->attributes->get(self::ATTRIBUTE);
 
-        if ($this->isCentral($host)) {
-            return null;
-        }
+        return is_string($slug) ? $slug : null;
+    }
 
-        $suffix = '.'.mb_strtolower((string) config('kiban.tenant_domain'));
-
-        if (! str_ends_with($host, $suffix)) {
-            return null;
-        }
-
-        $subdomain = substr($host, 0, -strlen($suffix));
-
-        // One level only, same format the Core accepts.
-        return preg_match('/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/', $subdomain) === 1 ? $subdomain : null;
+    public function isCentral(Request $request): bool
+    {
+        return $this->slug($request) === null;
     }
 }

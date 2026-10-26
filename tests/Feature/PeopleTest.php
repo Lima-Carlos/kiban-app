@@ -65,7 +65,7 @@ class PeopleTest extends TestCase
             && $request->method() === 'POST'
             && $request['phone'] === '(11) 98888-7777'
             && $request['invited_by'] === $this->owner->name);
-        $this->assertSame('http://transportes.kiban.test/auth/login', $this->lastInvitationNext);
+        $this->assertSame('http://app.kiban.test/transportes/auth/login', $this->lastInvitationNext);
 
         $person = User::query()->where('name', 'João Pereira')->sole();
         $this->assertSame('5511988887777', $person->phone);
@@ -184,7 +184,8 @@ class PeopleTest extends TestCase
             ->assertOk()
             ->assertJsonPath('display', 'standalone')
             ->assertJsonPath('start_url', '/')
-            ->assertJsonPath('short_name', 'Transportes');
+            ->assertJsonPath('scope', '/')
+            ->assertJsonPath('name', config('app.name'));
 
         $this->get($this->company->url('/'))->assertSee('manifest.webmanifest', false)->assertSee(__('app.install.title'));
         $this->assertFileExists(public_path('sw.js'));

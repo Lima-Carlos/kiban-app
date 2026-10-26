@@ -1,5 +1,5 @@
 {{-- Lets phones install the app (icon on the home screen). --}}
-<link rel="manifest" href="{{ url('/manifest.webmanifest') }}">
+<link rel="manifest" href="{{ rtrim(config('app.url'), '/') }}/manifest.webmanifest">
 <meta name="theme-color" content="{{ config('kiban.brand.blue') }}">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">

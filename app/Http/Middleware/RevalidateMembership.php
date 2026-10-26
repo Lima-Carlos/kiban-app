@@ -14,7 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Every few minutes, asks the Core (with the app's own access) if the signed-in person still belongs to
- * the company: someone removed in the Core or in "People" loses access here too, and the role is updated.
+ * the company: someone removed in the Core or in "People" loses access to it here too, and the role is updated.
+ * One sign-in serves every company of the person (single address); each company checks its own membership.
  * It works the same for people who stay signed in for days on their phone.
  *
  * If the Core is down, the person keeps working: only a clear "no" from the Core signs them out.
@@ -39,11 +40,13 @@ class RevalidateMembership
         $tenant = $this->context->get();
         $session = $request->session();
 
+        // Signed in, but this company is not (yet) theirs here: the Core sign-in of this company checks it
+        // (it adds the company if the Core says the person belongs to it).
         if (! $user->belongsToTenant($tenant)) {
-            return $this->signOut($request);
+            return redirect()->guest($tenant->url('/auth/login'));
         }
 
-        $checkedAt = (int) $session->get(CoreSignIn::SESSION_CHECKED, 0);
+        $checkedAt = (int) $session->get(CoreSignIn::checkedKey($tenant), 0);
 
         if ($checkedAt > now()->subMinutes((int) config('kiban.license.membership_check_minutes'))->getTimestamp()) {
             return $next($request);
@@ -59,21 +62,18 @@ class RevalidateMembership
         if ($member === null || ($member['status'] ?? null) === 'blocked') {
             $user->tenants()->detach($tenant->getKey());
 
-            return $this->signOut($request);
+            return $this->noAccess();
         }
 
         $this->signIn->syncMember($member, $tenant);
-        $session->put(CoreSignIn::SESSION_CHECKED, now()->getTimestamp());
+        $session->put(CoreSignIn::checkedKey($tenant), now()->getTimestamp());
 
         return $next($request);
     }
 
-    protected function signOut(Request $request): Response
+    /** Out of this company only: the person stays signed in for the other companies they belong to. */
+    protected function noAccess(): Response
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
         return response()->view('auth.no-access', ['tenant' => $this->context->get(), 'email' => null], 403);
     }
 }

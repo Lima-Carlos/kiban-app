@@ -10,20 +10,21 @@ use App\Http\Controllers\TimeClock\ReceiptController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| Central address (APP_URL): choose the company and receive the person back from the Core sign-in.
+| The app's own pages (no company in the address): the companies of the person, the sign-in without a company
+| and the return from the Core sign-in.
 */
 Route::middleware(['central', 'locale'])->group(function (): void {
     Route::get('/entrar', [CentralController::class, 'home'])->name('central.home');
     Route::get('/entrar/ir', [CentralController::class, 'go'])->name('central.go');
+    Route::get('/entrar/conta', [SingleSignOnController::class, 'centralLogin'])->name('central.login');
     Route::get('/auth/callback', [SingleSignOnController::class, 'callback'])->name('sso.callback');
 });
 
 /*
-| Company address (<subdomain>.<domain>): sign-in through the Core. The screens themselves are the Filament panel.
+| A company's address (app.../<company>/...): sign-in through the Core. The screens themselves are the Filament panel.
 */
 Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::get('/auth/login', [SingleSignOnController::class, 'login'])->name('login');
-    Route::get('/auth/handoff', [SingleSignOnController::class, 'handoff'])->name('sso.handoff');
     Route::get('/auth/signed-out', [SingleSignOnController::class, 'signedOut'])->name('sso.signed-out');
 
     // Frota: page for the fuel station (no login). Few attempts per minute: codes cannot be guessed.
@@ -37,11 +38,11 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::post('/relogio/ciente', [KioskController::class, 'acknowledge'])->name('timeclock.kiosk.acknowledge');
 
     // Ponto: receipt of a punch at a signed address (works without a login, e.g. from the QR code on the tablet).
-    Route::get('/ponto/comprovante/{punch}', [ReceiptController::class, 'show'])->middleware('signed:relative')->whereNumber('punch')->name('timeclock.receipt');
-    Route::get('/ponto/comprovante/{punch}/pdf', [ReceiptController::class, 'pdf'])->middleware('signed:relative')->whereNumber('punch')->name('timeclock.receipt.pdf');
+    Route::get('/ponto/comprovante/{punch}', [ReceiptController::class, 'show'])->middleware('signed')->whereNumber('punch')->name('timeclock.receipt');
+    Route::get('/ponto/comprovante/{punch}/pdf', [ReceiptController::class, 'pdf'])->middleware('signed')->whereNumber('punch')->name('timeclock.receipt.pdf');
 });
 
-// Language switch (works on the central address and on every company address).
+// Language switch (works on the app's own pages and inside every company).
 Route::get('/idioma/{locale}', LocaleController::class)->name('locale.switch');
 
 // Installable app (icon on the phone home screen).

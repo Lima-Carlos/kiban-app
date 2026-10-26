@@ -29,18 +29,6 @@ return [
         'timeout' => 5,
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Companies (tenants)
-    |--------------------------------------------------------------------------
-    |
-    | Each company uses its own address: <subdomain>.<tenant_domain> (for example
-    | padaria.kibancore.com.br, or padaria.localhost:8090 in development).
-    |
-    */
-
-    'tenant_domain' => env('KIBAN_TENANT_DOMAIN', 'localhost'),
-
     'license' => [
         // Ask the Core for a new license this often (the Core may suggest another value).
         'refresh_seconds' => 300,

@@ -11,6 +11,7 @@ use App\Modules\ModuleRegistry;
 use App\Tenancy\TenantContext;
 use Filament\Auth\Http\Responses\Contracts\LogoutResponse as LogoutResponseContract;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Single address (app.../<company>/...): files (images, styles, scripts) are the same for every company,
+        // at the root of the app, never under a company's path.
+        URL::useAssetOrigin((string) config('app.url'));
+
         // Access rules of each module (license, read-only, first steps, limits).
         foreach (app(ModuleRegistry::class)->all() as $module) {
             foreach ($module->policies() as $model => $policy) {

@@ -141,7 +141,7 @@ abstract class TestCase extends BaseTestCase
         $user = User::factory()->memberOf($tenant, $role)->create();
         $this->actingAs($user);
         $this->withSession([
-            CoreSignIn::SESSION_CHECKED => now()->getTimestamp(),
+            CoreSignIn::checkedKey($tenant) => now()->getTimestamp(),
         ]);
         $this->coreMe = $this->coreMeFor($user, [$tenant], $role);
         $this->coreMember($tenant, $user, $role);
