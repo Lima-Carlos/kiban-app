@@ -26,6 +26,11 @@ As portas são diferentes das do Core (8080, 5432, 6379), então os dois rodam j
 - `TRUSTED_PROXIES` (opcional): quem pode avisar que a pessoa chegou com cadeado e por qual porta (o Caddy no teste externo, o proxy da VPS). Padrão `*`.
 - **Teste no celular de verdade:** o comando `teste-externo ligar` / `desligar`, que fica no Core (veja `kiban-core/docs/arquivos/teste-externo.md`), troca `APP_URL`, `KIBAN_CORE_URL` e `APP_DEBUG` daqui junto com os do Core.
 
+## Dados de demonstração (`php artisan kiban:demo`)
+- Recomeça os dados do zero, **só no PC**: apaga todas as empresas, pessoas, veículos, batidas, fotos e avisos, e preenche a empresa de demonstração do Core (`transportes-demo`). Ela recebe os papéis de cada conta, 3 veículos, abastecimentos, uma manutenção, um local de trabalho, o horário e as batidas dos últimos dias.
+- Roda junto com o do Core pelo atalho **`dados-demo`** (na pasta do Core); veja `kiban-core/docs/arquivos/dados-demo.md`.
+- Arquivo: `app/Console/Commands/ResetDemoData.php`. Testes: `tests/Feature/DemoDataTest.php`.
+
 ## Agendador (`routes/console.php`)
 - `kiban:licenses`, a cada 5 minutos: renova as licenças e envia os primeiros passos ao Core.
 - `kiban:fleet`, de hora em hora: rotina da Frota (códigos de abastecimento não finalizados expiram).
