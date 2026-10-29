@@ -10,10 +10,13 @@ use App\Modules\Fleet\Models\FuelUp;
 use App\Modules\Fleet\Models\Maintenance;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
+use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
+use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\PunchService;
 use App\Tenancy\TenantContext;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -68,6 +71,18 @@ class DemoDataTest extends TestCase
             $this->assertSame(2, Employee::count());
             $this->assertGreaterThan(50, Punch::count());
             $this->assertNull(app(PunchService::class)->brokenLink());
+
+            // Recent dates: the last fuel-up 2 days ago, the punches in the last working days, hired 5 weeks ago.
+            $this->assertGreaterThan(now()->subDays(3), CarbonImmutable::parse(FuelUp::query()->max('fueled_at')));
+            $this->assertGreaterThan(now()->subDays(12), CarbonImmutable::parse(Punch::query()->max('punched_at')));
+            $this->assertGreaterThan(now()->subDays(40), CarbonImmutable::parse(FuelUp::query()->min('fueled_at')));
+            $this->assertSame(now('America/Sao_Paulo')->startOfMonth()->subMonth()->toDateString(), Employee::query()->value('admitted_on')->toDateString());
+
+            // The previous month closed (when it can already be closed): the driver signed, the employee not yet.
+            if (app(MonthClosing::class)->canClose(now('America/Sao_Paulo')->startOfMonth()->subMonth(), 'America/Sao_Paulo')) {
+                $this->assertSame(2, Closing::count());
+                $this->assertSame(1, Closing::query()->whereNotNull('signed_at')->count());
+            }
         });
 
         // Dates are back to normal after the command.

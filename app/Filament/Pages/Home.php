@@ -36,7 +36,8 @@ class Home extends Page
 
     public function getTitle(): string|Htmlable
     {
-        return __('app.home.welcome', ['name' => $this->tenant()->name]);
+        // "Welcome, Maria" (the person's first name).
+        return __('app.home.welcome', ['name' => (string) str((string) auth()->user()?->name)->trim()->before(' ')]);
     }
 
     /**

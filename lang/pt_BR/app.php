@@ -12,7 +12,7 @@ return [
         'no_access' => 'Você ainda não tem acesso a nenhum sistema',
         'no_access_help' => 'Peça ao gestor da sua empresa para liberar o seu acesso em Pessoas.',
         'title' => 'Início',
-        'welcome' => 'Bem-vindo(a) à :name',
+        'welcome' => 'Bem-vindo(a), :name',
         'progress' => 'Primeiros passos: :done de :total concluídos.',
         'all_done' => 'Primeiros passos concluídos. Tudo pronto para usar!',
         'locked' => 'Disponível depois de: :steps',

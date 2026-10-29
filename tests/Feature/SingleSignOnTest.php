@@ -91,7 +91,7 @@ class SingleSignOnTest extends TestCase
         $this->assertSame('maria@padaria.test', $user->email);
         $this->assertSame('admin', $user->roleIn($this->padaria));
         $this->assertTrue(Auth::user()->is($user));
-        $this->get($this->padaria->url('/'))->assertOk()->assertSee('Padaria');
+        $this->get($this->padaria->url('/'))->assertOk()->assertSee(__('app.home.welcome', ['name' => 'Maria']));
     }
 
     public function test_sign_in_links_cannot_be_reused_or_finished_in_another_browser(): void

@@ -12,7 +12,7 @@ return [
         'no_access' => 'You do not have access to any system yet',
         'no_access_help' => 'Ask your company manager to give you access in People.',
         'title' => 'Home',
-        'welcome' => 'Welcome to :name',
+        'welcome' => 'Welcome, :name',
         'progress' => 'First steps: :done of :total done.',
         'all_done' => 'First steps done. Everything is ready to use!',
         'locked' => 'Available after: :steps',

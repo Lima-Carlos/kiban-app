@@ -49,6 +49,11 @@ class TeamsPage extends Page implements HasActions, HasSchemas, HasTable
         return PeoplePage::canAccess();
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return __('app.teams.title');
+    }
+
     public function getTitle(): string
     {
         return __('app.teams.title');

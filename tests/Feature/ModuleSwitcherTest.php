@@ -55,6 +55,10 @@ class ModuleSwitcherTest extends TestCase
             ->assertDontSee(TimesheetPage::getNavigationLabel())
             ->assertSee(__('app.menu.company'))
             ->assertSee(__('app.people.title'))
+            ->assertSee(__('app.teams.title'))
+            ->assertDontSee('Teams Page')
+            // The greeting uses the person's first name.
+            ->assertSee(__('app.home.welcome', ['name' => strtok($this->owner->name, ' ')]))
             // Files stay at the root, never under the company's path.
             ->assertSee('src="http://app.kiban.test/images/brand/logo.png"', false)
             ->assertDontSee('/instaladora/images/', false);

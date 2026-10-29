@@ -19,6 +19,7 @@ use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\Services\HolidayCalendar;
+use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\PunchPhotoStore;
 use App\Modules\TimeClock\Services\PunchService;
@@ -37,7 +38,7 @@ use Illuminate\Support\Facades\Storage;
  * Test data from zero (only on the PC): erases every company, person, record and file of the app and creates the
  * data of the demonstration company of the Core ("transportes-demo", created first by kiban:demo in the Core):
  * the roles of each account in Frota and Ponto, 3 vehicles with fuel-ups and a maintenance, a workplace, a
- * schedule and the punches of the last days. Run both with "dados-demo" (in the kiban-core folder).
+ * schedule, the punches since the 1st of the previous month and that month closed (one time sheet signed). Run both with "dados-demo" (in the kiban-core folder).
  */
 class ResetDemoData extends Command
 {
@@ -52,6 +53,9 @@ class ResetDemoData extends Command
 
     protected const TZ = 'America/Sao_Paulo';
 
+    /** The real today, taken once before any demo moment is set (every date counts from it). */
+    protected CarbonImmutable $today;
+
     public function handle(LicenseManager $licenses, CoreClient $core, CoreSignIn $signIn, TenantContext $context): int
     {
         if (! app()->environment(['local', 'testing'])) {
@@ -64,6 +68,7 @@ class ResetDemoData extends Command
             return self::FAILURE;
         }
 
+        $this->today = CarbonImmutable::now(self::TZ)->startOfDay();
         $this->erase();
 
         try {
@@ -116,7 +121,7 @@ class ResetDemoData extends Command
         $owner = $users['dono.demo@exemplo.test'];
         $people = app(PeopleService::class);
         $person = fn (string $email): Person => Person::query()->where('user_id', $users[$email]->getKey())->sole();
-        $start = CarbonImmutable::now(self::TZ)->startOfDay()->subDays(35);
+        $start = $this->today->subDays(35);
 
         // --- Frota: 3 vehicles (registered 5 weeks ago), a station, a workshop, the driver and the manager.
         $this->at($start->setTime(9, 0));
@@ -142,7 +147,7 @@ class ResetDemoData extends Command
         foreach ([28, 21, 14, 7, 2] as $round => $daysAgo) {
             foreach ($fuel as [$index, , $km, $liters, $cents]) {
                 $vehicle = $vehicles[$index];
-                $this->at(CarbonImmutable::now(self::TZ)->startOfDay()->subDays($daysAgo)->setTime(7 + $index, 15 + $round));
+                $this->at($this->today->subDays($daysAgo)->setTime(7 + $index, 15 + $round));
                 app(FuelService::class)->register([
                     'vehicle' => $vehicle, 'station' => $station, 'driver_id' => $index < 2 ? $driverId : null,
                     'odometer' => $vehicle->fresh()->odometer + $km + $round * 7, 'volume' => $liters + $round, 'total_cents' => $cents + $round * 450,
@@ -152,7 +157,7 @@ class ResetDemoData extends Command
         }
 
         // A preventive maintenance of the pickup (oil change), 10 days ago.
-        $this->at(CarbonImmutable::now(self::TZ)->startOfDay()->subDays(10)->setTime(15, 0));
+        $this->at($this->today->subDays(10)->setTime(15, 0));
         app(MaintenanceService::class)->recordMaintenance($vehicles[0], [
             'type' => 'preventive', 'services' => ['oil_change', 'filters'], 'performed_on' => now()->toDateString(),
             'odometer' => $vehicles[0]->fresh()->odometer + 50, 'workshop_id' => $workshop->getKey(),
@@ -174,7 +179,7 @@ class ResetDemoData extends Command
             $record->setDocument($cpf);
             $record->save();
             $people->saveModules($record, ['ponto' => [
-                'clocks_in' => true, 'admitted_on' => $start->toDateString(), 'job_title' => $job, 'registration' => $registration,
+                'clocks_in' => true, 'admitted_on' => $this->today->startOfMonth()->subMonth()->toDateString(), 'job_title' => $job, 'registration' => $registration,
                 'workplace_id' => $garage->getKey(), 'schedule_id' => $schedule->getKey(),
             ]]);
             app(PhotoNoticeService::class)->record(Employee::query()->where('person_id', $record->getKey())->sole(), 'phone', $users[$email]);
@@ -184,23 +189,25 @@ class ResetDemoData extends Command
     }
 
     /**
-     * The last 7 working days (the employee forgot the last punch two days ago) and today's start of the driver.
+     * Every working day since the hiring (the 1st of the previous month), today's start of the driver (the
+     * employee forgot the last punch two working days ago), then the previous month closed: the driver signed the
+     * time sheet, the employee still has to.
      *
      * @param  array<string, User>  $users
      */
     protected function punches(array $users, Workplace $garage): void
     {
-        $today = CarbonImmutable::now(self::TZ)->startOfDay();
+        $today = $this->today;
         $holidays = app(HolidayCalendar::class);
         $days = [];
 
-        for ($day = $today->subDay(); count($days) < 7; $day = $day->subDay()) {
+        for ($day = $today->startOfMonth()->subMonth(); $day->lt($today); $day = $day->addDay()) {
             if ($day->isWeekday() && $holidays->holidayOn($day) === null) {
                 $days[] = $day;
             }
         }
 
-        foreach (array_reverse($days) as $position => $day) {
+        foreach ($days as $position => $day) {
             foreach (['motorista.demo@exemplo.test' => 0, 'funcionario.demo@exemplo.test' => 3] as $email => $offset) {
                 $times = ['08:0'.(($position + $offset) % 6), '12:0'.(($position * 2 + $offset) % 7), '13:0'.(($position + $offset * 2) % 5), '18:'.str_pad((string) (($position * 3 + $offset) % 12), 2, '0', STR_PAD_LEFT)];
 
@@ -216,8 +223,32 @@ class ResetDemoData extends Command
         }
 
         // Today the driver already started (if the day already started).
-        if (CarbonImmutable::now(self::TZ)->format('H:i') > '08:05' && $today->isWeekday()) {
+        if ($this->realNow()->format('H:i') > '08:05' && $today->isWeekday()) {
             $this->punch($users['motorista.demo@exemplo.test'], $today, '08:03', $garage);
+        }
+
+        $this->closePreviousMonth($users);
+    }
+
+    /**
+     * @param  array<string, User>  $users
+     */
+    protected function closePreviousMonth(array $users): void
+    {
+        $this->realNow();
+        $month = $this->today->startOfMonth()->subMonth();
+        $closing = app(MonthClosing::class);
+
+        if (! $closing->canClose($month, self::TZ)) {
+            return;
+        }
+
+        $closing->closeAll($month, $users['dono.demo@exemplo.test']);
+        $driver = Employee::query()->whereHas('person', fn ($query) => $query->where('user_id', $users['motorista.demo@exemplo.test']->getKey()))->sole();
+        $signed = $closing->current($driver, $month);
+
+        if ($signed !== null) {
+            $closing->sign($signed, $users['motorista.demo@exemplo.test'], '127.0.0.1', 'Dados de demonstração');
         }
     }
 
@@ -249,6 +280,14 @@ class ResetDemoData extends Command
         imagedestroy($image);
 
         return 'data:image/jpeg;base64,'.base64_encode((string) ob_get_clean());
+    }
+
+    protected function realNow(): CarbonImmutable
+    {
+        CarbonImmutable::setTestNow();
+        Carbon::setTestNow();
+
+        return CarbonImmutable::now(self::TZ);
     }
 
     /** The moment the demo data happens (records keep their real date). */
