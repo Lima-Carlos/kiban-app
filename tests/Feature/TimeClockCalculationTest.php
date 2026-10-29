@@ -120,12 +120,18 @@ class TimeClockCalculationTest extends TestCase
 
         // A 30-minute lunch after 9 hours of work: short break warning.
         $this->punch($rui, '2026-11-10 08:00', '2026-11-10 12:00', '2026-11-10 12:30', '2026-11-10 17:30');
-        $this->assertContains('short_break', $this->day($rui, '2026-11-10')['flags']);
+        $short = $this->day($rui, '2026-11-10');
+        $this->assertContains('short_break', $short['flags']);
+        // The warning says how long the break was.
+        $this->assertSame(30, $short['break_minutes']);
+        $this->assertSame(__('timeclock.timesheet.flags.short_break_minutes', ['minutes' => 30]), DayCalculator::flagLabel('short_break', $short));
 
         // Left at 23:00 and came back at 08:00: less than 11 hours of rest.
         $this->punch($rui, '2026-11-12 08:00', '2026-11-12 12:00', '2026-11-12 13:00', '2026-11-12 23:00');
         $this->punch($rui, '2026-11-13 08:00', '2026-11-13 12:00', '2026-11-13 13:00', '2026-11-13 18:00');
-        $this->assertContains('short_rest', $this->day($rui, '2026-11-13')['flags']);
+        $rest = $this->day($rui, '2026-11-13');
+        $this->assertContains('short_rest', $rest['flags']);
+        $this->assertSame(540, $rest['rest_minutes']); // 23:00 → 08:00
         $this->assertSame(300, $this->day($rui, '2026-11-12')['extra']);
     }
 

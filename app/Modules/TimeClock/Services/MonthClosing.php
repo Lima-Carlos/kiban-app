@@ -287,7 +287,7 @@ class MonthClosing
                 'punches' => array_map(fn (array $punch): array => ['at' => $punch['at']->toIso8601String(), 'kind' => $punch['kind']], $day['punches']),
                 'ignored' => count($day['ignored']),
                 'excuses' => collect($day['adjustments'])->where('type', Adjustment::EXCUSE)->map(fn (Adjustment $adjustment): ?int => $adjustment->minutes)->values()->all(),
-            ] + array_intersect_key($day, array_flip(['expected', 'worked', 'excused', 'extra', 'extra_rest', 'deficit', 'absence', 'night', 'night_reduced', 'flags']));
+            ] + array_intersect_key($day, array_flip(['expected', 'worked', 'excused', 'extra', 'extra_rest', 'deficit', 'absence', 'night', 'night_reduced', 'flags', 'break_minutes', 'rest_minutes']));
         }
 
         return $copy;

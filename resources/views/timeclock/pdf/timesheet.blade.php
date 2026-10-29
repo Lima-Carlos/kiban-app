@@ -89,7 +89,7 @@
                     <td>
                         {{ collect([
                             $day['absence'] ? __('timeclock.timesheet.flags.absence') : null,
-                            ...array_map(fn (string $flag): string => __('timeclock.timesheet.flags.'.$flag), $day['flags']),
+                            ...array_map(fn (string $flag): string => \App\Modules\TimeClock\Services\DayCalculator::flagLabel($flag, $day), $day['flags']),
                             ...collect($day['adjustments'])->where('type', Adjustment::EXCUSE)->map(fn ($excuse): string => $excuse->minutes === null ? __('timeclock.timesheet.excused_day') : __('timeclock.timesheet.excused', ['hours' => ScheduleCalendar::hours($excuse->minutes)]))->all(),
                             count($day['ignored']) > 0 ? trans_choice('timeclock.timesheet.ignored', count($day['ignored']), ['count' => count($day['ignored'])]) : null,
                         ])->filter()->implode(' · ') }}

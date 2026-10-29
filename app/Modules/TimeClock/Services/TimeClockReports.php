@@ -12,8 +12,8 @@ use Filament\Support\Facades\FilamentTimezone;
 
 /**
  * Numbers of the Ponto dashboard (managers and viewers):
- * - right now: who is working, on a break, done, late (no punch after the expected start plus the tolerance)
- *   and who is expected later; punches outside the workplace today;
+ * - right now: who is working, on a break, done, late (no punch after the expected start plus the tolerance),
+ *   did not come (the shift is over without a punch) and who is expected later; punches outside the workplace today;
  * - a month: the company's overtime, days off/holidays, minutes short, absences, night, hour bank and the people
  *   with the most overtime, absences and bank balance. Closed months use the frozen copy.
  */
@@ -36,7 +36,7 @@ class TimeClockReports
      */
     public function now(): array
     {
-        $result = ['working' => [], 'break' => [], 'done' => [], 'late' => [], 'later' => [], 'excused' => [], 'outside' => 0, 'expected' => 0];
+        $result = ['working' => [], 'break' => [], 'done' => [], 'late' => [], 'absent' => [], 'later' => [], 'excused' => [], 'outside' => 0, 'expected' => 0];
         $tolerance = (int) TimeClockSetting::current()->tolerance_punch_minutes;
 
         foreach (Employee::query()->active()->with(['person', 'workplace'])->get()->sortBy(fn (Employee $employee): string => mb_strtolower((string) $employee->person?->name)) as $employee) {
@@ -77,7 +77,10 @@ class TimeClockReports
 
             $start = CarbonImmutable::parse($day['date']->toDateString().' '.$plan['start'], $day['date']->getTimezone());
 
-            if ($now->gt($start->addMinutes($tolerance))) {
+            if ($now->gte($this->planEnd($day['date'], $plan))) {
+                // The shift is over without any punch: did not come (not "late by 12 hours").
+                $result['absent'][] = ['employee' => $employee, 'start' => $plan['start']];
+            } elseif ($now->gt($start->addMinutes($tolerance))) {
                 $result['late'][] = ['employee' => $employee, 'start' => $plan['start'], 'minutes' => intdiv((int) $start->diffInSeconds($now, true), 60)];
             } else {
                 $result['later'][] = ['employee' => $employee, 'start' => $plan['start']];

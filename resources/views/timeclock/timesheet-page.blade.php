@@ -126,7 +126,7 @@
                                             <x-filament::badge color="danger" size="sm">{{ __('timeclock.timesheet.flags.absence') }}</x-filament::badge>
                                         @endif
                                         @foreach ($day['flags'] as $flag)
-                                            <x-filament::badge color="warning" size="sm">{{ __('timeclock.timesheet.flags.'.$flag) }}</x-filament::badge>
+                                            <x-filament::badge color="warning" size="sm">{{ \App\Modules\TimeClock\Services\DayCalculator::flagLabel($flag, $day) }}</x-filament::badge>
                                         @endforeach
                                         @foreach ($day['adjustments'] as $adjustment)
                                             @if ($adjustment->type === Adjustment::EXCUSE)

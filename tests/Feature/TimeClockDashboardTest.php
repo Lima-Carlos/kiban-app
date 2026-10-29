@@ -88,6 +88,12 @@ class TimeClockDashboardTest extends TestCase
         $this->assertSame(['Caio'], collect($now['excused'])->map(fn (Employee $employee): string => $employee->person->name)->all());
         $this->assertSame(4, $now['expected']);
 
+        // After the end of the shift, someone without any punch did not come (not "late by 11 hours").
+        $this->travelTo(CarbonImmutable::parse('2026-11-03 19:00', 'America/Sao_Paulo'));
+        $now = app(TimeClockReports::class)->now();
+        $this->assertSame([], $now['late']);
+        $this->assertSame(['Ana'], collect($now['absent'])->map(fn (array $row): string => $row['employee']->person->name)->all());
+
         // Before the start (plus the tolerance), nobody is late yet.
         $this->travelTo(CarbonImmutable::parse('2026-11-04 08:04', self::TZ));
         $now = app(TimeClockReports::class)->now();

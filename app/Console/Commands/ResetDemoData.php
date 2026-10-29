@@ -209,7 +209,9 @@ class ResetDemoData extends Command
 
         foreach ($days as $position => $day) {
             foreach (['motorista.demo@exemplo.test' => 0, 'funcionario.demo@exemplo.test' => 3] as $email => $offset) {
-                $times = ['08:0'.(($position + $offset) % 6), '12:0'.(($position * 2 + $offset) % 7), '13:0'.(($position + $offset * 2) % 5), '18:'.str_pad((string) (($position * 3 + $offset) % 12), 2, '0', STR_PAD_LEFT)];
+                // Small daily variations; the lunch break always takes 60 to 62 minutes (as most people do).
+                $lunch = ($position * 2 + $offset) % 7;
+                $times = ['08:0'.(($position + $offset) % 6), '12:0'.$lunch, '13:0'.($lunch + ($position + $offset) % 3), '18:'.str_pad((string) (($position * 3 + $offset) % 12), 2, '0', STR_PAD_LEFT)];
 
                 // Forgot to punch out two working days ago: it shows in "Attention" and in the time sheet.
                 if ($email === 'funcionario.demo@exemplo.test' && $position === count($days) - 2) {

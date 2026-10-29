@@ -140,7 +140,7 @@ class DayCalculator
             'ignored' => $adjustments->where('type', Adjustment::IGNORE_PUNCH)->pluck('punch_id')->filter()->values()->all(),
             'adjustments' => $adjustments->values()->all(), 'pending' => $pending,
             'expected' => 0, 'worked' => 0, 'excused' => 0, 'extra' => 0, 'extra_rest' => 0, 'deficit' => 0,
-            'absence' => false, 'night' => 0, 'night_reduced' => 0, 'flags' => [],
+            'absence' => false, 'night' => 0, 'night_reduced' => 0, 'flags' => [], 'break_minutes' => null, 'rest_minutes' => null,
         ];
 
         if (! $result['counts']) {
@@ -178,7 +178,8 @@ class DayCalculator
         $result['night_reduced'] = $settings->night_reduced_hour ? (int) round($result['night'] * 60 / 52.5) : $result['night'];
 
         if ($settings->isBrazil()) {
-            $result['flags'] = array_merge($result['flags'], $this->legalWarnings($pairs, $worked, $previousOut));
+            [$flags, $result['break_minutes'], $result['rest_minutes']] = $this->legalWarnings($pairs, $worked, $previousOut);
+            $result['flags'] = array_merge($result['flags'], $flags);
         }
 
         return $result;
@@ -298,7 +299,7 @@ class DayCalculator
      * (interjornada). Warnings only.
      *
      * @param  Collection<int, array{0: CarbonImmutable, 1: CarbonImmutable}>  $pairs
-     * @return array<int, string>
+     * @return array{0: array<int, string>, 1: ?int, 2: ?int} the warnings, the longest break and the rest before the day (minutes)
      */
     protected function legalWarnings(Collection $pairs, int $worked, ?CarbonImmutable $previousOut): array
     {
@@ -313,11 +314,27 @@ class DayCalculator
             $flags[] = 'short_break';
         }
 
-        if ($previousOut !== null && $pairs->isNotEmpty() && intdiv((int) $previousOut->diffInSeconds($pairs->first()[0], true), 60) < self::MIN_REST_MINUTES) {
+        $rest = $previousOut !== null && $pairs->isNotEmpty() ? intdiv((int) $previousOut->diffInSeconds($pairs->first()[0], true), 60) : null;
+
+        if ($rest !== null && $rest < self::MIN_REST_MINUTES) {
             $flags[] = 'short_rest';
         }
 
-        return $flags;
+        return [$flags, $pairs->count() > 1 ? $longestBreak : null, $rest];
+    }
+
+    /**
+     * The text of a warning of the day: "Break of 59 min", "Rest of 10:30 between days", or the plain warning.
+     *
+     * @param  array<string, mixed>  $day
+     */
+    public static function flagLabel(string $flag, array $day): string
+    {
+        return match (true) {
+            $flag === 'short_break' && isset($day['break_minutes']) => __('timeclock.timesheet.flags.short_break_minutes', ['minutes' => $day['break_minutes']]),
+            $flag === 'short_rest' && isset($day['rest_minutes']) => __('timeclock.timesheet.flags.short_rest_hours', ['hours' => ScheduleCalendar::hours((int) $day['rest_minutes'])]),
+            default => __('timeclock.timesheet.flags.'.$flag),
+        };
     }
 
     /**

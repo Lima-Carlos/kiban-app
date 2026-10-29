@@ -7,6 +7,7 @@
     $columns = [
         'working' => ['color' => 'success', 'items' => $now['working']],
         'late' => ['color' => 'danger', 'items' => $now['late']],
+        'absent' => ['color' => 'danger', 'items' => $now['absent']],
         'break' => ['color' => 'warning', 'items' => $now['break']],
         'later' => ['color' => 'gray', 'items' => $now['later']],
         'done' => ['color' => 'info', 'items' => $now['done']],
@@ -25,7 +26,7 @@
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
             @foreach ($columns as $key => $column)
-                @continue ($column['items'] === [] && in_array($key, ['break', 'done', 'later'], true))
+                @continue ($column['items'] === [] && in_array($key, ['break', 'done', 'later', 'absent'], true))
                 <div>
                     <div style="display:flex;align-items:center;gap:6px;font-weight:600;margin-bottom:4px">
                         <x-filament::badge :color="$column['color']">{{ count($column['items']) }}</x-filament::badge>
@@ -36,7 +37,9 @@
                             <span>{{ $item['employee']->person?->name }}</span>
                             <span style="opacity:.75;font-size:13px;white-space:nowrap">
                                 @if ($key === 'late')
-                                    {{ __('timeclock.dashboard.late_by', ['start' => $item['start'], 'time' => ScheduleCalendar::hours($item['minutes'])]) }}
+                                    {{ __('timeclock.dashboard.late_by', ['time' => $item['minutes'] < 60 ? __('timeclock.dashboard.minutes', ['minutes' => $item['minutes']]) : intdiv($item['minutes'], 60).'h'.str_pad((string) ($item['minutes'] % 60), 2, '0', STR_PAD_LEFT)]) }}
+                                @elseif ($key === 'absent')
+                                    {{ __('timeclock.dashboard.expected_at', ['start' => $item['start']]) }}
                                 @elseif ($key === 'later')
                                     {{ $item['start'] }}
                                 @else

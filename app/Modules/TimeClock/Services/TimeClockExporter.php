@@ -77,7 +77,7 @@ class TimeClockExporter
                     $this->time($day['worked']), $this->time($day['extra']), $this->time($day['extra_rest']), $this->time($day['deficit']), $this->time($day['night_reduced']),
                     collect([
                         $day['absence'] ? __('timeclock.timesheet.flags.absence') : null,
-                        ...array_map(fn (string $flag): string => __('timeclock.timesheet.flags.'.$flag), $day['flags']),
+                        ...array_map(fn (string $flag): string => DayCalculator::flagLabel($flag, $day), $day['flags']),
                         ...collect($day['adjustments'])->where('type', Adjustment::EXCUSE)->map(fn ($excuse): string => $excuse->minutes === null ? __('timeclock.timesheet.excused_day') : __('timeclock.timesheet.excused', ['hours' => ScheduleCalendar::hours($excuse->minutes)]))->all(),
                     ])->filter()->implode(' · '),
                 ];
