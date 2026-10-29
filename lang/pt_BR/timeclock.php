@@ -30,7 +30,7 @@ return [
         'night_percent' => 'Adicional noturno',
         'night_reduced_hour' => 'Hora noturna reduzida (52min30s)',
         'night_reduced_hour_help' => 'Regra do Brasil: cada 52min30s à noite contam como 1 hora.',
-        'tolerance_punch' => 'Tolerância por batida',
+        'tolerance_punch' => 'Tolerância na entrada e na saída',
         'tolerance_day' => 'Tolerância por dia',
         'hour_bank' => 'Usar banco de horas',
         'hour_bank_help' => 'As horas a mais viram crédito para folgar depois, em vez de serem pagas.',

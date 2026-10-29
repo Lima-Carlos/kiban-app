@@ -30,7 +30,7 @@ return [
         'night_percent' => 'Recargo nocturno',
         'night_reduced_hour' => 'Hora nocturna reducida (52min30s)',
         'night_reduced_hour_help' => 'Regla de Brasil: cada 52min30s de noche cuentan como 1 hora.',
-        'tolerance_punch' => 'Tolerancia por marcación',
+        'tolerance_punch' => 'Tolerancia en la entrada y en la salida',
         'tolerance_day' => 'Tolerancia por día',
         'hour_bank' => 'Usar bolsa de horas',
         'hour_bank_help' => 'Las horas de más se convierten en crédito para descansar después, en lugar de pagarse.',

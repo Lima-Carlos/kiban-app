@@ -90,6 +90,12 @@ class TimeClockCalculationTest extends TestCase
         $this->assertSame([540, 0, 0], [$day['expected'], $day['extra'], $day['deficit']]);
         $this->assertSame(540, $day['worked']); // 238 + 302
 
+        // Only the start and the end of the day count for the tolerance (Súmula 366): 1 + 3 minutes, inside,
+        // even if the break punches moved more (the sum of the 4 punches would be 11).
+        $this->punch($rui, '2026-11-16 08:01', '2026-11-16 12:03', '2026-11-16 13:04', '2026-11-16 18:03');
+        $day = $this->day($rui, '2026-11-16');
+        $this->assertSame([541, 0, 0], [$day['worked'], $day['extra'], $day['deficit']]);
+
         // One punch 10 minutes early: every minute counts (CLT: the whole time, not only the excess).
         $this->punch($rui, '2026-11-04 07:50', '2026-11-04 12:00', '2026-11-04 13:00', '2026-11-04 18:20');
         $this->assertSame(30, $this->day($rui, '2026-11-04')['extra']);

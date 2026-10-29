@@ -220,7 +220,7 @@ São usadas no cálculo das horas a partir da parte 4:
 ### Como cada dia é calculado
 - **De que dia é a batida:** de meia-noite a meia-noite. Depois de um turno que passa da meia-noite, o dia vira **4 horas depois do fim do turno** (no máximo ao meio-dia). Assim, a saída das 6h do turno da noite conta para a noite em que ele começou.
 - As batidas formam **pares** (entrada e saída). Número ímpar = **batida faltando**: contam só os pares completos e o dia fica marcado.
-- **Tolerância (CLT, art. 58):** se cada batida ficou até 5 minutos do horário previsto e a soma do dia até 10, **o dia conta exatamente como o previsto**. Passou disso, **contam todos os minutos**, não só o excesso.
+- **Tolerância (CLT, art. 58, e Súmula 366 do TST), decisão do dono em 29/10/2026:** vale para a **entrada e a saída do dia** (a primeira e a última batida). Se cada uma ficou até 5 minutos do horário previsto e as duas juntas até 10, **o dia conta exatamente como o previsto**. Passou disso, **contam todos os minutos**, não só o excesso. O intervalo é conferido à parte, pelo aviso "Intervalo de X min". (Pergunta levada ao advogado/contador.)
 - **Dia normal:** a diferença vira **hora extra** ou **minutos que faltaram** (atraso ou saída antes).
 - **Dia sem nenhuma batida:** **falta**, a não ser que haja abono.
 - **Folga ou feriado trabalhado:** todos os minutos são extra com o **% de folga e feriado** (100% no Brasil).

@@ -21,8 +21,9 @@ use Illuminate\Support\Collection;
  *   for the night it started.
  * - Punches are paired in order (in/out, in/out...). An odd number means a forgotten punch: only the complete
  *   pairs count and the day is flagged.
- * - Tolerance (Brazil, CLT art. 58 §1): when every punch is within the tolerance of its expected time and the
- *   total is within the daily tolerance, the day counts as exactly the expected; otherwise every minute counts.
+ * - Tolerance (Brazil, CLT art. 58 §1 and TST Súmula 366): the start and the end of the day (first and last punch)
+ *   each within the tolerance of the expected time, and both together within the daily tolerance: the day counts as
+ *   exactly the expected; otherwise every minute counts. The break is checked apart (short break warning).
  * - Working on a day off or a holiday: every minute is overtime at the rest-day percentage.
  * - Night minutes (and the reduced night hour in Brazil), and in Brazil the warnings of a short break
  *   (intrajornada) and a short rest between days (interjornada, less than 11 hours).
@@ -228,7 +229,9 @@ class DayCalculator
     }
 
     /**
-     * Every punch within the tolerance of its expected time, and the total within the daily tolerance.
+     * The start and the end of the day (first and last punch) within the tolerance of their expected times, and
+     * both together within the daily tolerance (owner's decision, 29/10/2026: CLT art. 58 §1 / TST Súmula 366 speak
+     * of the start and end of the working day). All punches of the day must exist; the break is checked apart.
      *
      * @param  Collection<int, array{at: CarbonImmutable, kind: string, id: ?int}>  $effective
      */
@@ -253,9 +256,10 @@ class DayCalculator
         }
 
         $total = 0;
+        $punches = $effective->values();
 
-        foreach ($effective->values() as $index => $punch) {
-            $deviation = intdiv((int) $punch['at']->diffInSeconds($marks[$index], true), 60);
+        foreach ([0, count($marks) - 1] as $index) {
+            $deviation = intdiv((int) $punches[$index]['at']->diffInSeconds($marks[$index], true), 60);
 
             if ($deviation > $settings->tolerance_punch_minutes) {
                 return false;

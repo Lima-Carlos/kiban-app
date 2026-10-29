@@ -30,7 +30,7 @@ return [
         'night_percent' => 'Night premium',
         'night_reduced_hour' => 'Reduced night hour (52min30s)',
         'night_reduced_hour_help' => 'Brazilian rule: every 52min30s at night count as 1 hour.',
-        'tolerance_punch' => 'Tolerance per punch',
+        'tolerance_punch' => 'Tolerance at the start and at the end',
         'tolerance_day' => 'Tolerance per day',
         'hour_bank' => 'Use an hour bank',
         'hour_bank_help' => 'Extra hours become credit to take time off later, instead of being paid.',
