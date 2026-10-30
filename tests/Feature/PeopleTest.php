@@ -192,6 +192,13 @@ class PeopleTest extends TestCase
         $this->assertFileExists(public_path('sw.js'));
     }
 
+    public function test_lists_are_cards_on_the_phone(): void
+    {
+        // Every list (people, vehicles, fuel-ups...) shows one card per line on the phone.
+        $this->assertTrue(Livewire::test(PeoplePage::class)->instance()->getTable()->isStackedOnMobile());
+        $this->get($this->company->url('/frota/veiculos'))->assertOk()->assertSee('fi-ta-table-stacked-on-mobile', false);
+    }
+
     public function test_the_company_downloads_a_persons_data(): void
     {
         // LGPD: the company (controller) hands the person a copy of what the systems keep about them.

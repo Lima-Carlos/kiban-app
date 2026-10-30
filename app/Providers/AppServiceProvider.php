@@ -11,6 +11,7 @@ use App\Licensing\LicenseVerifier;
 use App\Modules\ModuleRegistry;
 use App\Tenancy\TenantContext;
 use Filament\Auth\Http\Responses\Contracts\LogoutResponse as LogoutResponseContract;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -43,5 +44,9 @@ class AppServiceProvider extends ServiceProvider
                 Gate::policy($model, $policy);
             }
         }
+
+        // On the phone, every list shows one card per line, with the name of each field (no columns cut off
+        // at the side). On larger screens it stays a table.
+        Table::configureUsing(fn (Table $table) => $table->stackedOnMobile());
     }
 }

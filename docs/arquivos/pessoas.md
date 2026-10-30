@@ -84,6 +84,9 @@ Na tela **Motoristas** também há o botão **Enviar acesso**, para quem cadastr
 - O ícone da Kiban vai para a tela inicial. Ao tocar, o sistema abre direto, como um aplicativo.
 - O aviso pode ser fechado e não volta mais naquele celular.
 
+## Listas no celular (30/10/2026)
+No celular, toda lista (pessoas, veículos, abastecimentos, batidas, solicitações...) mostra **um cartão por linha**, com o nome de cada informação, e nenhuma coluna fica cortada. No computador e no tablet, continua tabela. Isso vale para todas as listas de uma vez (`AppServiceProvider`, `stackedOnMobile`), inclusive as do Campo.
+
 ## Menus por papel (Frota)
 | Papel | Menu |
 |---|---|
