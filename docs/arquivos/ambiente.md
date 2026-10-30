@@ -38,11 +38,13 @@ As portas são diferentes das do Core (8080, 5432, 6379), então os dois rodam j
   - 8 pessoas batendo ponto na "Base Centro", sem alertas;
   - contas em português, espanhol e inglês;
   - o mês passado fechado.
+  - **Campo** (quando a empresa tem o Campo no Core): modelo de provedor com preços, identidade da empresa (cor verde), Lucas, Ana, Sofía e John como técnicos, 8 clientes inventados ao redor da base, a agenda de hoje (Lucas e Ana), 2 OS para agendar (uma urgente), 3 OS concluídas ontem pelo celular (com roteiro, foto e assinatura) e 3 orçamentos (aprovado, enviado e rascunho).
 - Quem usa é o estúdio de vídeos (`kiban-videos/scripts/empresa.sh`).
 - Arquivo: `app/Console/Commands/VideoDemoData.php`. Testes: `tests/Feature/DemoDataTest.php`.
 
 ## Agendador (`routes/console.php`)
 - `kiban:licenses`, a cada 5 minutos: renova as licenças e envia os primeiros passos ao Core.
+- `kiban:field`, a cada minuto: procura no mapa (OpenStreetMap) os endereços de clientes do Campo ainda sem ponto, no máximo 1 por segundo.
 - `kiban:fleet`, de hora em hora: rotina da Frota (códigos de abastecimento não finalizados expiram).
 
 ## Arquivos

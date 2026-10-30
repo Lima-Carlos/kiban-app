@@ -3,8 +3,12 @@
 namespace Tests\Feature;
 
 use App\Access\AccessManager;
+use App\Models\CompanyProfile;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Modules\Field\Models\Customer;
+use App\Modules\Field\Models\Quote;
+use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Fleet\Enums\FleetRole;
 use App\Modules\Fleet\Models\FuelUp;
 use App\Modules\Fleet\Models\Maintenance;
@@ -96,7 +100,7 @@ class DemoDataTest extends TestCase
         Storage::disk('local')->put('tenants/'.$other->id.'/foto.jpg', 'x');
 
         // The Core already has the video company and its accounts (created by kiban:video-demo in the Core).
-        $this->coreLicenses['rede-exemplo'] = $this->licenseToken('rede-exemplo', ['frota' => [], 'ponto' => []]);
+        $this->coreLicenses['rede-exemplo'] = $this->licenseToken('rede-exemplo', ['frota' => [], 'ponto' => [], 'campo' => []]);
         $accounts = ['dona' => 'owner', 'rh' => 'member', 'frota' => 'member', 'tecnico' => 'member', 'tecnica' => 'member',
             'gerente' => 'admin', 'empleado' => 'member', 'manager' => 'admin', 'employee' => 'member'];
         foreach ($accounts as $index => $role) {
@@ -124,6 +128,14 @@ class DemoDataTest extends TestCase
             $this->assertNull(app(PunchService::class)->brokenLink());
             // Clean data for the videos: every punch inside the base.
             $this->assertSame(0, Punch::query()->whereJsonLength('flags', '>', 0)->count());
+
+            // Campo: customers, today's agenda, orders done yesterday on the phone and quotes.
+            $this->assertSame(8, Customer::count());
+            $this->assertSame(3, WorkOrder::query()->where('status', 'done')->whereNotNull('signature_path')->count());
+            $this->assertSame(5, WorkOrder::query()->where('status', 'scheduled')->count());
+            $this->assertSame(3, WorkOrder::query()->where('status', 'open')->count());
+            $this->assertSame(['approved', 'sent', 'draft'], Quote::query()->orderBy('number')->pluck('status')->map(fn ($status) => $status->value)->all());
+            $this->assertSame('Rede Exemplo Fibra Ltda', CompanyProfile::current()->name());
         });
     }
 

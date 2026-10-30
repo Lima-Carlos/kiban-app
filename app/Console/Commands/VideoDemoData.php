@@ -2,8 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Access\AccessManager;
+use App\Models\CompanyProfile;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Modules\Field\Enums\FieldRole;
+use App\Modules\Field\FieldModule;
+use App\Modules\Field\Models\Customer;
+use App\Modules\Field\Models\FieldSetting;
+use App\Modules\Field\Models\Material;
+use App\Modules\Field\Models\ServiceType;
+use App\Modules\Field\Models\WorkOrder;
+use App\Modules\Field\Services\FieldTemplates;
+use App\Modules\Field\Services\OrderExecutionService;
+use App\Modules\Field\Services\QuoteService;
+use App\Modules\Field\Services\WorkOrderService;
 use App\Modules\Fleet\Models\Driver;
 use App\Modules\Fleet\Models\FuelStation;
 use App\Modules\Fleet\Models\Workshop;
@@ -24,6 +37,7 @@ use App\People\PeopleService;
 use App\People\Person;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * The company used only to record the videos (only on the PC): "Rede Exemplo Fibra" ("rede-exemplo", created
@@ -41,7 +55,7 @@ class VideoDemoData extends ResetDemoData
 
     protected const NOT_FOUND = 'A empresa "rede-exemplo" não foi encontrada no Core. Rode "php artisan kiban:video-demo" no Core primeiro.';
 
-    protected const READY = 'Empresa dos vídeos pronta: Rede Exemplo, com Frota e Ponto e dados de exemplo.';
+    protected const READY = 'Empresa dos vídeos pronta: Rede Exemplo, com Frota, Ponto e Campo e dados de exemplo.';
 
     /** The base in Belo Horizonte (Avenida Afonso Pena); the recordings clock in from here. */
     public const BASE = ['latitude' => -19.9227, 'longitude' => -43.9385];
@@ -78,6 +92,8 @@ class VideoDemoData extends ResetDemoData
         $people = app(PeopleService::class);
         $person = fn (string $email): Person => Person::query()->where('user_id', $users[$email]->getKey())->sole();
         $start = $this->today->subDays(35);
+        // Read now: the data below is made at past moments, when this license would not be valid yet.
+        $withField = $tenant->license()->hasModule(FieldModule::KEY);
 
         // --- Frota: four vehicles of the field team, a station, a workshop, the fleet manager and a driver.
         $this->at($start->setTime(9, 0));
@@ -152,6 +168,132 @@ class VideoDemoData extends ResetDemoData
 
         $this->teamPunches($employees, $base, $users['rh.video@exemplo.test']);
         $this->closeMonth($users);
+
+        if ($withField) {
+            $this->field($users);
+        }
+    }
+
+    /** Clearly invented customers around the base (no real business), each with a point on the map. */
+    protected const FIELD_CUSTOMERS = [
+        ['Padaria Pão Quente Ltda', 'Pão Quente', 'company', 'Rua da Bahia', '1200', 'Centro', 0.0030, -0.0021, '31988881001'],
+        ['Maria Aparecida Souza', null, 'person', 'Rua Espírito Santo', '455', 'Centro', -0.0042, 0.0018, '31988881002'],
+        ['Clínica Bem-Estar Ltda', 'Clínica Bem-Estar', 'company', 'Avenida Augusto de Lima', '890', 'Barro Preto', 0.0061, 0.0049, '31988881003'],
+        ['João Batista Ferreira', null, 'person', 'Rua Tupinambás', '310', 'Centro', -0.0018, -0.0057, '31988881004'],
+        ['Mercadinho Bom Preço Ltda', 'Mercadinho Bom Preço', 'company', 'Rua Curitiba', '1450', 'Centro', 0.0072, -0.0035, '31988881005'],
+        ['Escritório Silva & Costa', null, 'company', 'Avenida Álvares Cabral', '700', 'Lourdes', -0.0065, 0.0071, '31988881006'],
+        ['Ana Paula Ribeiro', null, 'person', 'Rua dos Guajajaras', '1020', 'Centro', 0.0025, 0.0062, '31988881007'],
+        ['Roberto Alves Lima', null, 'person', 'Rua Guaicurus', '220', 'Centro', -0.0081, -0.0024, '31988881008'],
+    ];
+
+    /**
+     * Kiban Campo: the ISP model with prices, the company identity, the technicians, customers, today's agenda,
+     * orders to schedule, orders done yesterday (with checklist, photo and signature) and quotes.
+     *
+     * @param  array<string, User>  $users  by e-mail
+     */
+    protected function field(array $users): void
+    {
+        $owner = $users['dona.video@exemplo.test'];
+        $this->at($this->today->subDays(10)->setTime(9, 0));
+
+        FieldSetting::current()->update(['business' => 'isp', 'currency' => 'BRL', 'configured_at' => now()]);
+        app(FieldTemplates::class)->apply('isp');
+        $prices = ['Instalação' => 15000, 'Sem sinal / lentidão' => 8000, 'Mudança de endereço' => 12000, 'Retirada de equipamento' => 0, 'Visita técnica' => 9000];
+        foreach ($prices as $name => $cents) {
+            ServiceType::query()->where('name', $name)->update(['price_cents' => $cents]);
+        }
+        foreach (['Cabo drop' => 120, 'Conector de fibra' => 800, 'ONU' => 18990, 'Roteador Wi-Fi' => 18990, 'Esticador / ancoragem' => 350, 'Cordão óptico' => 1500] as $name => $cents) {
+            Material::query()->where('name', $name)->update(['price_cents' => $cents]);
+        }
+
+        CompanyProfile::query()->create([
+            'legal_name' => 'Rede Exemplo Fibra Ltda', 'color' => '#0F766E', 'document' => '11.444.777/0001-61', 'phone' => '(31) 3333-0000',
+            'email' => 'contato@exemplo.test', 'address' => 'Av. Afonso Pena, 1500 - Centro - Belo Horizonte/MG',
+            'report_footer' => 'Garantia de 90 dias para o serviço. Atendimento de segunda a sábado, das 8h às 18h.',
+        ]);
+
+        foreach (['tecnico.video@exemplo.test', 'tecnica.video@exemplo.test', 'empleado.video@exemplo.test', 'employee.video@exemplo.test'] as $email) {
+            app(AccessManager::class)->set($users[$email], FieldModule::KEY, FieldRole::Technician->value);
+        }
+
+        $customers = [];
+        foreach (self::FIELD_CUSTOMERS as $index => [$name, $trade, $kind, $street, $number, $district, $dLat, $dLng, $phone]) {
+            $customer = Customer::create(['name' => $name, 'trade_name' => $trade, 'kind' => $kind, 'phone' => '55'.$phone, 'external_code' => (string) (1001 + $index)]);
+            $customer->sites()->create([
+                'label' => $kind === 'company' ? 'Matriz' : 'Casa', 'street' => $street, 'number' => $number, 'district' => $district,
+                'city' => 'Belo Horizonte', 'state' => 'MG', 'country' => 'BR', 'is_main' => true,
+                'latitude' => round(self::BASE['latitude'] + $dLat, 6), 'longitude' => round(self::BASE['longitude'] + $dLng, 6),
+            ]);
+            $customers[] = $customer;
+        }
+
+        $type = fn (string $name): int => (int) ServiceType::query()->where('name', $name)->value('id');
+        $orders = app(WorkOrderService::class);
+        $lucas = $users['tecnico.video@exemplo.test'];
+        $ana = $users['tecnica.video@exemplo.test'];
+
+        // Yesterday: three services done on the phone (checklist, photo, material, signature).
+        $yesterday = $this->today->subDay();
+        foreach ([[0, 'Instalação', $lucas, '08:30', 'Quer internet de 500 mega'], [2, 'Sem sinal / lentidão', $ana, '10:00', 'Sem internet desde a noite anterior'], [4, 'Instalação', $lucas, '14:00', 'Internet para o caixa e o Wi-Fi dos clientes']] as [$who, $name, $technician, $time, $reported]) {
+            $this->at($yesterday->setTime(7, 30));
+            $order = $orders->open(['customer_id' => $customers[$who]->getKey(), 'service_type_id' => $type($name), 'reported' => $reported, 'technician_id' => $technician->getKey(), 'scheduled_at' => $yesterday->setTimeFromTimeString($time)->utc()->toDateTimeString()], $owner);
+            $this->doneOnThePhone($order, $technician, $yesterday->setTimeFromTimeString($time));
+        }
+
+        // Today: the agenda of Lucas and Ana, and two orders still to schedule (one urgent).
+        $this->at($this->today->setTime(7, 40));
+        foreach ([[1, 'Instalação', $lucas, '08:30'], [3, 'Sem sinal / lentidão', $lucas, '10:30'], [6, 'Mudança de endereço', $lucas, '14:00'], [5, 'Visita técnica', $ana, '09:00'], [7, 'Sem sinal / lentidão', $ana, '13:30']] as [$who, $name, $technician, $time]) {
+            $orders->open(['customer_id' => $customers[$who]->getKey(), 'service_type_id' => $type($name), 'technician_id' => $technician->getKey(), 'scheduled_at' => $this->today->setTimeFromTimeString($time)->utc()->toDateTimeString()], $owner);
+        }
+        $orders->open(['customer_id' => $customers[2]->getKey(), 'service_type_id' => $type('Visita técnica'), 'priority' => 'urgent', 'reported' => 'Câmera do caixa sem imagem'], $owner);
+        $orders->open(['customer_id' => $customers[0]->getKey(), 'service_type_id' => $type('Mudança de endereço'), 'reported' => 'Vai abrir uma filial'], $owner);
+
+        // Quotes: one approved (became an order), one sent waiting for the customer, one being written.
+        $quotes = app(QuoteService::class);
+        $line = fn (string $name, float $quantity = 1): array => ($service = ServiceType::query()->where('name', $name)->first())
+            ? ['service_type_id' => $service->getKey(), 'description' => $service->name, 'quantity' => $quantity, 'unit' => 'un', 'unit_price_cents' => (int) $service->price_cents]
+            : (fn (Material $material): array => ['material_id' => $material->getKey(), 'description' => $material->name, 'quantity' => $quantity, 'unit' => $material->unit, 'unit_price_cents' => (int) $material->price_cents])(Material::query()->where('name', $name)->sole());
+
+        $this->at($this->today->subDays(2)->setTime(11, 0));
+        $approved = $quotes->send($quotes->create(['customer_id' => $customers[6]->getKey(), 'notes' => "Instalação em até 3 dias úteis.\nPagamento na instalação (Pix ou cartão)."], [$line('Mudança de endereço'), $line('Cabo drop', 40)], $owner));
+        $this->at($this->today->subDays(2)->setTime(15, 20));
+        $quotes->approve($approved, 'Ana Paula Ribeiro', ['ip' => '177.10.20.30', 'device' => 'Celular']);
+
+        $this->at($this->today->subDay()->setTime(16, 0));
+        $quotes->send($quotes->create(['customer_id' => $customers[5]->getKey(), 'notes' => 'Rede para 12 computadores e Wi-Fi em todo o escritório.'], [$line('Instalação'), $line('Roteador Wi-Fi', 2), $line('Cabo drop', 60)], $owner));
+
+        $this->at($this->today->setTime(7, 50));
+        $quotes->create(['customer_id' => $customers[3]->getKey()], [$line('Instalação'), $line('ONU')], $owner);
+    }
+
+    /** One service done on the technician's phone, piece by piece, as the app sends it. */
+    protected function doneOnThePhone(WorkOrder $order, User $technician, CarbonImmutable $start): void
+    {
+        $send = function (string $type, array $data, CarbonImmutable $at) use ($order, $technician): void {
+            $this->at($at);
+            app(OrderExecutionService::class)->apply($order->fresh(), $technician, ['id' => (string) Str::uuid(), 'type' => $type, 'taken_at' => $at->getTimestampMs(), 'data' => $data]);
+        };
+
+        $site = $order->site;
+        $send('check_in', ['latitude' => $site->latitude, 'longitude' => $site->longitude, 'accuracy' => 8], $start->addMinutes(5));
+
+        foreach ((array) $order->checklist as $index => $item) {
+            $at = $start->addMinutes(10 + $index * 4);
+            match ($item['type']) {
+                'photo' => $send('photo', ['key' => $item['key'], 'image' => $this->photo('CTO')], $at),
+                'number' => $send('answer', ['key' => $item['key'], 'value' => $item['unit'] === 'dBm' ? '-19.4' : '512'], $at),
+                'text' => $send('answer', ['key' => $item['key'], 'value' => $item['key'] === 'onu_serial' ? 'ZTEG'.random_int(10000000, 99999999) : 'Conector oxidado na caixa; trocado e testado.'], $at),
+                'choice' => $send('answer', ['key' => $item['key'], 'value' => $item['options'][1] ?? ($item['options'][0] ?? '')], $at),
+                'yes_no' => $send('answer', ['key' => $item['key'], 'value' => 'yes'], $at),
+                default => $send('answer', ['key' => $item['key'], 'value' => '1'], $at),
+            };
+        }
+
+        $send('material', ['material_id' => Material::query()->where('name', 'Cabo drop')->value('id'), 'quantity' => 35], $start->addMinutes(50));
+        $send('note', ['text' => 'Serviço feito e testado com o cliente.'], $start->addMinutes(52));
+        $send('signature', ['name' => $order->customer->name, 'image' => $this->photo('OK')], $start->addMinutes(55));
+        $send('finish', [], $start->addMinutes(57));
     }
 
     /**
