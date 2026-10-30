@@ -10,6 +10,7 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [testes.md](testes.md): os testes automáticos.
 - [frota.md](frota.md): o sistema Kiban Frota (veículos e km, abastecimento, manutenção e agenda, vistorias, avisos, ficha em PDF, planilhas e limpeza de fotos).
 - [ponto.md](ponto.md): o sistema Kiban Ponto (regras por país, locais de trabalho com ponto no mapa, funcionários com ou sem login).
+- [campo.md](campo.md): o sistema Kiban Campo (ordens de serviço). O1: clientes com vários endereços, CEP, ponto no mapa (busca gratuita no OpenStreetMap) e planilha que atualiza sem duplicar.
 - [pessoas.md](pessoas.md): um sistema com vários módulos; quem acessa o quê (perfis de acesso); cadastrar pessoas, enviar o acesso pelo WhatsApp, entrar pelo celular e o app na tela do celular.
 - [avisos.md](avisos.md): os avisos dentro do sistema (o sino e o quadro "Atenção"), sem e-mail.
 - [registros-de-acesso.md](registros-de-acesso.md): Marco Civil, o que fica guardado de cada acesso (IP, porta, aparelho), por quanto tempo e como exportar numa ordem judicial.

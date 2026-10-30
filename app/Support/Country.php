@@ -71,4 +71,20 @@ class Country
 
         return str_starts_with($digits, $code) && strlen($digits) > 10 ? $digits : $code.$digits;
     }
+
+    /** A kept number (digits with the country code) as people read it: "+55 (31) 98888-1234", "+52 5500000000". */
+    public static function formatPhone(?string $digits): ?string
+    {
+        if (blank($digits)) {
+            return null;
+        }
+
+        if (preg_match('/^55(\d{2})(\d{4,5})(\d{4})$/', $digits, $parts)) {
+            return "+55 ({$parts[1]}) {$parts[2]}-{$parts[3]}";
+        }
+
+        $code = collect(self::CALLING_CODES)->unique()->sortByDesc(fn (string $code): int => strlen($code))->first(fn (string $code): bool => str_starts_with($digits, $code));
+
+        return $code === null ? '+'.$digits : '+'.$code.' '.substr($digits, strlen($code));
+    }
 }

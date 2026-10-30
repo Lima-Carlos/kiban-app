@@ -34,6 +34,13 @@ abstract class TestCase extends BaseTestCase
     /** When true, the fake Core is "down" (connection error). */
     protected bool $coreDown = false;
 
+    /**
+     * Answers of other services (maps, postal codes...) by address pattern, e.g. ['viacep.com.br/*' => fn ($request) => ...].
+     *
+     * @var array<string, callable(Request): PromiseInterface>
+     */
+    protected array $externalServices = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -239,6 +246,12 @@ abstract class TestCase extends BaseTestCase
         Http::fake(function (Request $request) {
             if ($this->coreDown) {
                 throw new ConnectionException('Core is down (test).');
+            }
+
+            foreach ($this->externalServices as $pattern => $answer) {
+                if (Str::is('*'.$pattern, $request->url())) {
+                    return $answer($request);
+                }
             }
 
             $path = (string) parse_url($request->url(), PHP_URL_PATH);

@@ -18,7 +18,8 @@ Sistema que os clientes da Kiban usam: uma "casca" única com os módulos (Frota
 Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (conferir a licença).
 
 ## Regras
-- **Comunicação:** responder e documentar sempre em português (pt-BR), de forma simples. O dono do projeto não é programador: explicar cada etapa e esperar a confirmação antes de seguir.
+- **Comunicação:** responder e documentar sempre em português (pt-BR), de forma simples. O dono do projeto não é programador e tem pouco tempo.
+- **Autonomia (29/10/2026):** decidir sozinho tudo o que segue `docs/planejamento/diretrizes.md` do Core (`kiban-core`) (leia antes de decidir). Continua com o dono: gastar dinheiro, criar contas em serviços, publicar fora do PC, apagar dados reais e mudar o negócio.
 - **Multi-idioma** (pt_BR, en, es): nenhum texto visível fica direto no código. Usar as chaves de `lang/`. Idiomas em `config/kiban.php`. Toda tela tem como trocar o idioma (menu do usuário e topo das páginas simples, rota `locale.switch`). Rótulos de campo/coluna usam chaves com letra maiúscula (`fields.*`), nunca `singular`/`plural`.
 - **Marca:** a mesma do Core (logo em `resources/brand/`, imagens em `public/images/brand/`, azul `#044299`).
 - **Documentação:** todo arquivo novo ganha uma explicação simples em português em `docs/arquivos/` (listada em `docs/arquivos/README.md`).
@@ -97,3 +98,11 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - Os módulos podem ter páginas, widgets e um bloco próprio na página Início para cada pessoa (`Module::pages()`, `widgets()`, `personalHome()`, `showsSetupTo()`).
 - Arquivos e fotos: `FleetFields::photo()` / `file()` (disco privado, pasta da empresa, foto reduzida no navegador).
 - Explicação para o dono: `docs/arquivos/frota.md`.
+
+## Campo (`app/Modules/Field`, chave `campo`, "Kiban Field" em inglês)
+- Ordem das partes: O1 clientes ✔ → O2 tipos de serviço e modelos por ramo → O2b orçamentos por link → O3 agenda e mapa → O4 execução no celular **sem internet** (reaproveitar a fila do Ponto: `public/js/punch-queue.js` / `sw.js`) com km do veículo → O5 relatório por link/WhatsApp. Limite do plano: técnicos ativos (`FieldModule::LIMIT_TECHNICIANS`).
+- Funções (`FieldRole`): gestor, atendimento (`dispatcher`), técnico, consulta. Quem altera cada tela fica em `FieldPolicy::$editRoles`.
+- Cliente (`Customer`, `fd_customers`) com vários endereços (`Site`, `fd_sites`, sempre um principal: `ensureMainSite()`). Regras do cliente só em `CustomerRules` (formulário, planilha e, depois, loja/API): CPF/CNPJ no Brasil, documento livre fora, documento e código únicos, telefones com `Country::phone()` e exibidos com `Country::formatPhone()`.
+- Ponto no mapa: `location_source` (typed/import/search/technician) e `locate_status` (pending/found/not_found). Um ponto de pessoa nunca é trocado pela busca. A busca é `AddressLocator` (OpenStreetMap, 1 por segundo, rua+número → rua → bairro), rodada por `kiban:field` a cada minuto; CEP pelo ViaCEP. Nos testes, serviços externos ficam em `$this->externalServices` do `TestCase`.
+- Planilha: `CustomerImporter` (xlsx/csv, colunas em 3 idiomas e apelidos, atualiza por código ou documento, nunca apaga com célula vazia).
+- Explicação para o dono: `docs/arquivos/campo.md`.

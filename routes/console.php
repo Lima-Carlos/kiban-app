@@ -16,3 +16,6 @@ Schedule::command('kiban:timeclock')->hourlyAt(20)->withoutOverlapping();
 
 // Marco Civil: access records older than the retention period (at least 6 months) are removed.
 Schedule::command('model:prune', ['--model' => [App\Models\AccessLog::class]])->dailyAt('03:45');
+
+// Campo: addresses of new customers searched on the map (one per second, a few per minute).
+Schedule::command('kiban:field')->everyMinute()->withoutOverlapping();

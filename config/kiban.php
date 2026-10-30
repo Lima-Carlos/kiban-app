@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Demo\DemoModule;
+use App\Modules\Field\FieldModule;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\TimeClock\TimeClockModule;
 
@@ -43,6 +44,7 @@ return [
         DemoModule::class,
         FleetModule::class,
         TimeClockModule::class,
+        FieldModule::class,
     ],
 
     /*
@@ -75,7 +77,9 @@ return [
         'driver' => ['name' => 'app.profiles.suggested.driver', 'description' => 'app.profiles.suggested.driver_help', 'roles' => ['frota' => 'driver', 'ponto' => 'employee']],
         'mechanic' => ['name' => 'app.profiles.suggested.mechanic', 'description' => 'app.profiles.suggested.mechanic_help', 'roles' => ['frota' => 'mechanic', 'ponto' => 'employee']],
         'hr' => ['name' => 'app.profiles.suggested.hr', 'description' => 'app.profiles.suggested.hr_help', 'roles' => ['ponto' => 'manager']],
-        'viewer' => ['name' => 'app.profiles.suggested.viewer', 'description' => 'app.profiles.suggested.viewer_help', 'roles' => ['frota' => 'viewer', 'ponto' => 'viewer']],
+        'technician' => ['name' => 'app.profiles.suggested.technician', 'description' => 'app.profiles.suggested.technician_help', 'roles' => ['campo' => 'technician', 'ponto' => 'employee']],
+        'service_desk' => ['name' => 'app.profiles.suggested.service_desk', 'description' => 'app.profiles.suggested.service_desk_help', 'roles' => ['campo' => 'dispatcher']],
+        'viewer' => ['name' => 'app.profiles.suggested.viewer', 'description' => 'app.profiles.suggested.viewer_help', 'roles' => ['frota' => 'viewer', 'ponto' => 'viewer', 'campo' => 'viewer']],
     ],
 
     'locales' => [
@@ -89,6 +93,22 @@ return [
 
     // Marco Civil access records (access_logs): days kept, never less than 6 months (183).
     'access_log_days' => (int) env('KIBAN_ACCESS_LOG_DAYS', 365),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kiban Campo
+    |--------------------------------------------------------------------------
+    |
+    | Addresses searched on the map (free OpenStreetMap service, at most one search per second, with a contact
+    | e-mail as their rule asks). "off" turns the search off; a paid service can be added here later.
+    |
+    */
+
+    'field' => [
+        'locator' => env('KIBAN_FIELD_LOCATOR', 'openstreetmap'),
+        'locator_contact' => env('KIBAN_FIELD_LOCATOR_CONTACT', 'privacidade@kibancore.com.br'),
+        'locator_pause_ms' => (int) env('KIBAN_FIELD_LOCATOR_PAUSE_MS', 1100),
+    ],
 
     /*
     |--------------------------------------------------------------------------
