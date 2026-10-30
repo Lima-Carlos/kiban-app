@@ -10,6 +10,7 @@ use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
+use App\Modules\TimeClock\Filament\Schedules\Pages\ManageSchedules;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
@@ -21,6 +22,7 @@ use App\Modules\TimeClock\Services\ScheduleService;
 use App\People\PeopleService;
 use App\People\PersonRuleException;
 use Carbon\CarbonImmutable;
+use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -78,6 +80,20 @@ class TimeClockCalculationTest extends TestCase
         $this->travelTo(CarbonImmutable::parse('2026-11-30 12:00', self::TZ));
 
         return app(DayCalculator::class)->period($employee, CarbonImmutable::parse($date), CarbonImmutable::parse($date))[$date];
+    }
+
+    public function test_schedule_hours_are_saved_as_typed(): void
+    {
+        // The panel works in the company's time zone; clock hours ("07:00") must not be shifted to UTC.
+        FilamentTimezone::set(self::TZ);
+
+        Livewire::test(ManageSchedules::class)
+            ->callAction('create', ['name' => '12x36', 'type' => 'cycle', 'work_days' => 1, 'off_days' => 1, 'anchor_date' => '2026-11-02',
+                'start_time' => '07:00', 'end_time' => '19:00', 'break_minutes' => 60])
+            ->assertHasNoActionErrors();
+
+        $schedule = Schedule::query()->where('name', '12x36')->sole();
+        $this->assertSame(['07:00', '19:00'], [substr((string) $schedule->start_time, 0, 5), substr((string) $schedule->end_time, 0, 5)]);
     }
 
     public function test_tolerance_overtime_and_minutes_short(): void
@@ -165,12 +181,15 @@ class TimeClockCalculationTest extends TestCase
         $this->assertContains('missing_punch', $this->day($rui, '2026-11-06')['flags']);
 
         $this->actingAs($user);
+        // As in the real panel, the company's time zone is set: the typed hour is the local hour (not shifted to UTC).
+        FilamentTimezone::set('America/Sao_Paulo');
         Livewire::test(TimesheetPage::class, ['month' => '2026-11'])
             ->callAction('adjust', ['type' => 'add_punch', 'time' => '18:00', 'reason' => 'Esqueci de bater a saída'], ['date' => '2026-11-06'])
             ->assertHasNoActionErrors()
             ->assertNotified(__('timeclock.adjustments.requested'));
         $request = Adjustment::sole();
         $this->assertTrue($request->isPending());
+        $this->assertSame('2026-11-06 18:00', $request->punch_at->setTimezone('America/Sao_Paulo')->format('Y-m-d H:i'));
         $this->assertSame(1, $this->owner->fresh()->notifications()->count()); // the manager hears about it
         $this->assertSame(1, $this->day($rui, '2026-11-06')['pending']);
 

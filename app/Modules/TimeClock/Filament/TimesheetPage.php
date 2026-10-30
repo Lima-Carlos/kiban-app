@@ -257,6 +257,8 @@ class TimesheetPage extends Page
                     ->label(__('timeclock.adjustments.time'))
                     ->seconds(false)
                     ->format('H:i')
+                    // A clock hour of the day ("18:00"), not a moment: Filament must not shift it to UTC.
+                    ->timezone(config('app.timezone'))
                     ->visible(fn (Get $get): bool => $get('type') === Adjustment::ADD_PUNCH)
                     ->required(fn (Get $get): bool => $get('type') === Adjustment::ADD_PUNCH),
                 Toggle::make('next_day')

@@ -78,7 +78,77 @@
         </div>
 
         <x-filament::section>
-            <div style="overflow-x:auto">
+            {{-- Phones: one card per day (the 9-column table hid the totals and "Ask for a correction" off screen). --}}
+            <style>
+                .kb-days { display: none }
+                @media (max-width: 640px) { .kb-table { display: none } .kb-days { display: flex } }
+            </style>
+            <div class="kb-days" style="flex-direction:column;gap:8px">
+                @foreach ($days as $key => $day)
+                    <div style="border:1px solid rgba(127,127,127,.2);border-radius:10px;padding:10px 12px;{{ $day['type'] !== 'work' ? 'background:rgba(127,127,127,.06);' : '' }}{{ ! $day['employed'] ? 'opacity:.4;' : '' }}">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                            <strong style="font-size:14px">{{ ucfirst($day['date']->translatedFormat(__('timeclock.holidays.day_month_weekday_format'))) }}</strong>
+                            <span style="font-size:13px">
+                                @if ($day['holiday'])
+                                    <x-filament::badge color="warning" size="sm">{{ $day['holiday'] }}</x-filament::badge>
+                                @elseif ($day['plan'])
+                                    {{ $day['plan']['start'] }}–{{ $day['plan']['end'] }}
+                                @elseif ($day['type'] === 'off')
+                                    <span style="opacity:.7">{{ __('timeclock.employees.day_off') }}</span>
+                                @else
+                                    <span style="opacity:.7">{{ __('timeclock.employees.no_schedule') }}</span>
+                                @endif
+                            </span>
+                        </div>
+                        @if ($day['punches'] !== [] || $day['ignored'] !== [])
+                            <div style="margin-top:6px;font-size:15px">
+                                @foreach ($day['punches'] as $punch)
+                                    <span style="white-space:nowrap;margin-right:10px">{{ $punch['at']->format('H:i') }}@if ($punch['kind'] === 'added')<sup title="{{ __('timeclock.timesheet.added') }}">I</sup>@endif</span>
+                                @endforeach
+                                @if ($day['ignored'] !== [])
+                                    <span style="font-size:12px;opacity:.7">({{ trans_choice('timeclock.timesheet.ignored', count($day['ignored']), ['count' => count($day['ignored'])]) }})</span>
+                                @endif
+                            </div>
+                        @endif
+                        @if ($day['counts'] && ($day['type'] === 'work' || $day['worked'] > 0))
+                            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px">
+                                <span>{{ __('timeclock.timesheet.worked') }}: <strong>{{ $h($day['worked']) }}</strong></span>
+                                @if ($day['extra'] + $day['extra_rest'] > 0)
+                                    <span style="color:#15803d">{{ __('timeclock.timesheet.extra') }}: <strong>{{ $h($day['extra'] + $day['extra_rest']) }}</strong></span>
+                                @endif
+                                @if ($day['deficit'] > 0)
+                                    <span style="color:#dc2626">{{ __('timeclock.timesheet.short') }}: <strong>{{ $h($day['deficit']) }}</strong></span>
+                                @endif
+                                @if ($day['night_reduced'] > 0)
+                                    <span>{{ __('timeclock.timesheet.night') }}: <strong>{{ $h($day['night_reduced']) }}</strong></span>
+                                @endif
+                            </div>
+                        @endif
+                        @if ($day['absence'] || $day['flags'] !== [] || $day['adjustments'] !== [] || $day['pending'] > 0)
+                            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
+                                @if ($day['absence'])
+                                    <x-filament::badge color="danger" size="sm">{{ __('timeclock.timesheet.flags.absence') }}</x-filament::badge>
+                                @endif
+                                @foreach ($day['flags'] as $flag)
+                                    <x-filament::badge color="warning" size="sm">{{ \App\Modules\TimeClock\Services\DayCalculator::flagLabel($flag, $day) }}</x-filament::badge>
+                                @endforeach
+                                @foreach ($day['adjustments'] as $adjustment)
+                                    @if ($adjustment->type === Adjustment::EXCUSE)
+                                        <x-filament::badge color="info" size="sm">{{ $adjustment->minutes === null ? __('timeclock.timesheet.excused_day') : __('timeclock.timesheet.excused', ['hours' => ScheduleCalendar::hours($adjustment->minutes)]) }}</x-filament::badge>
+                                    @endif
+                                @endforeach
+                                @if ($day['pending'] > 0)
+                                    <x-filament::badge color="gray" size="sm">{{ trans_choice('timeclock.timesheet.pending', $day['pending'], ['count' => $day['pending']]) }}</x-filament::badge>
+                                @endif
+                            </div>
+                        @endif
+                        @if ($day['employed'] && $day['moment'] !== 'future')
+                            <div style="margin-top:8px">{{ ($this->adjustAction)(['date' => $key])->link()->size('sm') }}</div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+            <div class="kb-table" style="overflow-x:auto">
                 <table style="width:100%;border-collapse:collapse;font-size:14px">
                     <thead>
                         <tr style="text-align:left;font-size:12px;opacity:.75">

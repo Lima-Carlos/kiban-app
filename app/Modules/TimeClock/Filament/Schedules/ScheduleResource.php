@@ -155,7 +155,8 @@ class ScheduleResource extends ModuleResource
 
     protected static function time(string $field): TimePicker
     {
-        return TimePicker::make($field)->seconds(false)->format('H:i');
+        // Clock hours of the schedule ("08:00"), not moments: Filament must not shift them to UTC.
+        return TimePicker::make($field)->seconds(false)->format('H:i')->timezone(config('app.timezone'));
     }
 
     public static function table(Table $table): Table
