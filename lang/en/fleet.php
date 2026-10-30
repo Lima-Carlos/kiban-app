@@ -284,6 +284,7 @@ return [
             'inspection' => 'Inspection',
             'wash' => 'Wash',
             'correction' => 'Correction',
+            'work_order' => 'Work order (Field)',
         ],
         'vehicle_event' => [
             'created' => 'Registered',

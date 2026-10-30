@@ -25,6 +25,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
@@ -332,6 +333,47 @@ class OrderResource extends ModuleResource
                         TextEntry::make('scheduled_at')->label(__('field.fields.scheduled_at'))->state(fn (WorkOrder $record): string => static::when($record)),
                         TextEntry::make('cancel_reason')->label(__('field.fields.cancel_reason'))->visible(fn (WorkOrder $record): bool => $record->status === OrderStatus::Canceled),
                     ]),
+                Section::make(__('field.orders.sections.execution'))
+                    ->columnSpanFull()
+                    ->columns(['default' => 1, 'sm' => 2])
+                    ->visible(fn (WorkOrder $record): bool => $record->checked_in_at !== null)
+                    ->components([
+                        TextEntry::make('checked_in_at')
+                            ->label(__('field.orders.arrival'))
+                            ->state(fn (WorkOrder $record): string => $record->checked_in_at->setTimezone(static::timezone())->translatedFormat(__('app.datetime_format'))
+                                .($record->check_in_distance !== null ? ' · '.__('field.orders.distance', ['meters' => $record->check_in_distance]) : '')
+                                .($record->check_in_km !== null ? ' · '.number_format($record->check_in_km, 0, ',', '.').' km' : ''))
+                            ->url(fn (WorkOrder $record): ?string => $record->check_in_latitude !== null ? Geo::mapUrl($record->check_in_latitude, $record->check_in_longitude) : null, shouldOpenInNewTab: true),
+                        TextEntry::make('finished_at')
+                            ->label(__('field.orders.finished'))
+                            ->state(fn (WorkOrder $record): ?string => $record->finished_at?->setTimezone(static::timezone())->translatedFormat(__('app.datetime_format')))
+                            ->placeholder(fn (WorkOrder $record): string => $record->pause_reason ? __('field.events.paused', ['reason' => $record->pause_reason]) : '—'),
+                        TextEntry::make('answers_list')
+                            ->label(__('field.service_types.checklist'))
+                            ->state(fn (WorkOrder $record): array => static::answerLines($record))
+                            ->listWithLineBreaks()
+                            ->columnSpanFull(),
+                        TextEntry::make('materials_list')
+                            ->label(__('field.execute.materials'))
+                            ->state(fn (WorkOrder $record): array => $record->materials->map(fn ($material): string => FieldFormat::quantity($material->quantity, $material->unit).' · '.$material->description)->all())
+                            ->listWithLineBreaks()
+                            ->placeholder('—'),
+                        TextEntry::make('work_done')->label(__('field.execute.work_done'))->placeholder('—'),
+                        ImageEntry::make('photo_paths')
+                            ->label(__('field.orders.photos'))
+                            ->state(fn (WorkOrder $record): array => $record->photos->pluck('path')->all())
+                            ->disk('local')
+                            ->visibility('private')
+                            ->imageHeight(110)
+                            ->placeholder('—')
+                            ->columnSpanFull(),
+                        ImageEntry::make('signature_path')
+                            ->label(fn (WorkOrder $record): string => $record->signed_by ? __('field.execute.signed_by', ['name' => $record->signed_by]) : __('field.execute.signature'))
+                            ->disk('local')
+                            ->visibility('private')
+                            ->imageHeight(90)
+                            ->placeholder('—'),
+                    ]),
                 Section::make(__('field.orders.sections.history'))
                     ->columnSpanFull()
                     ->components([
@@ -348,6 +390,30 @@ class OrderResource extends ModuleResource
             ]);
     }
 
+    /**
+     * Each checklist question with the technician's answer ("Signal power: -19.5 dBm", "Photo of the box: 2 photos").
+     *
+     * @return array<int, string>
+     */
+    public static function answerLines(WorkOrder $order): array
+    {
+        $answers = $order->answers->pluck('value', 'item_key');
+        $photos = $order->photos->countBy('item_key');
+
+        return collect((array) $order->checklist)->map(function (array $item) use ($answers, $photos): string {
+            $value = $answers->get($item['key']);
+            $text = match ($item['type']) {
+                'photo' => ($photos->get($item['key'], 0) > 0 ? __('field.execute.photos_taken', ['count' => $photos->get($item['key'])]) : '—'),
+                'check' => in_array($value, ['1', 'true'], true) ? '✓ '.__('field.execute.done_item') : '—',
+                'yes_no' => in_array($value, ['yes', 'no'], true) ? __('field.execute.'.$value) : '—',
+                'number' => filled($value) ? $value.($item['unit'] ? ' '.$item['unit'] : '') : '—',
+                default => filled($value) ? (string) $value : '—',
+            };
+
+            return $item['label'].': '.$text;
+        })->all();
+    }
+
     /** One history line in words, in the language of who reads it. */
     public static function eventText(OrderEvent $event): string
     {
@@ -362,6 +428,9 @@ class OrderResource extends ModuleResource
             'canceled' => __('field.events.canceled', ['reason' => $data['reason'] ?? '']),
             'note' => __('field.events.note', ['text' => $data['text'] ?? '']),
             'edited' => __('field.events.edited'),
+            'checked_in' => __('field.events.checked_in').(isset($data['distance']) ? ' · '.__('field.orders.distance', ['meters' => $data['distance']]) : '').(isset($data['km']) ? ' · '.number_format((int) $data['km'], 0, ',', '.').' km' : '').(isset($data['km_note']) ? ' ('.$data['km_note'].')' : ''),
+            'paused' => __('field.events.paused', ['reason' => $data['reason'] ?? '']),
+            'finished' => __('field.events.finished'),
             default => $event->type,
         };
     }

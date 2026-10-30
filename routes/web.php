@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
+use App\Http\Controllers\Field\OrderSyncController;
 use App\Http\Controllers\Field\QuoteLinkController;
 use App\Http\Controllers\Fleet\StationCheckController;
 use App\Http\Controllers\LocaleController;
@@ -49,6 +50,9 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::middleware(['auth', EnsureLicense::class, RevalidateMembership::class])->group(function (): void {
         Route::get('/ponto/hora', [PhoneQueueController::class, 'clock'])->name('timeclock.clock');
         Route::post('/ponto/enviar', [PhoneQueueController::class, 'send'])->middleware('throttle:60,1')->name('timeclock.queue');
+
+        // Campo: the pieces of a work order sent by the technician's phone (also later, without signal).
+        Route::post('/campo/os/{order}/enviar', OrderSyncController::class)->whereNumber('order')->middleware('throttle:120,1')->name('field.sync');
     });
 
     // Ponto: receipt of a punch at a signed address (works without a login, e.g. from the QR code on the tablet).

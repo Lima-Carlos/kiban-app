@@ -284,6 +284,7 @@ return [
             'inspection' => 'Vistoria',
             'wash' => 'Lavagem',
             'correction' => 'Correção',
+            'work_order' => 'Ordem de serviço (Campo)',
         ],
         'vehicle_event' => [
             'created' => 'Cadastrado',

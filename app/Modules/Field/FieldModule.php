@@ -6,8 +6,10 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\Filament\Customers\CustomerResource;
+use App\Modules\Field\Filament\ExecuteOrderPage;
 use App\Modules\Field\Filament\FieldSettingsPage;
 use App\Modules\Field\Filament\Materials\MaterialResource;
+use App\Modules\Field\Filament\MyOrdersPage;
 use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Filament\Quotes\QuoteResource;
 use App\Modules\Field\Filament\ServiceTypes\ServiceTypeResource;
@@ -91,7 +93,20 @@ class FieldModule extends Module
 
     public function pages(): array
     {
-        return [FieldSettingsPage::class];
+        return [MyOrdersPage::class, ExecuteOrderPage::class, FieldSettingsPage::class];
+    }
+
+    /** The technician: today's services and the button to open them, on the start page. */
+    public function personalHome(User $user): ?array
+    {
+        if (! MyOrdersPage::canAccess()) {
+            return null;
+        }
+
+        return [
+            'view' => 'field.home.technician',
+            'data' => ['today' => app(MyOrdersPage::class)->groups()['today'], 'url' => MyOrdersPage::getUrl()],
+        ];
     }
 
     public function showsSetupTo(User $user): bool

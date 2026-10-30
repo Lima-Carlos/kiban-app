@@ -20,6 +20,9 @@ enum OdometerSource: string implements HasLabel
 
     case Correction = 'correction';
 
+    /** Typed by a technician arriving at a work order (Kiban Campo). */
+    case WorkOrder = 'work_order';
+
     public function getLabel(): string
     {
         return __('fleet.enums.odometer_source.'.$this->value);

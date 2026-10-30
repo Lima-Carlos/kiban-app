@@ -284,6 +284,7 @@ return [
             'inspection' => 'Inspección',
             'wash' => 'Lavado',
             'correction' => 'Corrección',
+            'work_order' => 'Orden de servicio (Campo)',
         ],
         'vehicle_event' => [
             'created' => 'Registrado',

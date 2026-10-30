@@ -10,8 +10,8 @@ A ordem das partes (aprovada em 30/10/2026):
 | O2 | Tipos de serviço, roteiro do técnico, materiais e modelos prontos por ramo | ✔ pronta (30/10/2026) |
 | O3 | Ordens de serviço, agenda do dia por técnico e mapa | ✔ pronta (30/10/2026, antes da O2b) |
 | O2b | Orçamentos aprovados pelo cliente por link (viram OS) | ✔ pronta (30/10/2026) |
-| O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | próxima |
-| O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | |
+| O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | ✔ pronta (30/10/2026) |
+| O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | próxima |
 | Depois | O6 painel e avisos, O7 ligação completa com Ponto e Frota, PMOC | |
 
 ## Quem faz o quê (função no Campo)
@@ -236,3 +236,45 @@ Na tela Pessoas, dar a função "Técnico" a mais gente do que o plano permite �
 - `database/migrations/2026_10_30_230000_create_field_quote_tables.php`: `fd_quotes`, `fd_quote_items`, `quote_id` na OS, numeração e validade padrão em `fd_settings`.
 - `app/Modules/Field/Services/FieldFormat.php`: agora também a quantidade ("35 m", "2,5 kg").
 - `tests/Feature/FieldQuotesTest.php`.
+
+## O4: O técnico no celular, também sem internet
+### Minhas OS (Campo → Minhas OS, só para técnicos)
+- **Hoje**, em ordem de horário, **Pendentes** e **Próximos dias**.
+- Cada OS mostra: cliente, tipo, endereço, **"Como chegar"** (abre o mapa do celular), **WhatsApp** do cliente e **"Começar" / "Continuar"**.
+- No **Início**, o técnico vê "Meus serviços de hoje" com o botão para a lista.
+- **Abrir "Minhas OS" com sinal guarda a lista e cada OS no celular.** Depois, sem sinal, o app abre direto nelas, como o "Bater ponto".
+
+### Na casa do cliente (a tela da OS)
+1. **Chegada:** o toque em "Cheguei" guarda a hora, o local (e a distância até o ponto do cliente) e, se o técnico tiver veículo na Frota, o **km do veículo**, que **vai também para a Frota** (origem "Ordem de serviço (Campo)").
+   - Um cliente sem ponto no mapa **ganha o ponto do técnico** ("Confirmado na visita").
+   - Um km que a Frota recusa (ex.: menor que o último) fica na OS, com o motivo no histórico.
+2. **Roteiro:** cada pergunta do tipo de serviço (marcar como feito, sim/não, número com unidade, texto, lista, foto). O asterisco (*) mostra as obrigatórias. Há também "Outras fotos do serviço".
+   - As fotos são reduzidas no próprio celular antes de enviar.
+3. **Materiais usados** (do catálogo, com a quantidade; dá para tirar) e **"O que foi feito"**.
+4. **Assinatura do cliente:** o nome e a assinatura com o dedo, na tela.
+5. **"Concluir serviço"** confere, ainda no celular, o que falta (perguntas obrigatórias, foto obrigatória, assinatura) e diz o quê.
+   - **"Deixar pendente"** pede o motivo (ex.: falta peça). O escritório vê o motivo, e **"Retomar"** continua depois.
+- **Sem internet:**
+  - tudo vai primeiro para a **fila do celular** e é enviado sozinho, na ordem, quando o sinal volta;
+  - a tela mostra "⏳ N esperando sinal" ou "✓ Tudo enviado";
+  - cada informação vale pela **hora em que foi feita**, até 7 dias. Uma resposta antiga que chega depois não apaga uma mais nova;
+  - a mesma informação enviada duas vezes conta uma vez só.
+- **Testado num Chrome de verdade, com a internet cortada:** chegada, roteiro, foto, material, assinatura e concluir, tudo sem sinal. Ao voltar a internet, as 9 informações foram enviadas, e a OS ficou "Concluída" no escritório.
+
+### No escritório
+- A ficha da OS ganhou **"O que o técnico fez"**:
+  - chegada (hora, distância do cliente e km, com link do mapa);
+  - conclusão ou o motivo da pendência;
+  - cada pergunta com a resposta ("Potência do sinal na ONU: -19.5 dBm");
+  - os materiais, "o que foi feito", as fotos e a assinatura.
+- O histórico mostra a chegada, as pendências e a conclusão.
+
+## Arquivos (parte O4)
+- `app/Modules/Field/Services/OrderExecutionService.php`: aplica cada informação vinda do celular (chegada, resposta, foto, material, nota, assinatura, pendência, conclusão), uma vez só, e diz o que falta para concluir.
+- `app/Http/Controllers/Field/OrderSyncController.php`: recebe as informações (`POST /<empresa>/campo/os/<número>/enviar`).
+- `app/Modules/Field/Models/OrderAnswer.php`, `OrderPhoto.php`, `OrderMaterial.php` e `Services/FieldPhotoStore.php` (fotos e assinaturas na pasta privada da empresa).
+- `app/Modules/Field/Filament/MyOrdersPage.php` e `ExecuteOrderPage.php`, com as telas `resources/views/field/my-orders.blade.php`, `execute.blade.php` e `home/technician.blade.php`.
+- `public/js/field-queue.js`: a fila do celular do técnico. `public/sw.js` agora guarda também "Minhas OS" e cada OS.
+- `database/migrations/2026_10_31_100000_create_field_execution_tables.php`.
+- Frota: nova origem do km, `OdometerSource::WorkOrder`.
+- `tests/Feature/FieldExecutionTest.php`. Teste num Chrome de verdade, sem internet: `docker compose run --rm studio node scripts/testar-campo-offline.mjs`, no projeto `kiban-videos`.

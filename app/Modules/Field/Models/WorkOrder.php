@@ -44,7 +44,38 @@ class WorkOrder extends Model
             'checklist' => 'array',
             'signature_required' => 'boolean',
             'photo_required' => 'boolean',
+            'checked_in_at' => 'immutable_datetime',
+            'check_in_latitude' => 'float',
+            'check_in_longitude' => 'float',
+            'check_in_accuracy' => 'integer',
+            'check_in_distance' => 'integer',
+            'check_in_km' => 'integer',
+            'signed_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * @return HasMany<OrderAnswer, $this>
+     */
+    public function answers(): HasMany
+    {
+        return $this->hasMany(OrderAnswer::class, 'order_id');
+    }
+
+    /**
+     * @return HasMany<OrderPhoto, $this>
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(OrderPhoto::class, 'order_id')->orderBy('taken_at');
+    }
+
+    /**
+     * @return HasMany<OrderMaterial, $this>
+     */
+    public function materials(): HasMany
+    {
+        return $this->hasMany(OrderMaterial::class, 'order_id')->orderBy('id');
     }
 
     /**
