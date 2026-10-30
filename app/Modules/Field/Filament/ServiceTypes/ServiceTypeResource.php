@@ -29,6 +29,7 @@ use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 /**
  * Types of service (manager): name, color on the agenda, expected time, price and the technician's checklist,
@@ -165,7 +166,8 @@ class ServiceTypeResource extends ModuleResource
                     ->label(__('field.fields.color')),
                 TextColumn::make('name')
                     ->label(__('field.fields.service_name'))
-                    ->description(fn (ServiceType $record): ?string => $record->description)
+                    ->description(fn (ServiceType $record): ?string => Str::limit((string) $record->description, 70) ?: null)
+                    ->wrap()
                     ->weight('bold')
                     ->searchable(),
                 TextColumn::make('duration_minutes')
@@ -176,6 +178,7 @@ class ServiceTypeResource extends ModuleResource
                     ->formatStateUsing(fn (?int $state): string => FieldFormat::money($state))
                     ->placeholder('—'),
                 TextColumn::make('checklist')
+                    ->visibleFrom('xl')
                     ->label(__('field.service_types.checklist'))
                     ->state(fn (ServiceType $record): string => trans_choice('field.service_types.items', count($record->checklist), ['count' => count($record->checklist)])),
                 ToggleColumn::make('is_active')

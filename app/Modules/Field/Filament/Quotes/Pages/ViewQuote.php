@@ -43,6 +43,8 @@ class ViewQuote extends ViewRecord
                 ->label(fn (): string => $this->getRecord()->status === QuoteStatus::Draft ? __('field.quotes.send') : __('field.quotes.send_again'))
                 ->icon(Heroicon::OutlinedPaperAirplane)
                 ->visible(fn (): bool => $canEdit() && ! $this->getRecord()->status->isAnswered())
+                ->requiresConfirmation()
+                ->modalDescription(__('field.quotes.send_confirm'))
                 ->action(function () use ($service): void {
                     try {
                         $quote = $service->send($this->getRecord());

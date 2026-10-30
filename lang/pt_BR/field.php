@@ -318,6 +318,13 @@ return [
         'cancel_help' => 'A ordem fica no histórico, cancelada, com o motivo. Não dá para desfazer.',
         'note' => 'Anotação',
         'more' => 'Mais',
+        'tabs' => [
+            'pending' => 'Em aberto',
+            'today' => 'Hoje',
+            'done' => 'Concluídas',
+            'canceled' => 'Canceladas',
+            'all' => 'Todas',
+        ],
     ],
     'agenda' => [
         'title' => 'Agenda',
@@ -366,6 +373,7 @@ return [
         'answered_by' => ':name, em :at (IP :ip)',
         'send' => 'Enviar ao cliente',
         'send_again' => 'Enviar de novo',
+        'send_confirm' => 'O orçamento deixa de ser rascunho e o link passa a abrir para o cliente. Depois, é só mandar pelo WhatsApp.',
         'sent' => 'Pronto para enviar!',
         'sent_help' => 'Mande o link pelo WhatsApp. O cliente aprova pelo celular, e o orçamento aprovado vira ordem de serviço sozinho.',
         'whatsapp' => 'Enviar pelo WhatsApp',

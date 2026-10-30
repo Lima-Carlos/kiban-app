@@ -36,7 +36,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Facades\FilamentTimezone;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -245,25 +244,14 @@ class OrderResource extends ModuleResource
                     ->badge()
                     ->visibleFrom('md'),
             ])
+            // The situation and "today" are the tabs above the list (ListOrders::getTabs).
             ->filters([
-                SelectFilter::make('status')
-                    ->label(__('field.fields.status'))
-                    ->options(OrderStatus::class)
-                    ->multiple()
-                    ->default(array_map(fn (OrderStatus $status): string => $status->value, OrderStatus::pending())),
                 SelectFilter::make('technician_id')
                     ->label(__('field.fields.technician'))
                     ->options(fn (): array => static::technicianOptions()),
                 SelectFilter::make('service_type_id')
                     ->label(__('field.fields.service_type'))
                     ->relationship('serviceType', 'name'),
-                Filter::make('day')
-                    ->label(__('field.orders.today'))
-                    ->query(fn (Builder $query) => $query->whereBetween('scheduled_at', [
-                        CarbonImmutable::now(static::timezone())->startOfDay()->utc(),
-                        CarbonImmutable::now(static::timezone())->endOfDay()->utc(),
-                    ]))
-                    ->toggle(),
             ])
             ->recordActions([
                 ViewAction::make(),

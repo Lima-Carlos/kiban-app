@@ -318,6 +318,13 @@ return [
         'cancel_help' => 'The order stays in the history, canceled, with the reason. It cannot be undone.',
         'note' => 'Note',
         'more' => 'More',
+        'tabs' => [
+            'pending' => 'Open',
+            'today' => 'Today',
+            'done' => 'Done',
+            'canceled' => 'Canceled',
+            'all' => 'All',
+        ],
     ],
     'agenda' => [
         'title' => 'Agenda',
@@ -366,6 +373,7 @@ return [
         'answered_by' => ':name, on :at (IP :ip)',
         'send' => 'Send to the customer',
         'send_again' => 'Send again',
+        'send_confirm' => 'The quote stops being a draft and the link starts opening for the customer. Then just send it on WhatsApp.',
         'sent' => 'Ready to send!',
         'sent_help' => 'Send the link on WhatsApp. The customer approves on the phone, and the approved quote becomes a work order by itself.',
         'whatsapp' => 'Send on WhatsApp',

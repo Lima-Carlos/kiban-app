@@ -200,11 +200,11 @@
             <strong style="font-size:16px" x-text="texts.arrival"></strong>
             <p style="font-size:13px;opacity:.75;margin:4px 0 10px" x-text="order.needsPoint ? texts.arrival_point_help : texts.arrival_help"></p>
             <template x-if="order.vehicles.length">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-                    <select x-model="vehicle" style="border:1px solid #d1d5db;border-radius:8px;padding:8px">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:10px">
+                    <select x-model="vehicle" style="width:100%;min-width:0;border:1px solid #d1d5db;border-radius:8px;padding:8px">
                         <template x-for="v in order.vehicles" :key="v.id"><option :value="v.id" x-text="v.name"></option></template>
                     </select>
-                    <input type="number" inputmode="numeric" x-model="km" :placeholder="texts.km" style="border:1px solid #d1d5db;border-radius:8px;padding:8px">
+                    <input type="number" inputmode="numeric" x-model="km" :placeholder="texts.km" style="width:100%;min-width:0;border:1px solid #d1d5db;border-radius:8px;padding:8px">
                 </div>
             </template>
             <x-filament::button size="xl" icon="heroicon-o-map-pin" x-on:click="checkIn()" x-bind:disabled="locating" style="width:100%">

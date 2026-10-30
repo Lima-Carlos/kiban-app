@@ -318,6 +318,13 @@ return [
         'cancel_help' => 'La orden queda en el historial, cancelada, con el motivo. No se puede deshacer.',
         'note' => 'Nota',
         'more' => 'Más',
+        'tabs' => [
+            'pending' => 'Abiertas',
+            'today' => 'Hoy',
+            'done' => 'Terminadas',
+            'canceled' => 'Canceladas',
+            'all' => 'Todas',
+        ],
     ],
     'agenda' => [
         'title' => 'Agenda',
@@ -366,6 +373,7 @@ return [
         'answered_by' => ':name, el :at (IP :ip)',
         'send' => 'Enviar al cliente',
         'send_again' => 'Enviar de nuevo',
+        'send_confirm' => 'El presupuesto deja de ser borrador y el enlace empieza a abrir para el cliente. Después, solo envíalo por WhatsApp.',
         'sent' => '¡Listo para enviar!',
         'sent_help' => 'Envía el enlace por WhatsApp. El cliente aprueba en el celular, y el presupuesto aprobado se convierte en orden de servicio solo.',
         'whatsapp' => 'Enviar por WhatsApp',

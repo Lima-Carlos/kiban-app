@@ -2,7 +2,7 @@
     use App\Modules\Field\Enums\QuoteStatus;
     use App\Modules\Field\Services\FieldFormat;
 @endphp
-<x-layout :title="$quote->label()">
+<x-layout :title="$quote->label()" :brand="$company" :logo="$logo" :color="$color">
     <h1>{{ __('field.quote_page.title', ['company' => $company]) }}</h1>
     <p>{{ $quote->label() }} · {{ $quote->customer->displayName() }}</p>
     @if ($quote->site)

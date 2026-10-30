@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Field;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompanyProfile;
 use App\Modules\Field\Enums\QuoteStatus;
 use App\Modules\Field\FieldModule;
 use App\Modules\Field\Models\Quote;
@@ -67,9 +68,14 @@ class QuoteLinkController extends Controller
      */
     protected function data(Quote $quote): array
     {
+        // The company's own identity (name, logo, color), never the Kiban one: the customer is theirs.
+        $profile = CompanyProfile::current();
+
         return [
             'quote' => $quote,
-            'company' => app(TenantContext::class)->get()->name,
+            'company' => $profile->name(),
+            'logo' => $profile->logoDataUrl(),
+            'color' => $profile->color(),
             'canAnswer' => $quote->status === QuoteStatus::Sent && ! $quote->isExpired(),
         ];
     }
