@@ -14,6 +14,7 @@ use App\Modules\Field\Models\Site;
 use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\FieldAccess;
 use App\Modules\Field\Services\FieldFormat;
+use App\Modules\Field\Services\FieldReports;
 use App\Support\Country;
 use App\Support\Geo;
 use App\Tenancy\TenantContext;
@@ -28,7 +29,6 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -101,6 +101,23 @@ class OrderResource extends ModuleResource
     public static function technicianOptions(): array
     {
         return app(FieldAccess::class)->technicians()->mapWithKeys(fn ($user): array => [$user->getKey() => $user->name])->all();
+    }
+
+    /**
+     * For an existing order: the nearest technicians first, free ones before busy ones
+     * ("Ana Souza · free · about 10 min away").
+     *
+     * @return array<int|string, string>
+     */
+    public static function nearestOptions(WorkOrder $order): array
+    {
+        return collect(app(FieldReports::class)->nearest($order))
+            ->mapWithKeys(fn (array $row): array => [$row['technician']->getKey() => implode(' · ', array_filter([
+                $row['technician']->name,
+                $row['free'] ? __('field.orders.nearest_free') : __('field.orders.nearest_busy'),
+                $row['travel'] !== null ? __('field.orders.nearest_travel', ['minutes' => $row['travel']]) : null,
+            ]))])
+            ->all();
     }
 
     public static function form(Schema $schema): Schema
@@ -190,13 +207,13 @@ class OrderResource extends ModuleResource
      *
      * @return array<int, mixed>
      */
-    public static function scheduleFields(bool $required): array
+    public static function scheduleFields(bool $required, ?WorkOrder $order = null): array
     {
         return [
             Select::make('technician_id')
                 ->label(__('field.fields.technician'))
-                ->options(fn (): array => static::technicianOptions())
-                ->helperText(fn (): ?string => static::technicianOptions() === [] ? __('field.helpers.no_technicians') : null)
+                ->options(fn (): array => $order !== null ? static::nearestOptions($order) : static::technicianOptions())
+                ->helperText(fn (): ?string => static::technicianOptions() === [] ? __('field.helpers.no_technicians') : ($order !== null ? __('field.orders.nearest_help') : null))
                 ->requiredWith('scheduled_at')
                 ->required($required),
             DateTimePicker::make('scheduled_at')

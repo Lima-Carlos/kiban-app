@@ -102,7 +102,7 @@ class ViewOrder extends ViewRecord
                     'scheduled_at' => $this->getRecord()->scheduled_at?->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s'),
                     'duration_minutes' => $this->getRecord()->duration_minutes,
                 ])
-                ->schema(OrderResource::scheduleFields(required: true))
+                ->schema(fn (): array => OrderResource::scheduleFields(required: true, order: $this->getRecord()))
                 ->action(function (array $data) use ($service, $run): void {
                     $run(function () use ($service, $data): void {
                         $order = $service->schedule($this->getRecord(), User::query()->findOrFail($data['technician_id']), CarbonImmutable::parse($data['scheduled_at'], config('app.timezone')), (int) ($data['duration_minutes'] ?? 0) ?: null, auth()->user());

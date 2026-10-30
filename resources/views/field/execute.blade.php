@@ -219,6 +219,12 @@
                 const text = this.order.onTheWayMessage + (this.eta ? this.texts.arrive_at.replace(':time', this.eta) : '');
                 return 'https://wa.me/' + this.order.customerPhone + '?text=' + encodeURIComponent(text);
             },
+            // The delay told to the customer of this service or of the next one, with the new time of arrival.
+            whatsappLate(target, minutes) {
+                const at = target.scheduledAt ? this.clockText(target.scheduledAt + minutes * 60000) : '';
+                const text = target.lateMessage.replace(':minutes', minutes).replace(':time', at);
+                return 'https://wa.me/' + target.customerPhone + '?text=' + encodeURIComponent(text);
+            },
             late(minutes) {
                 const data = { minutes, reason: this.lateReason || null };
                 if (this.order.checkedIn && this.order.next) {
@@ -343,6 +349,9 @@
             <p x-show="order.onTheWay && !order.customerPhone" x-cloak style="font-size:13px;margin:0;color:#15803d" x-text="'✓ ' + texts.on_the_way"></p>
 
             <p x-show="order.delayMinutes" x-cloak style="font-size:13px;margin:0;color:#b45309" x-text="texts.late_sent.replace(':minutes', order.delayMinutes)"></p>
+            <template x-if="(lateSent || order.delayMinutes) && order.customerPhone && !order.checkedIn">
+                <x-filament::button tag="a" x-bind:href="whatsappLate(order, lateSent || order.delayMinutes)" target="_blank" color="success" outlined icon="heroicon-o-chat-bubble-left-right" style="width:100%"><span x-text="texts.tell_customer_late"></span></x-filament::button>
+            </template>
             <x-filament::button color="warning" outlined icon="heroicon-o-clock" x-on:click="showLate = !showLate; showHandoff = false"><span x-text="texts.late"></span></x-filament::button>
             <x-filament::button color="gray" outlined icon="heroicon-o-arrows-right-left" x-on:click="showHandoff = !showHandoff; showLate = false"><span x-text="texts.handoff"></span></x-filament::button>
         </div>
@@ -394,6 +403,9 @@
                     <strong x-text="texts.finish_by.replace(':time', order.next.finishBy)"></strong>
                 </div>
                 <p x-show="lateNextSent" style="font-size:13px;margin:6px 0 0;color:#b45309" x-text="texts.late_sent.replace(':minutes', lateNextSent)"></p>
+                <template x-if="lateNextSent && order.next.customerPhone">
+                    <x-filament::button tag="a" x-bind:href="whatsappLate(order.next, lateNextSent)" target="_blank" color="success" outlined size="sm" icon="heroicon-o-chat-bubble-left-right" style="margin-top:8px"><span x-text="texts.tell_customer_late"></span></x-filament::button>
+                </template>
                 <x-filament::button color="warning" outlined size="sm" icon="heroicon-o-clock" x-on:click="showLate = !showLate" style="margin-top:8px"><span x-text="texts.late_next"></span></x-filament::button>
             </div>
         </template>

@@ -106,6 +106,9 @@ class ExecuteOrderPage extends Page
             'travel' => ['speed' => max(5, (int) $settings->travel_speed_kmh), 'factor' => (float) $settings->route_factor],
             'onTheWayMessage' => __('field.execute.on_the_way_message', ['name' => Str::before($order->customer->name, ' '), 'technician' => Str::before((string) auth()->user()->name, ' '), 'company' => CompanyProfile::current()->name()]),
             'customerPhone' => preg_replace('/\D/', '', (string) $order->customer->phone),
+            // "I will be late": the message to the customer (the minutes and the new time are filled on the phone).
+            'lateMessage' => $this->lateMessage($order),
+            'scheduledAt' => $order->scheduled_at?->getTimestampMs(),
             'pushKey' => app(PhoneAlerts::class)->enabled() ? config('kiban.push.public_key') : null,
             'pushUrl' => route('phone-alerts.subscribe'),
             // Written on each photo, with the date, time and place.
@@ -140,7 +143,20 @@ class ExecuteOrderPage extends Page
             'alertAt' => $plan['alert_at']->toIso8601ZuluString(),
             'url' => static::getUrl(['order' => $next->getKey()]),
             'sync' => route('field.sync', ['order' => $next->getKey()]),
+            'customerPhone' => preg_replace('/\D/', '', (string) $next->customer->phone),
+            'lateMessage' => $this->lateMessage($next),
+            'scheduledAt' => $next->scheduled_at->getTimestampMs(),
         ];
+    }
+
+    /** "Hello, Ana! This is Carlos, from X. Sorry: I will be about :minutes min late. I should arrive around :time." */
+    protected function lateMessage(WorkOrder $order): string
+    {
+        return __('field.execute.late_message', [
+            'name' => Str::before($order->customer->name, ' '),
+            'technician' => Str::before((string) auth()->user()->name, ' '),
+            'company' => CompanyProfile::current()->name(),
+        ]);
     }
 
     /**

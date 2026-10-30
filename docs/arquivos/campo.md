@@ -12,7 +12,8 @@ A ordem das partes (aprovada em 30/10/2026):
 | O2b | Orçamentos aprovados pelo cliente por link (viram OS) | ✔ pronta (30/10/2026) |
 | O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | ✔ pronta (30/10/2026) |
 | O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | ✔ pronta (30/10/2026) |
-| Depois | O6 painel e avisos, O7 ligação completa com Ponto e Frota, PMOC | |
+| O6 | Painel do gestor: técnicos agora, resultado do mês, avisos em "Atenção", técnico mais perto | ✔ pronta (30/10/2026) |
+| Depois | O7 ligação completa com Ponto e Frota, PMOC, estoque no carro | |
 
 ## Quem faz o quê (função no Campo)
 Ela é escolhida na tela **Pessoas** (ou por um perfil de acesso):
@@ -351,3 +352,28 @@ Velocidade média na cidade (25 km/h), fator das ruas (1,4), minutos do alerta p
 - `resources/views/field/agenda-suggest.blade.php`: a lista da ordem sugerida.
 - `tests/Feature/FieldDayTest.php`.
 - Conferido no Chrome do estúdio: `C:\Projetos\kiban-videos\scripts\testar-campo-dia.mjs`.
+
+## O6: Painel do gestor (30/10/2026)
+Para o gestor, o atendimento e quem só acompanha. O técnico não vê.
+
+### Campo → Painel (e o Início)
+- **Hoje, agora:** cada técnico com a situação na hora: **Atrasado** (não chegou 15 min depois do horário, contando o atraso avisado), **Em atendimento** (desde que horas), **A caminho**, **Livre** (com o próximo serviço) ou **Sem mais serviços**, e "2 de 4 feitos". Atualiza sozinho a cada minuto. Embaixo, quantas OS estão sem técnico, com o link da Agenda.
+- **Resultado do mês** (escolha o mês no topo): OS feitas e o valor, tempo médio no cliente (da chegada ao fim), pontualidade (% que chegou até 15 min depois do horário), retornos, nota média dos clientes e orçamentos aprovados / enviados.
+- **Por técnico:** a mesma conta para cada técnico. Pontualidade abaixo de 80%, retornos e nota 3 ou menor ficam destacados. O nome abre as OS feitas por ele.
+
+### Quadro "Atenção" do Início (gestor e atendimento)
+Some sozinho quando resolvido: técnico que ainda não chegou, OS devolvidas por técnicos esperando outro técnico e OS urgentes ou de prioridade alta sem técnico.
+
+### Técnico mais perto
+Ao **Agendar** uma OS (na ficha dela), a lista de técnicos vem com os **mais perto primeiro e os livres antes dos ocupados** ("Ana Souza · livre · a uns 10 min"). A posição é o último lugar onde o técnico chegou hoje ou, se ainda não saiu, a base da empresa (Configurações do Campo). Ocupado = em atendimento agora ou com outro serviço no mesmo horário. Serve principalmente para a OS que um técnico devolveu.
+
+### Avisar o cliente do atraso
+Depois de "Vou atrasar", o técnico tem o botão **"Avisar o cliente do atraso pelo WhatsApp"**, com a mensagem pronta e a nova hora ("vou atrasar uns 15 min. Devo chegar por volta das 10:45"). Vale também para o atraso do próximo serviço.
+
+## Arquivos (O6)
+- `app/Modules/Field/Services/FieldReports.php`: as contas do painel (hoje, mês, por técnico), o quadro "Atenção" e os técnicos mais perto.
+- `app/Modules/Field/Filament/Dashboard/FieldDashboard.php`: a página Campo → Painel (`/campo/painel`).
+- `app/Modules/Field/Filament/Dashboard/FieldNowWidget.php`, `FieldMonthWidget.php`, `FieldTechniciansWidget.php` e `ReadsFieldFilters.php`: os blocos "Hoje, agora", "Resultado do mês" e "Por técnico" (os dois primeiros também no Início).
+- `resources/views/field/dashboard/now.blade.php` e `technicians.blade.php`: as telas desses blocos.
+- `tests/Feature/FieldDashboardTest.php`.
+- Conferido no Chrome do estúdio: `C:\Projetos\kiban-videos\scripts\testar-campo-painel.mjs`.

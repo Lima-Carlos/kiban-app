@@ -6,6 +6,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\Filament\Customers\CustomerResource;
+use App\Modules\Field\Filament\Dashboard\FieldDashboard;
+use App\Modules\Field\Filament\Dashboard\FieldMonthWidget;
+use App\Modules\Field\Filament\Dashboard\FieldNowWidget;
 use App\Modules\Field\Filament\ExecuteOrderPage;
 use App\Modules\Field\Filament\FieldSettingsPage;
 use App\Modules\Field\Filament\Materials\MaterialResource;
@@ -26,6 +29,7 @@ use App\Modules\Field\Policies\ServiceTypePolicy;
 use App\Modules\Field\Policies\WorkOrderPolicy;
 use App\Modules\Field\Services\FieldAccess;
 use App\Modules\Field\Services\FieldPeople;
+use App\Modules\Field\Services\FieldReports;
 use App\Modules\Module;
 use App\Modules\Step;
 use App\People\Person;
@@ -93,7 +97,19 @@ class FieldModule extends Module
 
     public function pages(): array
     {
-        return [MyOrdersPage::class, ExecuteOrderPage::class, FieldSettingsPage::class];
+        return [FieldDashboard::class, MyOrdersPage::class, ExecuteOrderPage::class, FieldSettingsPage::class];
+    }
+
+    /** Managers, the service desk and viewers: where each technician is now and the month, on the start page. */
+    public function homeWidgets(User $user): array
+    {
+        return in_array(app(FieldAccess::class)->role($user), [FieldRole::Manager, FieldRole::Dispatcher, FieldRole::Viewer], true) ? [FieldNowWidget::class, FieldMonthWidget::class] : [];
+    }
+
+    /** The office: a technician who has not arrived, orders handed back and urgent orders without a technician. */
+    public function attention(User $user): array
+    {
+        return in_array(app(FieldAccess::class)->role($user), [FieldRole::Manager, FieldRole::Dispatcher], true) ? app(FieldReports::class)->attention() : [];
     }
 
     /** The technician: today's services and the button to open them, on the start page. */
