@@ -64,6 +64,12 @@ class AppPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedUserCircle)
                     ->url(fn (): string => config('kiban.core.url').'/conta')
                     ->openUrlInNewTab(),
+                // LGPD: the privacy channel, "download my data" and requests, in the Kiban account.
+                Action::make('privacy')
+                    ->label(fn (): string => __('app.menu.privacy'))
+                    ->icon(Heroicon::OutlinedShieldCheck)
+                    ->url(fn (): string => config('kiban.core.url').'/conta/privacidade')
+                    ->openUrlInNewTab(),
                 ...$this->localeMenuItems(),
             ])
             // The bell: warnings of the current company, checked every 30 seconds.

@@ -14,6 +14,7 @@ use App\Modules\Fleet\Models\Driver;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\VehicleService;
+use App\People\PeopleService;
 use App\People\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -189,5 +190,15 @@ class PeopleTest extends TestCase
 
         $this->get($this->company->url('/'))->assertSee('manifest.webmanifest', false)->assertSee(__('app.install.title'));
         $this->assertFileExists(public_path('sw.js'));
+    }
+
+    public function test_the_company_downloads_a_persons_data(): void
+    {
+        // LGPD: the company (controller) hands the person a copy of what the systems keep about them.
+        $person = app(PeopleService::class)->add($this->company, ['name' => 'Ana Silva', 'phone' => '11988887777'], [], $this->owner, false)['person'];
+
+        Livewire::test(PeoplePage::class)
+            ->callTableAction('exportData', $person)
+            ->assertFileDownloaded('dados-ana-silva-'.now()->format('Y-m-d').'.json');
     }
 }

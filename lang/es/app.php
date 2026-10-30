@@ -5,6 +5,7 @@ return [
     'datetime_format' => 'd/m/Y \\a \\l\\a\\s H:i',
     'menu' => [
         'account' => 'Mi cuenta Kiban',
+        'privacy' => 'Privacidad',
         'company' => 'Empresa',
         'systems' => 'Sistemas',
     ],
@@ -136,6 +137,8 @@ return [
         'grant_login_help' => 'La persona recibe un usuario con este celular o correo. Su historial sigue igual.',
         'deactivate' => 'Dar de baja de la empresa',
         'deactivate_help' => 'La persona sale de la lista y pierde el acceso a los sistemas de la empresa en hasta 10 minutos. La ficha y el historial se guardan.',
+        'export_data' => 'Descargar los datos de la persona (protección de datos)',
+        'export_data_help' => 'Un archivo con todo lo que los sistemas guardan sobre esta persona (registro, marcaciones, correcciones, hojas mensuales, cargas de combustible). Entrégaselo cuando lo pida: la empresa es la responsable de estos datos.',
         'deactivated' => 'Persona dada de baja.',
         'reactivate' => 'Reactivar',
         'reactivate_help' => 'La persona vuelve a la lista, sin usuario. Si hace falta, dé el acceso de nuevo.',

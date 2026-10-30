@@ -5,6 +5,7 @@ return [
     'datetime_format' => 'm/d/Y \\a\\t g:i A',
     'menu' => [
         'account' => 'My Kiban account',
+        'privacy' => 'Privacy',
         'company' => 'Company',
         'systems' => 'Systems',
     ],
@@ -136,6 +137,8 @@ return [
         'grant_login_help' => 'The person gets a login with this mobile or e-mail. Their history stays the same.',
         'deactivate' => 'Deactivate from the company',
         'deactivate_help' => 'The person leaves the list and loses access to the company\'s systems within 10 minutes. The record and the history stay.',
+        'export_data' => "Download this person's data (data protection)",
+        'export_data_help' => 'A file with everything the systems keep about this person (profile, punches, corrections, timesheets, fuel-ups). Hand it to them when they ask: the company is responsible for this data.',
         'deactivated' => 'Person deactivated.',
         'reactivate' => 'Reactivate',
         'reactivate_help' => 'The person comes back to the list, without a login. If needed, give the access again.',

@@ -157,6 +157,17 @@ abstract class Module
     }
 
     /**
+     * Everything this module keeps about the person, for the LGPD export the company makes from "People"
+     * (art. 18: the data subject's copy). Plain values only (no photos), dates as text.
+     *
+     * @return array<string, mixed>
+     */
+    public function exportPerson(Person $person): array
+    {
+        return [];
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public function savePerson(Person $person, array $data): void {}

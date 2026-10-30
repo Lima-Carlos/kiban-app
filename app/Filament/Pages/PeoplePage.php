@@ -363,6 +363,33 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
 
                         Notification::make()->success()->title(__('app.people.deactivated'))->send();
                     }),
+                // LGPD (art. 18): the company, controller of its employees' data, hands the person a copy of it.
+                Action::make('exportData')
+                    ->label(__('app.people.export_data'))
+                    ->icon(Heroicon::OutlinedArrowDownTray)
+                    ->iconButton()
+                    ->authorize(fn (): bool => static::canAccess())
+                    ->requiresConfirmation()
+                    ->modalDescription(__('app.people.export_data_help'))
+                    ->action(function (Person $record) {
+                        $data = [
+                            'generated_at_utc' => now()->toIso8601ZuluString(),
+                            'company' => $this->tenant()->name,
+                            'person' => [
+                                'name' => $record->name, 'phone' => $record->phone, 'email' => $record->email,
+                                'document' => app(PeopleService::class)->canSeeDocuments(auth()->user(), $this->tenant()) ? $record->document : null,
+                                'team' => $record->team?->name, 'active' => (bool) $record->is_active, 'has_login' => $record->hasLogin(),
+                            ],
+                            'systems' => collect(static::modules())->mapWithKeys(fn (Module $module): array => [$module->key() => $module->exportPerson($record)])
+                                ->filter(fn (array $part): bool => $part !== [])->all(),
+                        ];
+
+                        return response()->streamDownload(
+                            fn () => print (json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+                            'dados-'.str($record->name)->slug().'-'.now()->format('Y-m-d').'.json',
+                            ['Content-Type' => 'application/json; charset=utf-8'],
+                        );
+                    }),
                 Action::make('reactivate')
                     ->label(__('app.people.reactivate'))
                     ->icon(Heroicon::OutlinedArrowUturnLeft)

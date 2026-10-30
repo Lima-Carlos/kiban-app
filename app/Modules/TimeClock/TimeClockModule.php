@@ -24,6 +24,7 @@ use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
 use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Filament\Workplaces\WorkplaceResource;
 use App\Modules\TimeClock\Models\Adjustment;
+use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Holiday;
 use App\Modules\TimeClock\Models\Kiosk;
@@ -201,6 +202,35 @@ class TimeClockModule extends Module
     public function savePerson(Person $person, array $data): void
     {
         app(TimeClockPeople::class)->save($person, $data);
+    }
+
+    public function exportPerson(Person $person): array
+    {
+        $employee = Employee::query()->where('person_id', $person->getKey())->first();
+
+        if ($employee === null) {
+            return [];
+        }
+
+        $day = fn ($date): ?string => $date?->toDateString();
+        $moment = fn ($at): ?string => $at?->toIso8601ZuluString();
+
+        return [
+            'employee' => [
+                'registration' => $employee->registration, 'job_title' => $employee->job_title, 'admitted_on' => $day($employee->admitted_on),
+                'terminated_on' => $day($employee->terminated_on), 'workplace' => $employee->workplace?->name, 'external' => (bool) $employee->is_external,
+            ],
+            'punches' => Punch::query()->where('employee_id', $employee->getKey())->orderBy('punched_at')->get()->map(fn (Punch $punch): array => [
+                'nsr' => $punch->nsr, 'at_utc' => $moment($punch->punched_at), 'source' => $punch->source, 'latitude' => $punch->latitude, 'longitude' => $punch->longitude,
+                'flags' => $punch->flags, 'with_photo' => $punch->photo_path !== null, 'ip' => $punch->ip,
+            ])->all(),
+            'corrections' => Adjustment::query()->where('employee_id', $employee->getKey())->orderBy('date')->get()->map(fn (Adjustment $adjustment): array => [
+                'date' => $day($adjustment->date), 'type' => $adjustment->type, 'punch_at_utc' => $moment($adjustment->punch_at), 'reason' => $adjustment->reason, 'status' => $adjustment->status,
+            ])->all(),
+            'monthly_timesheets' => Closing::query()->where('employee_id', $employee->getKey())->orderBy('month')->get()->map(fn (Closing $closing): array => [
+                'month' => $closing->month?->format('Y-m'), 'totals' => $closing->totals, 'closed_at_utc' => $moment($closing->closed_at), 'signed_at_utc' => $moment($closing->signed_at),
+            ])->all(),
+        ];
     }
 
     public function checkPerson(?Person $person, array $data, array $details): void

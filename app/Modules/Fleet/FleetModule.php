@@ -238,6 +238,26 @@ class FleetModule extends Module
         app(FleetPeople::class)->save($person, $data);
     }
 
+    public function exportPerson(Person $person): array
+    {
+        $driver = $person->user === null ? null : Driver::query()->where('user_id', $person->user->getKey())->first();
+
+        if ($driver === null) {
+            return [];
+        }
+
+        return [
+            'driver' => [
+                'license_number' => $driver->license_number, 'license_category' => $driver->license_category,
+                'license_expires_on' => $driver->license_expires_on?->toDateString(), 'vehicles' => $driver->vehicles()->pluck('plate')->all(),
+            ],
+            'fuel_ups' => FuelUp::query()->where('driver_id', $driver->getKey())->with('vehicle')->orderBy('fueled_at')->get()->map(fn (FuelUp $fuelUp): array => [
+                'at_utc' => $fuelUp->fueled_at?->toIso8601ZuluString(), 'vehicle' => $fuelUp->vehicle?->plate, 'odometer' => $fuelUp->odometer,
+                'volume' => $fuelUp->volume, 'total_cents' => $fuelUp->total_cents,
+            ])->all(),
+        ];
+    }
+
     /** Fleet roles are for people who sign in (owner's decision: no login, no Frota role). */
     public function personNeedsLogin(): bool
     {

@@ -132,3 +132,14 @@ Na tela **Motoristas** também há o botão **Enviar acesso**, para quem cadastr
   - `2026_10_24_100000_create_people_table.php` (pessoas e equipes; quem já existia ganhou a ficha);
   - `2026_10_24_120000_add_deleted_at_to_access_profiles.php`.
 - Testes: `tests/Feature/PeopleTest.php`, `tests/Feature/AccessProfilesTest.php` e `tests/Feature/TimeClockEmployeesTest.php`.
+
+## Dados da pessoa (LGPD)
+- A **empresa cliente é a controladora** dos dados dos seus funcionários, e a Kiban é a operadora. Quando um funcionário pede uma cópia dos dados dele, quem entrega é a empresa.
+- Na tela **Pessoas**, o botão **"Baixar os dados da pessoa (LGPD)"** (ícone de download) gera um arquivo com tudo o que os sistemas guardam sobre ela:
+  - cadastro e equipe;
+  - no Ponto: dados do funcionário, batidas (com local e IP), correções e espelhos;
+  - na Frota: dados do motorista e abastecimentos.
+- O CPF só entra no arquivo se quem baixa pode ver documentos (dono, administradores e RH). As fotos não entram.
+- Cada sistema diz o que exporta em `exportPerson()` (`app/Modules/Module.php`). Um sistema novo, como o Campo, precisa implementar esse método.
+- O menu do usuário tem o link **"Privacidade"**, que leva à página de privacidade da conta Kiban (canal, "baixar meus dados" e pedidos).
+- **Ainda não existe** a exclusão ou anonimização de uma pessoa, nem a exclusão automática dos dados da empresa depois do cancelamento. Faltam decisões do dono e do advogado, porque as batidas precisam ficar guardadas por 5 anos. Veja o roteiro.
