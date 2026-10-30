@@ -55,3 +55,6 @@ As portas são diferentes das do Core (8080, 5432, 6379), então os dois rodam j
   - `docker/postgres/create-test-database.sql` (cria o banco de testes `kiban_app_test`).
 - `.env.example` (modelo da configuração) e `config/kiban.php` (configurações da Kiban: Core, domínio, módulos, idiomas, marca).
 - `.github/workflows/tests.yml`: testes automáticos no GitHub a cada envio.
+
+## .dockerignore (31/10/2026)
+É a lista do que nunca entra numa imagem do Docker: Git, pacotes, `.env`, `CREDENCIAIS.local.md`, chaves, arquivos enviados e o cache do PC. A imagem de produção é montada pela pasta `servidor/` do Core.
