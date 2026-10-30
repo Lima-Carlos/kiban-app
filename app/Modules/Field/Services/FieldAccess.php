@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\FieldModule;
 use App\Tenancy\TenantContext;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -36,5 +37,24 @@ class FieldAccess
     public function managesCustomers(?User $user = null): bool
     {
         return $this->role($user)->managesCustomers();
+    }
+
+    /**
+     * Technicians of the company (they get work orders on the agenda), by name.
+     *
+     * @return Collection<int, User>
+     */
+    public function technicians(): Collection
+    {
+        return $this->context->get()->users()->get()
+            ->filter(fn (User $user): bool => $this->role($user) === FieldRole::Technician)
+            ->sortBy('name')
+            ->values()
+            ->toBase();
+    }
+
+    public function isTechnician(User $user): bool
+    {
+        return $user->belongsToTenant($this->context->get()) && $this->role($user) === FieldRole::Technician;
     }
 }

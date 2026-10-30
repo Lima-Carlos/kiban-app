@@ -44,6 +44,16 @@ class Customer extends Model
     }
 
     /**
+     * The customer's work orders, newest first (the history on the customer's page).
+     *
+     * @return HasMany<WorkOrder, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(WorkOrder::class)->orderByDesc('number');
+    }
+
+    /**
      * The main address (there is always exactly one when there are addresses: ensureMainSite()).
      *
      * @return HasOne<Site, $this>

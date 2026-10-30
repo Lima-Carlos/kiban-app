@@ -8,8 +8,8 @@ A ordem das partes (aprovada em 30/10/2026):
 |---|---|---|
 | O1 | Clientes, endereços com ponto no mapa, planilha | ✔ pronta (30/10/2026) |
 | O2 | Tipos de serviço, roteiro do técnico, materiais e modelos prontos por ramo | ✔ pronta (30/10/2026) |
+| O3 | Ordens de serviço, agenda do dia por técnico e mapa | ✔ pronta (30/10/2026, antes da O2b) |
 | O2b | Orçamentos aprovados pelo cliente por link (viram OS) | próxima |
-| O3 | Abertura e distribuição das OS: agenda e mapa do dia | |
 | O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | |
 | O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | |
 | Depois | O6 painel e avisos, O7 ligação completa com Ponto e Frota, PMOC | |
@@ -149,3 +149,56 @@ Novos perfis sugeridos: **"Técnico de campo"** (técnico no Campo e funcionári
 - `database/migrations/2026_10_30_210000_create_field_setup_tables.php`: `fd_settings`, `fd_service_types`, `fd_materials`.
 - `tests/Feature/FieldSetupTest.php`.
 - Peça compartilhada nova: `App\Support\Country::currency()` (moeda de cada país).
+
+## O3: Ordens de serviço e agenda (feita antes da O2b)
+A O3 veio antes dos orçamentos porque o orçamento aprovado vira uma ordem de serviço.
+
+### Ordens de serviço (Campo → Ordens de serviço)
+- **Abrir:**
+  - escolha o cliente (procura por nome, documento, código ou celular, em qualquer formato);
+  - o endereço (o principal já vem marcado);
+  - o tipo de serviço, a prioridade (normal, alta, urgente), o que o cliente pediu e as anotações internas (o cliente nunca vê).
+  - Na ficha do cliente, o botão **"Abrir ordem de serviço"** já traz o cliente escolhido.
+- **Número próprio** em cada empresa, em sequência (OS 000001, 000002...), sem repetir nem pular, mesmo com duas aberturas no mesmo segundo.
+- Ao abrir, a OS **copia o roteiro do técnico**, o tempo e o preço do tipo de serviço. Mudar o tipo depois não mexe nas OS já abertas.
+- **Agendar:** técnico, dia e hora e tempo previsto. Pode ser na abertura ou depois.
+  - Se o técnico já tiver outro serviço no horário, aparece um **aviso** com o serviço que bate, mas não é proibido (às vezes cabe um serviço rápido).
+  - Só pessoas com a função "Técnico" no Campo recebem OS.
+- **Reagendar**, **Tirar da agenda** (volta para "Sem agenda"), **Cancelar** (o motivo é obrigatório) e **Anotação**.
+  - Uma OS concluída ou cancelada **não muda mais**.
+  - Uma OS **nunca é excluída**.
+- **Editar** muda só o endereço, a prioridade, o que foi pedido e as anotações. O cliente e o tipo ficam.
+- **Histórico** de cada OS, com quem fez e quando: aberta, agendada para fulano em tal hora, reagendada (com a hora anterior), tirada da agenda, cancelada (com o motivo), anotações e edições.
+- **Situações:**
+  - Sem agenda, Agendada e Cancelada (desta parte);
+  - Em execução, Pendente e Concluída (pelo técnico, na O4).
+- A lista mostra as OS em aberto (filtros por situação, técnico, tipo e "só de hoje"). O número ao lado do menu conta as OS sem agenda.
+- **Na ficha do cliente**, o "Histórico" agora lista as OS dele.
+  - Um cliente com OS não pode ser excluído, só desligado.
+
+### Agenda (botão "Agenda" na lista de OS)
+- **Um dia por vez**, com setas para o dia anterior e o próximo, e o botão "Hoje".
+- **Uma coluna por técnico**, com as OS do dia em ordem de horário: hora de início e fim, cliente, tipo, número e bairro. A borda tem a cor do tipo de serviço.
+- **"Para agendar":** as OS sem agenda, as urgentes primeiro.
+- **Mapa do dia:** um ponto por OS com endereço no mapa, na cor do técnico. Tocar no ponto abre a OS.
+  - Usa o mapa gratuito do OpenStreetMap (Leaflet). Para muito uso, dá para trocar por um serviço próprio de mapas no futuro.
+- No celular, as colunas ficam uma embaixo da outra.
+
+### Limite do plano: técnicos ativos
+Na tela Pessoas, dar a função "Técnico" a mais gente do que o plano permite é recusado com uma explicação. As outras funções não contam.
+
+### Quem faz o quê
+- Gestor e atendimento: abrem, agendam e cancelam.
+- Consulta: só vê, inclusive a agenda.
+- Técnico: não vê estas telas. Ele terá a tela dele no celular na O4.
+
+## Arquivos (parte O3)
+- `app/Modules/Field/Models/WorkOrder.php` (a OS) e `OrderEvent.php` (uma linha do histórico, que nunca muda).
+- `app/Modules/Field/Enums/OrderStatus.php` e `OrderPriority.php`.
+- `app/Modules/Field/Services/WorkOrderService.php`: abrir (número em sequência, cópia do roteiro), agendar, reagendar, tirar da agenda, cancelar, anotação e conferir conflitos. Toda mudança de OS passa por aqui.
+- `app/Modules/Field/Services/FieldException.php`: as recusas com a explicação.
+- `app/Modules/Field/Policies/WorkOrderPolicy.php` (OS nunca é excluída) e `CustomerPolicy.php` (cliente com OS não é excluído).
+- `app/Modules/Field/Filament/Orders/`: as telas (lista, abrir, editar, ficha com as ações e `Pages/Agenda.php`).
+- `resources/views/field/agenda.blade.php`: a agenda do dia e o mapa.
+- `database/migrations/2026_10_30_220000_create_field_order_tables.php`: `fd_orders`, `fd_order_events` e o último número usado em `fd_settings`.
+- `tests/Feature/FieldOrdersTest.php`.

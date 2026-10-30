@@ -6,6 +6,8 @@ use App\Access\AccessManager;
 use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\FieldModule;
 use App\People\Person;
+use App\People\PersonRuleException;
+use App\Tenancy\TenantContext;
 use Filament\Forms\Components\Select;
 
 /**
@@ -37,6 +39,29 @@ class FieldPeople
     public function data(Person $person): array
     {
         return ['role' => $person->user === null ? FieldRole::None->value : $this->access->role($person->user)->value];
+    }
+
+    /**
+     * Before saving: one more technician only within the plan limit (active technicians).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function check(?Person $person, array $data): void
+    {
+        if (($data['role'] ?? null) !== FieldRole::Technician->value) {
+            return;
+        }
+
+        if ($person?->user !== null && $this->access->role($person->user) === FieldRole::Technician) {
+            return;
+        }
+
+        $license = app(TenantContext::class)->get()->license();
+        $max = $license->limitWithTolerance(FieldModule::KEY, FieldModule::LIMIT_TECHNICIANS);
+
+        if ($max !== null && $this->access->technicians()->count() >= $max) {
+            throw new PersonRuleException(__('field.errors.technician_limit', ['limit' => $license->limit(FieldModule::KEY, FieldModule::LIMIT_TECHNICIANS)]));
+        }
     }
 
     /**

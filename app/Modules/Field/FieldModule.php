@@ -8,14 +8,17 @@ use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\Filament\Customers\CustomerResource;
 use App\Modules\Field\Filament\FieldSettingsPage;
 use App\Modules\Field\Filament\Materials\MaterialResource;
+use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Filament\ServiceTypes\ServiceTypeResource;
 use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Models\FieldSetting;
 use App\Modules\Field\Models\Material;
 use App\Modules\Field\Models\ServiceType;
+use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Policies\CustomerPolicy;
 use App\Modules\Field\Policies\MaterialPolicy;
 use App\Modules\Field\Policies\ServiceTypePolicy;
+use App\Modules\Field\Policies\WorkOrderPolicy;
 use App\Modules\Field\Services\FieldAccess;
 use App\Modules\Field\Services\FieldPeople;
 use App\Modules\Module;
@@ -80,7 +83,7 @@ class FieldModule extends Module
 
     public function resources(): array
     {
-        return [CustomerResource::class, ServiceTypeResource::class, MaterialResource::class];
+        return [OrderResource::class, CustomerResource::class, ServiceTypeResource::class, MaterialResource::class];
     }
 
     public function pages(): array
@@ -118,6 +121,12 @@ class FieldModule extends Module
         app(FieldPeople::class)->save($person, $data);
     }
 
+    /** Plan limit: a new technician only while the company has room for one more. */
+    public function checkPerson(?Person $person, array $data, array $details): void
+    {
+        app(FieldPeople::class)->check($person, $data);
+    }
+
     /** A role in Kiban Campo only makes sense with a login (the technician works on the phone). */
     public function personNeedsLogin(): bool
     {
@@ -140,6 +149,7 @@ class FieldModule extends Module
             Customer::class => CustomerPolicy::class,
             ServiceType::class => ServiceTypePolicy::class,
             Material::class => MaterialPolicy::class,
+            WorkOrder::class => WorkOrderPolicy::class,
         ];
     }
 }

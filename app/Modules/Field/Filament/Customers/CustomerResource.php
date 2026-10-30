@@ -6,7 +6,9 @@ use App\Filament\Support\MapPoint;
 use App\Filament\Support\ModuleResource;
 use App\Modules\Field\FieldModule;
 use App\Modules\Field\Models\Customer;
+use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Models\Site;
+use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\AddressLocator;
 use App\Modules\Field\Services\CustomerRules;
 use App\Support\Country;
@@ -393,8 +395,24 @@ class CustomerResource extends ModuleResource
                     ->components([
                         TextEntry::make('history')
                             ->hiddenLabel()
-                            ->state(__('field.customers.history_soon'))
-                            ->color('gray'),
+                            ->state(__('field.customers.no_orders'))
+                            ->color('gray')
+                            ->visible(fn (Customer $record): bool => ! $record->orders()->exists()),
+                        RepeatableEntry::make('orders')
+                            ->hiddenLabel()
+                            ->contained(false)
+                            ->visible(fn (Customer $record): bool => $record->orders()->exists())
+                            ->components([
+                                TextEntry::make('number')
+                                    ->hiddenLabel()
+                                    ->state(fn (WorkOrder $record): string => $record->label().' · '.$record->serviceType->name)
+                                    ->helperText(fn (WorkOrder $record): string => OrderResource::when($record).($record->technician ? ' · '.$record->technician->name : ''))
+                                    ->url(fn (WorkOrder $record): string => OrderResource::getUrl('view', ['record' => $record]))
+                                    ->color('primary')
+                                    ->badge(false),
+                                TextEntry::make('status')->hiddenLabel()->badge(),
+                            ])
+                            ->columns(2),
                     ]),
             ]);
     }
