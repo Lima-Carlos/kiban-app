@@ -27,6 +27,8 @@ use Illuminate\Support\Collection;
  * "Clock in" on the phone (employees with a login): the live camera takes a selfie, the phone gives the
  * location, and the big button records the punch with the server's time. Nothing blocks the punch: without
  * location or photo, or outside the workplace radius, it is only flagged for the manager.
+ * Without signal, the punch is kept on the phone and sent by itself later (public/js/punch-queue.js, sent to
+ * PhoneQueueController); each kept punch shows "waiting for signal" until it goes.
  * Below: today's hours and the last punches with their receipts.
  */
 class PunchPage extends Page
@@ -104,6 +106,12 @@ class PunchPage extends Page
     public function recentPunches(): Collection
     {
         return Punch::query()->where('employee_id', $this->employee()->getKey())->latest('punched_at')->limit(20)->get();
+    }
+
+    /** Whose punches are in the phone's queue: only this person in this company sends them. */
+    public function queueOwner(): string
+    {
+        return app(TenantContext::class)->get()->getKey().':'.auth()->id();
     }
 
     public function receiptUrl(Punch $punch): string

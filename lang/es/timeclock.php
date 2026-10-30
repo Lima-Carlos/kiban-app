@@ -165,6 +165,8 @@ return [
         'punch_not_found' => 'Marcación no encontrada en este día.',
         'minutes_required' => 'Informe los minutos (de 1 a 1440) o marque el día entero.',
         'month_closed' => 'Este mes ya fue cerrado y no cambia más.',
+        'offline_too_old' => 'Esta marcación quedó guardada en el celular por más de :days días y no fue aceptada. Pide una corrección a tu gerente.',
+        'offline_month_closed' => 'Esta marcación quedó guardada en el celular y su mes ya fue cerrado. Pide una corrección a tu gerente.',
     ],
     'denied' => [
         'manager' => 'Solo el gestor del control horario (RR. HH.) puede hacer esto.',
@@ -303,6 +305,8 @@ return [
         'help' => 'Guarde este comprobante. El código de verificación confirma que salió del sistema.',
         'open' => 'Ver comprobante',
         'short' => 'Comprobante',
+        'received' => 'Recibida por el sistema',
+        'offline' => 'Marcación hecha sin internet: el celular la guardó y la envió cuando volvió la señal.',
     ],
     'punches' => [
         'singular' => 'marcación',
@@ -328,6 +332,7 @@ return [
             'no_location' => 'Sin ubicación',
             'no_photo' => 'Sin foto',
             'photo_declined' => 'Sin foto (elección de la persona)',
+            'offline' => 'Sin internet (enviada después)',
         ],
         'sources' => [
             'phone' => 'Celular',
@@ -361,6 +366,19 @@ return [
         'deactivated' => 'Reloj desactivado.',
         'empty' => 'Ningún reloj registrado',
         'empty_help' => 'Registre la tableta de la entrada y, en ella, toque "Usar este aparato como reloj".',
+    ],
+    'queue' => [
+        'waiting' => 'Esperando señal',
+        'sending' => 'Enviando…',
+        'sent' => 'Enviada',
+        'done' => 'Marcación registrada a las :time (número :nsr).',
+        'saved' => 'Sin internet: la marcación de las :time quedó guardada en el celular. Se enviará sola cuando vuelva la señal.',
+        'offline' => 'Sin internet. Puedes marcar normalmente: queda guardada en el celular y se envía sola cuando vuelve la señal.',
+        'pending' => 'Guardadas en el celular',
+        'sign_in' => 'Para enviar las marcaciones guardadas, abre Kiban con internet e inicia sesión de nuevo.',
+        'refused' => 'Marcación de las :time no registrada: :reason',
+        'invalid' => 'los datos llegaron incompletos.',
+        'send_now' => 'Enviar ahora',
     ],
     'home' => [
         'title' => 'Mi control horario hoy',

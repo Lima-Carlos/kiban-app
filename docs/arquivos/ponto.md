@@ -405,3 +405,40 @@ São usadas no cálculo das horas a partir da parte 4:
   - celular: `PunchPage` e `punch-page.blade.php`;
   - tablet: `KioskController` (rota `/relogio/ciente`) e `kiosk.blade.php`.
 - Testes: `tests/Feature/TimeClockPhotoNoticeTest.php`.
+
+## Bater o ponto sem internet (30/10/2026)
+
+Funciona como o WhatsApp: **sem sinal, a batida fica guardada no celular e é enviada sozinha quando o sinal voltar.**
+
+### Como funciona para o funcionário
+- Na primeira vez que abre "Bater ponto" com internet, o celular guarda essa tela. Depois, mesmo sem sinal, o app abre direto nela (também pelo ícone na tela inicial).
+- Sem sinal, aparece o aviso amarelo "Sem internet. Pode bater o ponto normalmente…".
+- Ao tocar em "Registrar ponto agora", a batida (com a selfie e o local) vai primeiro para a lista **"Guardadas no celular"**, com "⏳ Esperando sinal".
+- Quando o sinal volta, ela é enviada sozinha. O celular tenta ao voltar o sinal, ao abrir a tela e a cada 30 segundos, e também há o botão "Enviar agora". Na lista "Hoje", cada batida mostra **"✓ Enviada"**. Essa é a prova de envio.
+- Se a sessão tiver acabado, a tela pede para entrar de novo. As batidas guardadas não se perdem e vão depois.
+
+### A hora da batida
+- Com internet (a batida chega em até 2 minutos), vale a **hora do servidor**, como antes.
+- Guardada sem sinal, vale a **hora em que foi feita**. O celular corrige o próprio relógio pelo relógio do servidor (medido a cada contato). Uma hora no futuro nunca é aceita.
+- A batida ganha o aviso **"Sem internet (enviada depois)"** para o gestor. O comprovante mostra a hora da batida e a hora em que o sistema recebeu, além do aviso "Batida feita sem internet".
+- A mesma batida enviada duas vezes (por exemplo, quando a resposta se perdeu) conta **uma vez só**: cada batida tem um código próprio.
+- A batida é **recusada**, com o motivo na tela, quando:
+  - ficou guardada por mais de **7 dias**;
+  - o mês dela **já foi fechado**;
+  - é um toque repetido no mesmo minuto.
+  Nos dois primeiros casos, o gestor inclui a batida por correção.
+- A sequência das batidas (número e corrente de códigos) continua conferível. O número segue a ordem de chegada.
+- No AFD, a "data e hora da gravação" é a de chegada (`created_at`).
+
+### Privacidade
+- O celular guarda só a tela "Bater ponto" e os arquivos visuais (cores, letras, imagens). As outras telas vêm sempre do servidor.
+- Ao sair (Sair), a tela guardada é apagada. Batidas ainda não enviadas continuam na fila e só são enviadas para a mesma pessoa, na mesma empresa.
+
+### Arquivos
+- `public/js/punch-queue.js`: a fila no celular (IndexedDB), o relógio corrigido e o envio.
+- `public/sw.js`: o "ajudante" do celular (service worker). Guarda a tela "Bater ponto" e os arquivos visuais; sem sinal, abre essa tela.
+- `app/Http/Controllers/TimeClock/PhoneQueueController.php`: recebe as batidas da fila (`POST /<empresa>/ponto/enviar`) e informa a hora do servidor (`GET /<empresa>/ponto/hora`).
+- `app/Modules/TimeClock/Services/PunchService.php`: regras da hora, do código único, dos 7 dias e do mês fechado.
+- `database/migrations/2026_10_30_100000_add_client_id_to_tc_punches.php`: o código único de cada batida.
+- `tests/Feature/TimeClockOfflineTest.php`: os testes automáticos.
+- Teste num Chrome de verdade (corta a internet de fato): `docker compose run --rm studio node scripts/testar-offline.mjs`, no projeto `kiban-videos`.

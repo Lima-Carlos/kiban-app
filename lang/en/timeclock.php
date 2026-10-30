@@ -165,6 +165,8 @@ return [
         'punch_not_found' => 'Punch not found on this day.',
         'minutes_required' => 'Enter the minutes (1 to 1440) or mark the whole day.',
         'month_closed' => 'This month is closed and does not change any more.',
+        'offline_too_old' => 'This punch stayed on the phone for more than :days days and was not accepted. Ask your manager for a correction.',
+        'offline_month_closed' => 'This punch stayed on the phone and its month is already closed. Ask your manager for a correction.',
     ],
     'denied' => [
         'manager' => 'Only the time clock manager (HR) can do this.',
@@ -303,6 +305,8 @@ return [
         'help' => 'Keep this receipt. The verification code confirms it came from the system.',
         'open' => 'See receipt',
         'short' => 'Receipt',
+        'received' => 'Received by the system',
+        'offline' => 'Punch made without internet: the phone kept it and sent it when the signal came back.',
     ],
     'punches' => [
         'singular' => 'punch',
@@ -328,6 +332,7 @@ return [
             'no_location' => 'No location',
             'no_photo' => 'No photo',
             'photo_declined' => 'No photo (person\'s choice)',
+            'offline' => 'No internet (sent later)',
         ],
         'sources' => [
             'phone' => 'Phone',
@@ -361,6 +366,19 @@ return [
         'deactivated' => 'Clock deactivated.',
         'empty' => 'No clocks',
         'empty_help' => 'Add the entrance tablet and, on it, tap "Use this device as the clock".',
+    ],
+    'queue' => [
+        'waiting' => 'Waiting for signal',
+        'sending' => 'Sending…',
+        'sent' => 'Sent',
+        'done' => 'Punch recorded at :time (number :nsr).',
+        'saved' => 'No internet: the :time punch was kept on the phone. It will be sent by itself when the signal comes back.',
+        'offline' => 'No internet. You can punch as usual: it is kept on the phone and sent by itself when the signal comes back.',
+        'pending' => 'Kept on the phone',
+        'sign_in' => 'To send the punches kept on the phone, open Kiban with internet and sign in again.',
+        'refused' => 'Punch at :time not recorded: :reason',
+        'invalid' => 'the data arrived incomplete.',
+        'send_now' => 'Send now',
     ],
     'home' => [
         'title' => 'My time clock today',

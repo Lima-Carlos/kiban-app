@@ -33,6 +33,9 @@ class Punch extends Model
     /** Without a photo by the person's choice ("Punch without photo"). */
     public const PHOTO_DECLINED = 'photo_declined';
 
+    /** Taken on the phone without signal and sent later (the time is when it was taken; created_at, when it arrived). */
+    public const OFFLINE = 'offline';
+
     protected $table = 'tc_punches';
 
     protected $guarded = ['*'];
@@ -42,6 +45,7 @@ class Punch extends Model
         return [
             'nsr' => 'integer',
             'punched_at' => 'immutable_datetime',
+            'created_at' => 'immutable_datetime',
             'latitude' => 'float',
             'longitude' => 'float',
             'accuracy_meters' => 'integer',

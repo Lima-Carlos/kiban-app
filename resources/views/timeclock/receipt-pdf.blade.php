@@ -25,6 +25,10 @@
     <div class="row"><span class="label">{{ __('timeclock.receipt.when') }}:</span> {{ $local->translatedFormat(__('app.date_format')) }} {{ $local->format('H:i:s') }}</div>
     <div class="row"><span class="label">{{ __('timeclock.receipt.timezone') }}:</span> {{ $punch->timezone }} (UTC{{ $local->format('P') }})</div>
     <div class="row"><span class="label">{{ __('timeclock.receipt.nsr') }}:</span> {{ $punch->nsr }}</div>
+    @if ($punch->hasFlag('offline') && $punch->created_at)
+        <div class="row"><span class="label">{{ __('timeclock.receipt.received') }}:</span> {{ $punch->created_at->setTimezone($punch->timezone)->translatedFormat(__('app.date_format')) }} {{ $punch->created_at->setTimezone($punch->timezone)->format('H:i:s') }}</div>
+        <div class="row" style="font-size:9px">{{ __('timeclock.receipt.offline') }}</div>
+    @endif
     <div class="row"><span class="label">{{ __('timeclock.receipt.how') }}:</span> {{ __('timeclock.punches.sources.'.$punch->source) }}@if ($punch->kiosk) · {{ $punch->kiosk->name }}@endif</div>
     @if ($workplace)
         <div class="row"><span class="label">{{ __('timeclock.fields.workplace') }}:</span> {{ $workplace->name }}</div>

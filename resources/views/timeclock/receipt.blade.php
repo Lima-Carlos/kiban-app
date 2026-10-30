@@ -9,6 +9,10 @@
         @endif
         <div><strong>{{ __('timeclock.receipt.when') }}:</strong> {{ $local->translatedFormat(__('app.date_format')) }} {{ $local->format('H:i:s') }} ({{ $punch->timezone }})</div>
         <div><strong>{{ __('timeclock.receipt.nsr') }}:</strong> {{ $punch->nsr }}</div>
+        @if ($punch->hasFlag('offline') && $punch->created_at)
+            <div><strong>{{ __('timeclock.receipt.received') }}:</strong> {{ $punch->created_at->setTimezone($punch->timezone)->translatedFormat(__('app.date_format')) }} {{ $punch->created_at->setTimezone($punch->timezone)->format('H:i:s') }}</div>
+            <div class="muted" style="font-size:13px">{{ __('timeclock.receipt.offline') }}</div>
+        @endif
         <div><strong>{{ __('timeclock.receipt.how') }}:</strong> {{ __('timeclock.punches.sources.'.$punch->source) }}</div>
         @if ($workplace)
             <div><strong>{{ __('timeclock.fields.workplace') }}:</strong> {{ $workplace->name }}</div>

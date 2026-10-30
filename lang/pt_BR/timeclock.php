@@ -165,6 +165,8 @@ return [
         'punch_not_found' => 'Batida não encontrada neste dia.',
         'minutes_required' => 'Informe os minutos (de 1 a 1440) ou marque o dia inteiro.',
         'month_closed' => 'Este mês já foi fechado e não muda mais.',
+        'offline_too_old' => 'Esta batida ficou guardada no celular por mais de :days dias e não foi aceita. Peça uma correção ao gestor.',
+        'offline_month_closed' => 'Esta batida ficou guardada no celular e o mês dela já foi fechado. Peça uma correção ao gestor.',
     ],
     'denied' => [
         'manager' => 'Apenas o gestor do ponto (RH) pode fazer isso.',
@@ -303,6 +305,8 @@ return [
         'help' => 'Guarde este comprovante. O código de verificação confirma que ele saiu do sistema.',
         'open' => 'Ver comprovante',
         'short' => 'Comprovante',
+        'received' => 'Recebida pelo sistema',
+        'offline' => 'Batida feita sem internet: o celular guardou e enviou quando o sinal voltou.',
     ],
     'punches' => [
         'singular' => 'batida',
@@ -328,6 +332,7 @@ return [
             'no_location' => 'Sem localização',
             'no_photo' => 'Sem foto',
             'photo_declined' => 'Sem foto (escolha da pessoa)',
+            'offline' => 'Sem internet (enviada depois)',
         ],
         'sources' => [
             'phone' => 'Celular',
@@ -361,6 +366,19 @@ return [
         'deactivated' => 'Relógio desativado.',
         'empty' => 'Nenhum relógio cadastrado',
         'empty_help' => 'Cadastre o tablet da entrada e, nele, toque em "Usar este aparelho como relógio".',
+    ],
+    'queue' => [
+        'waiting' => 'Esperando sinal',
+        'sending' => 'Enviando…',
+        'sent' => 'Enviada',
+        'done' => 'Ponto registrado às :time (número :nsr).',
+        'saved' => 'Sem internet: ponto das :time guardado no celular. Ele será enviado sozinho quando o sinal voltar.',
+        'offline' => 'Sem internet. Pode bater o ponto normalmente: ele fica guardado no celular e é enviado sozinho quando o sinal voltar.',
+        'pending' => 'Guardadas no celular',
+        'sign_in' => 'Para enviar as batidas guardadas, abra o Kiban com internet e entre de novo.',
+        'refused' => 'Batida das :time não registrada: :reason',
+        'invalid' => 'os dados chegaram incompletos.',
+        'send_now' => 'Enviar agora',
     ],
     'home' => [
         'title' => 'Meu ponto hoje',
