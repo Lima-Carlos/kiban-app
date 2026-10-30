@@ -9,14 +9,17 @@ use App\Modules\Field\Filament\Customers\CustomerResource;
 use App\Modules\Field\Filament\FieldSettingsPage;
 use App\Modules\Field\Filament\Materials\MaterialResource;
 use App\Modules\Field\Filament\Orders\OrderResource;
+use App\Modules\Field\Filament\Quotes\QuoteResource;
 use App\Modules\Field\Filament\ServiceTypes\ServiceTypeResource;
 use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Models\FieldSetting;
 use App\Modules\Field\Models\Material;
+use App\Modules\Field\Models\Quote;
 use App\Modules\Field\Models\ServiceType;
 use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Policies\CustomerPolicy;
 use App\Modules\Field\Policies\MaterialPolicy;
+use App\Modules\Field\Policies\QuotePolicy;
 use App\Modules\Field\Policies\ServiceTypePolicy;
 use App\Modules\Field\Policies\WorkOrderPolicy;
 use App\Modules\Field\Services\FieldAccess;
@@ -83,7 +86,7 @@ class FieldModule extends Module
 
     public function resources(): array
     {
-        return [OrderResource::class, CustomerResource::class, ServiceTypeResource::class, MaterialResource::class];
+        return [OrderResource::class, QuoteResource::class, CustomerResource::class, ServiceTypeResource::class, MaterialResource::class];
     }
 
     public function pages(): array
@@ -150,6 +153,7 @@ class FieldModule extends Module
             ServiceType::class => ServiceTypePolicy::class,
             Material::class => MaterialPolicy::class,
             WorkOrder::class => WorkOrderPolicy::class,
+            Quote::class => QuotePolicy::class,
         ];
     }
 }

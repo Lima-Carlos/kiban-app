@@ -4,6 +4,7 @@ namespace App\Modules\Field\Filament\Customers\Pages;
 
 use App\Modules\Field\Filament\Customers\CustomerResource;
 use App\Modules\Field\Filament\Orders\OrderResource;
+use App\Modules\Field\Filament\Quotes\QuoteResource;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
@@ -28,6 +29,12 @@ class ViewCustomer extends ViewRecord
                 ->icon(Heroicon::OutlinedClipboardDocumentList)
                 ->url(fn (): string => OrderResource::getUrl('create', ['cliente' => $this->getRecord()->getKey()]))
                 ->visible(fn (): bool => $this->getRecord()->is_active && OrderResource::canCreate()),
+            Action::make('newQuote')
+                ->label(__('field.quotes.new'))
+                ->icon(Heroicon::OutlinedDocumentCurrencyDollar)
+                ->color('gray')
+                ->url(fn (): string => QuoteResource::getUrl('create', ['cliente' => $this->getRecord()->getKey()]))
+                ->visible(fn (): bool => $this->getRecord()->is_active && QuoteResource::canCreate()),
             EditAction::make()->color('gray'),
         ];
     }

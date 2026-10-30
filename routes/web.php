@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
+use App\Http\Controllers\Field\QuoteLinkController;
 use App\Http\Controllers\Fleet\StationCheckController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManifestController;
@@ -39,6 +40,10 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::post('/relogio/pin', [KioskController::class, 'pin'])->name('timeclock.kiosk.pin');
     Route::post('/relogio/bater', [KioskController::class, 'punch'])->name('timeclock.kiosk.punch');
     Route::post('/relogio/ciente', [KioskController::class, 'acknowledge'])->name('timeclock.kiosk.acknowledge');
+
+    // Campo: the customer's page of a quote (no login; a long random link). Few answers per minute.
+    Route::get('/orcamento/{token}', [QuoteLinkController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('field.quote');
+    Route::post('/orcamento/{token}', [QuoteLinkController::class, 'answer'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:10,1')->name('field.quote.answer');
 
     // Ponto: the phone's queue (punches kept without signal are sent here when it comes back) and the server's clock.
     Route::middleware(['auth', EnsureLicense::class, RevalidateMembership::class])->group(function (): void {

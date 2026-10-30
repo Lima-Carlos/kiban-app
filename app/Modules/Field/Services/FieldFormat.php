@@ -19,6 +19,14 @@ class FieldFormat
         return (string) Number::currency($cents / 100, FieldSetting::current()->currency, str_replace('_', '-', app()->getLocale()));
     }
 
+    /** "35 m", "2,5 kg", "3" (units are not written). */
+    public static function quantity(float|string $quantity, string $unit): string
+    {
+        $number = rtrim(rtrim(number_format((float) $quantity, 2, __('field.decimal_separator'), ''), '0'), __('field.decimal_separator'));
+
+        return $unit === 'un' ? $number : $number.' '.__('field.units_short.'.$unit);
+    }
+
     /** "1 h 30 min", "45 min". */
     public static function duration(int $minutes): string
     {

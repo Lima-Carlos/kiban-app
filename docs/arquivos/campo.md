@@ -9,8 +9,8 @@ A ordem das partes (aprovada em 30/10/2026):
 | O1 | Clientes, endereços com ponto no mapa, planilha | ✔ pronta (30/10/2026) |
 | O2 | Tipos de serviço, roteiro do técnico, materiais e modelos prontos por ramo | ✔ pronta (30/10/2026) |
 | O3 | Ordens de serviço, agenda do dia por técnico e mapa | ✔ pronta (30/10/2026, antes da O2b) |
-| O2b | Orçamentos aprovados pelo cliente por link (viram OS) | próxima |
-| O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | |
+| O2b | Orçamentos aprovados pelo cliente por link (viram OS) | ✔ pronta (30/10/2026) |
+| O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | próxima |
 | O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | |
 | Depois | O6 painel e avisos, O7 ligação completa com Ponto e Frota, PMOC | |
 
@@ -202,3 +202,37 @@ Na tela Pessoas, dar a função "Técnico" a mais gente do que o plano permite �
 - `resources/views/field/agenda.blade.php`: a agenda do dia e o mapa.
 - `database/migrations/2026_10_30_220000_create_field_order_tables.php`: `fd_orders`, `fd_order_events` e o último número usado em `fd_settings`.
 - `tests/Feature/FieldOrdersTest.php`.
+
+## O2b: Orçamentos (Campo → Orçamentos)
+- **Escrever:**
+  - escolha o cliente (e o endereço) e a validade (padrão: 15 dias);
+  - adicione os itens: "Do catálogo" escolhe um tipo de serviço ou um material e preenche a descrição, a unidade e o preço, que ainda podem ser mudados. Também dá para escrever uma linha à mão;
+  - quantidade com casas decimais (ex.: 35,5 m de cabo);
+  - o desconto nunca passa do subtotal;
+  - observações para o cliente (prazo, pagamento, garantia) e anotações internas.
+- Número próprio em sequência ("Orçamento 000001"), separado do das OS.
+- Na ficha do cliente, o botão **"Novo orçamento"** já traz o cliente.
+- **"Enviar ao cliente"** prepara o link e mostra o botão **"Enviar pelo WhatsApp"**, que abre o WhatsApp com a mensagem pronta (nome do cliente, empresa, número, total e link), sem integração paga.
+  - Há também "Ver como o cliente vê".
+- **A página do cliente** (sem login, link longo e aleatório, no endereço da empresa, nos 3 idiomas): itens, total, observações e validade.
+  - **Aprovar:** ele escreve o nome e marca "Li e aprovo este orçamento de R$ X". Fica guardado quem, quando, o IP e o aparelho, como prova do combinado.
+  - **Recusar:** com o motivo, opcional.
+- **O aprovado vira OS sozinho**, do primeiro serviço do orçamento. A OS vem "Sem agenda", com os itens no "O que o cliente pediu" e ligada ao orçamento.
+  - Se o orçamento só tiver materiais, o botão "Abrir ordem de serviço" pede o tipo.
+- **Aviso no sino** do gestor e do atendimento quando o cliente aprova ou recusa.
+- **Vencido:** depois da validade, a página mostra "venceu, fale com a empresa" e não aceita mais a aprovação.
+- **Proteções:**
+  - um orçamento respondido não muda e não é excluído;
+  - um rascunho não abre pelo link;
+  - o link de uma empresa não abre no endereço de outra.
+
+## Arquivos (parte O2b)
+- `app/Modules/Field/Models/Quote.php` e `QuoteItem.php` (o total da linha é sempre quantidade × preço).
+- `app/Modules/Field/Enums/QuoteStatus.php`.
+- `app/Modules/Field/Services/QuoteService.php`: criar, alterar, enviar, link e WhatsApp, aprovar, recusar, virar OS e o aviso no sino.
+- `app/Modules/Field/Policies/QuotePolicy.php`.
+- `app/Modules/Field/Filament/Quotes/`: as telas (lista, novo, editar, ficha com Enviar / WhatsApp / Ver como o cliente vê / Abrir OS).
+- `app/Http/Controllers/Field/QuoteLinkController.php` e `resources/views/field/quote-public.blade.php`: a página do cliente (`/<empresa>/orcamento/<link>`, no máximo 10 respostas por minuto).
+- `database/migrations/2026_10_30_230000_create_field_quote_tables.php`: `fd_quotes`, `fd_quote_items`, `quote_id` na OS, numeração e validade padrão em `fd_settings`.
+- `app/Modules/Field/Services/FieldFormat.php`: agora também a quantidade ("35 m", "2,5 kg").
+- `tests/Feature/FieldQuotesTest.php`.
