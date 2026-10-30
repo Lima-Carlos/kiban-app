@@ -89,10 +89,49 @@ class DemoDataTest extends TestCase
         $this->assertEqualsWithDelta(time(), now()->getTimestamp(), 60);
     }
 
+    public function test_fills_only_the_video_company(): void
+    {
+        Storage::fake('local');
+        $other = $this->tenant('carlos', ['ponto' => []]);
+        Storage::disk('local')->put('tenants/'.$other->id.'/foto.jpg', 'x');
+
+        // The Core already has the video company and its accounts (created by kiban:video-demo in the Core).
+        $this->coreLicenses['rede-exemplo'] = $this->licenseToken('rede-exemplo', ['frota' => [], 'ponto' => []]);
+        $accounts = ['dona' => 'owner', 'rh' => 'member', 'frota' => 'member', 'tecnico' => 'member', 'tecnica' => 'member',
+            'gerente' => 'admin', 'empleado' => 'member', 'manager' => 'admin', 'employee' => 'member'];
+        foreach ($accounts as $index => $role) {
+            $id = 800 + count($this->coreMembers['rede-exemplo'] ?? []);
+            $this->coreMembers['rede-exemplo'][$id] = [
+                'id' => $id, 'name' => ucfirst($index).' Video', 'email' => "{$index}.video@exemplo.test", 'phone' => null,
+                'role' => $role, 'status' => 'active', 'invited_at' => null, 'last_login_at' => null,
+            ];
+        }
+
+        $this->artisan('kiban:video-demo', ['--yes' => true])->assertSuccessful();
+        $first = Tenant::query()->where('subdomain', 'rede-exemplo')->sole();
+        $this->artisan('kiban:video-demo', ['--yes' => true])->assertSuccessful();
+
+        // The owner's company and its files stay; the video company was recreated (a new record each time).
+        $this->assertNotNull($other->fresh());
+        Storage::disk('local')->assertExists('tenants/'.$other->id.'/foto.jpg');
+        $tenant = Tenant::query()->where('subdomain', 'rede-exemplo')->sole();
+        $this->assertNotSame($first->id, $tenant->id);
+
+        app(TenantContext::class)->run($tenant, function (): void {
+            $this->assertSame(4, Vehicle::count());
+            $this->assertSame(8, Employee::count());
+            $this->assertGreaterThan(200, Punch::count());
+            $this->assertNull(app(PunchService::class)->brokenLink());
+            // Clean data for the videos: every punch inside the base.
+            $this->assertSame(0, Punch::query()->whereJsonLength('flags', '>', 0)->count());
+        });
+    }
+
     public function test_never_runs_outside_the_pc(): void
     {
         $this->app['env'] = 'production';
 
         $this->artisan('kiban:demo', ['--yes' => true])->assertFailed();
+        $this->artisan('kiban:video-demo', ['--yes' => true])->assertFailed();
     }
 }

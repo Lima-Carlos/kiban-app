@@ -48,6 +48,10 @@ class ResetDemoData extends Command
 
     public const SUBDOMAIN = 'transportes-demo';
 
+    protected const NOT_FOUND = 'A empresa "transportes-demo" não foi encontrada no Core. Ligue o Core e rode "dados-demo" (ou "php artisan kiban:demo" no Core primeiro).';
+
+    protected const READY = 'Sistemas prontos: Transportes Demo, com Frota e Ponto e dados de exemplo.';
+
     /** Tables of the framework itself (never data of a company). */
     protected const KEEP = ['migrations', 'cache', 'cache_locks', 'jobs', 'job_batches', 'failed_jobs'];
 
@@ -72,14 +76,14 @@ class ResetDemoData extends Command
         $this->erase();
 
         try {
-            $tenant = $licenses->resolve(self::SUBDOMAIN);
-            $members = $tenant ? $core->members(self::SUBDOMAIN) : [];
+            $tenant = $licenses->resolve(static::SUBDOMAIN);
+            $members = $tenant ? $core->members(static::SUBDOMAIN) : [];
         } catch (CoreUnavailableException) {
             $tenant = null;
         }
 
         if ($tenant === null || $members === []) {
-            $this->components->error('A empresa "transportes-demo" não foi encontrada no Core. Ligue o Core e rode "dados-demo" (ou "php artisan kiban:demo" no Core primeiro).');
+            $this->components->error(static::NOT_FOUND);
 
             return self::FAILURE;
         }
@@ -95,7 +99,7 @@ class ResetDemoData extends Command
             Carbon::setTestNow();
         }
 
-        $this->components->info('Sistemas prontos: Transportes Demo, com Frota e Ponto e dados de exemplo.');
+        $this->components->info(static::READY);
 
         return self::SUCCESS;
     }

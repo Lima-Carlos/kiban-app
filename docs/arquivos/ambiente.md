@@ -31,6 +31,16 @@ As portas são diferentes das do Core (8080, 5432, 6379), então os dois rodam j
 - Roda junto com o do Core pelo atalho **`dados-demo`** (na pasta do Core); veja `kiban-core/docs/arquivos/dados-demo.md`.
 - Arquivo: `app/Console/Commands/ResetDemoData.php`. Testes: `tests/Feature/DemoDataTest.php`.
 
+## Empresa dos vídeos (`php artisan kiban:video-demo`)
+- **Só no PC.** Apaga e preenche **só** a empresa fictícia dos vídeos, a "Rede Exemplo Fibra" (`rede-exemplo`, criada antes pelo mesmo comando no Core). Nunca toca na empresa de testes do dono.
+- Dados limpos para gravar:
+  - 4 veículos;
+  - 8 pessoas batendo ponto na "Base Centro", sem alertas;
+  - contas em português, espanhol e inglês;
+  - o mês passado fechado.
+- Quem usa é o estúdio de vídeos (`kiban-videos/scripts/empresa.sh`).
+- Arquivo: `app/Console/Commands/VideoDemoData.php`. Testes: `tests/Feature/DemoDataTest.php`.
+
 ## Agendador (`routes/console.php`)
 - `kiban:licenses`, a cada 5 minutos: renova as licenças e envia os primeiros passos ao Core.
 - `kiban:fleet`, de hora em hora: rotina da Frota (códigos de abastecimento não finalizados expiram).
