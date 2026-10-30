@@ -8,6 +8,7 @@ use App\Http\Controllers\Field\QuoteLinkController;
 use App\Http\Controllers\Fleet\StationCheckController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManifestController;
+use App\Http\Controllers\PersonDocumentFileController;
 use App\Http\Controllers\PhoneAlertController;
 use App\Http\Controllers\TimeClock\KioskController;
 use App\Http\Controllers\TimeClock\PhoneQueueController;
@@ -47,7 +48,7 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     // Campo: the report of a done work order for the customer (signed link, no login) and its PDF.
     Route::get('/os/{order}/relatorio', [OrderReportController::class, 'show'])->middleware('signed')->whereNumber('order')->name('field.report');
     Route::post('/os/{order}/relatorio/nota', [OrderReportController::class, 'rate'])->middleware(['signed', 'throttle:10,1'])->whereNumber('order')->name('field.report.rate');
-    Route::get('/os/{order}/relatorio/pdf',[OrderReportController::class, 'pdf'])->middleware('signed')->whereNumber('order')->name('field.report.pdf');
+    Route::get('/os/{order}/relatorio/pdf', [OrderReportController::class, 'pdf'])->middleware('signed')->whereNumber('order')->name('field.report.pdf');
 
     // Campo: the customer's page of a quote (no login; a long random link). Few answers per minute.
     Route::get('/orcamento/{token}', [QuoteLinkController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('field.quote');
@@ -63,6 +64,9 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
 
         // Campo: the pieces of a work order sent by the technician's phone (also later, without signal).
         Route::post('/campo/os/{order}/enviar', OrderSyncController::class)->whereNumber('order')->middleware('throttle:120,1')->name('field.sync');
+
+        // The file of a person's document (driver's license, medical exam...): only for who may see it.
+        Route::get('/documentos/{document}/arquivo', PersonDocumentFileController::class)->whereNumber('document')->name('people.documents.file');
     });
 
     // Ponto: receipt of a punch at a signed address (works without a login, e.g. from the QR code on the tablet).

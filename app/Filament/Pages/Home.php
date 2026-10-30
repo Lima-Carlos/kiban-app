@@ -6,6 +6,7 @@ use App\Access\CurrentModule;
 use App\Models\Tenant;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
+use App\People\Documents\PersonDocumentService;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -80,6 +81,8 @@ class Home extends Page
     {
         return collect(array_filter([app(CurrentModule::class)->get()]))
             ->flatMap(fn (Module $module): array => $module->attention(auth()->user()))
+            // Common to every system: the people's documents expired or expiring (who takes care of them).
+            ->merge(app(PersonDocumentService::class)->attention(auth()->user()))
             ->values()
             ->all();
     }

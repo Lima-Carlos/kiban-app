@@ -4,12 +4,15 @@ namespace App\People;
 
 use App\Models\Team;
 use App\Models\User;
+use App\People\Documents\PersonDocument;
+use App\People\Documents\PersonDocumentService;
 use App\Rules\Cpf;
 use App\Support\Country;
 use App\Tenancy\BelongsToTenant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Someone of the company (the "People" screen): the central record every module uses.
@@ -32,6 +35,22 @@ class Person extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // When the system deletes a person's data, their documents and files go with it.
+        static::deleting(fn (Person $person) => app(PersonDocumentService::class)->purgePerson($person));
+    }
+
+    /**
+     * Documents with a validity (driver's license, medical exam, trainings), current ones and history.
+     *
+     * @return HasMany<PersonDocument, $this>
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(PersonDocument::class);
     }
 
     /**

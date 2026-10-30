@@ -15,6 +15,7 @@ use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\FieldAccess;
 use App\Modules\Field\Services\FieldFormat;
 use App\Modules\Field\Services\FieldReports;
+use App\People\Documents\PersonDocumentService;
 use App\Support\Country;
 use App\Support\Geo;
 use App\Tenancy\TenantContext;
@@ -30,6 +31,7 @@ use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -111,13 +113,52 @@ class OrderResource extends ModuleResource
      */
     public static function nearestOptions(WorkOrder $order): array
     {
+        $expired = static::expiredDocuments();
+
         return collect(app(FieldReports::class)->nearest($order))
             ->mapWithKeys(fn (array $row): array => [$row['technician']->getKey() => implode(' · ', array_filter([
                 $row['technician']->name,
                 $row['free'] ? __('field.orders.nearest_free') : __('field.orders.nearest_busy'),
                 $row['travel'] !== null ? __('field.orders.nearest_travel', ['minutes' => $row['travel']]) : null,
+                isset($expired[$row['technician']->getKey()]) ? '⚠ '.$expired[$row['technician']->getKey()] : null,
             ]))])
             ->all();
+    }
+
+    /**
+     * Technicians to choose when scheduling, with an expired safety training shown next to the name (warns, never forbids).
+     *
+     * @return array<int|string, string>
+     */
+    public static function technicianChoices(): array
+    {
+        $expired = static::expiredDocuments();
+
+        return collect(static::technicianOptions())
+            ->map(fn (string $name, int|string $id): string => isset($expired[$id]) ? $name.' · ⚠ '.$expired[$id] : $name)
+            ->all();
+    }
+
+    /**
+     * Technicians (by login) with an expired document of the Campo (e.g. NR-10, NR-35): "NR-10 vencida em 10/03/2026".
+     *
+     * @return array<int, string>
+     */
+    public static function expiredDocuments(): array
+    {
+        return app(PersonDocumentService::class)->expiredTexts(FieldModule::KEY);
+    }
+
+    /** "Atenção: NR-10 vencida em 10/03/2026" for the chosen technician, or null. */
+    public static function technicianWarning(mixed $technicianId): ?string
+    {
+        if (blank($technicianId)) {
+            return null;
+        }
+
+        $expired = app(PersonDocumentService::class)->expiredTexts(FieldModule::KEY, [(int) $technicianId]);
+
+        return isset($expired[(int) $technicianId]) ? __('documents.attention.technician_hint', ['documents' => $expired[(int) $technicianId]]) : null;
     }
 
     public static function form(Schema $schema): Schema
@@ -212,8 +253,13 @@ class OrderResource extends ModuleResource
         return [
             Select::make('technician_id')
                 ->label(__('field.fields.technician'))
-                ->options(fn (): array => $order !== null ? static::nearestOptions($order) : static::technicianOptions())
+                ->options(fn (): array => $order !== null ? static::nearestOptions($order) : static::technicianChoices())
                 ->helperText(fn (): ?string => static::technicianOptions() === [] ? __('field.helpers.no_technicians') : ($order !== null ? __('field.orders.nearest_help') : null))
+                // An expired safety training (NR-10, NR-35...) is shown, but never blocks the schedule.
+                ->live()
+                ->belowContent(fn (Get $get): ?Text => ($warning = static::technicianWarning($get('technician_id'))) !== null
+                    ? Text::make($warning)->color('danger')->icon(Heroicon::OutlinedExclamationTriangle)
+                    : null)
                 ->requiredWith('scheduled_at')
                 ->required($required),
             DateTimePicker::make('scheduled_at')

@@ -141,7 +141,8 @@ No celular, toda lista (pessoas, veículos, abastecimentos, batidas, solicitaç�
 - Na tela **Pessoas**, o botão **"Baixar os dados da pessoa (LGPD)"** (ícone de download) gera um arquivo com tudo o que os sistemas guardam sobre ela:
   - cadastro e equipe;
   - no Ponto: dados do funcionário, batidas (com local e IP), correções e espelhos;
-  - na Frota: dados do motorista e abastecimentos.
+  - na Frota: dados do motorista e abastecimentos;
+  - os documentos com validade (CNH, ASO, treinamentos), sem os anexos. O ASO e outros dados de saúde só entram se quem baixa pode vê-los (veja `documentos.md`).
 - O CPF só entra no arquivo se quem baixa pode ver documentos (dono, administradores e RH). As fotos não entram.
 - Cada sistema diz o que exporta em `exportPerson()` (`app/Modules/Module.php`). Um sistema novo, como o Campo, precisa implementar esse método.
 - O menu do usuário tem o link **"Privacidade"**, que leva à página de privacidade da conta Kiban (canal, "baixar meus dados" e pedidos).

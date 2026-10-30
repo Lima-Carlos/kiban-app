@@ -11,11 +11,14 @@ use App\Modules\Fleet\Enums\RequestStatus;
 use App\Modules\Fleet\Enums\VehicleStatus;
 use App\Modules\Fleet\Filament\Appointments\AppointmentResource;
 use App\Modules\Fleet\Filament\Dashboard\FleetDashboard;
+use App\Modules\Fleet\Filament\Drivers\DriverResource;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
 use App\Modules\Fleet\Filament\Inspections\InspectionResource;
 use App\Modules\Fleet\Filament\Requests\ServiceRequestResource;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
+use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Appointment;
+use App\Modules\Fleet\Models\Driver;
 use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Models\FuelUp;
 use App\Modules\Fleet\Models\Inspection;
@@ -24,6 +27,9 @@ use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Models\VehicleDocument;
 use App\Notices\Notice;
 use App\Notices\Notifier;
+use App\People\Documents\PersonDocument;
+use App\People\Documents\PersonDocumentService;
+use App\Support\Country;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Filament\Support\Facades\FilamentTimezone;
@@ -336,6 +342,41 @@ class FleetNotices
                     'url' => VehicleResource::getUrl('view', ['record' => $document->vehicle]),
                     'color' => 'warning',
                 ];
+            }
+
+            $items = array_merge($items, $this->expiredLicenses());
+        }
+
+        return $items;
+    }
+
+    /**
+     * Active drivers with an expired driver's license: from the person's documents (People) or, for who has none
+     * there yet, from the driver record. Only "expired" (the document itself stays with HR).
+     *
+     * @return array<int, array{text: string, url: ?string, color: string}>
+     */
+    protected function expiredLicenses(): array
+    {
+        $drivers = Driver::query()->where('is_active', true)->orderBy('name')->get();
+        $documents = app(PersonDocumentService::class);
+        $expired = $documents->expiredFor(FleetModule::KEY, $drivers->pluck('user_id')->filter()->values()->all());
+        $withDocuments = $documents->usersWithDocuments(FleetModule::KEY);
+        $today = PersonDocument::today();
+        $items = [];
+
+        foreach ($drivers as $driver) {
+            $text = match (true) {
+                $driver->user_id !== null && $expired->has($driver->user_id) => PersonDocumentService::expiredText($expired->get($driver->user_id)),
+                ($driver->user_id === null || ! in_array($driver->user_id, $withDocuments, true)) && $driver->license_expires_on?->lt($today) === true => __('documents.attention.expired_item', [
+                    'document' => __('documents.templates.'.(Country::isBrazil() ? 'cnh' : 'driver_license')),
+                    'date' => $driver->license_expires_on->translatedFormat(__('app.date_format')),
+                ]),
+                default => null,
+            };
+
+            if ($text !== null) {
+                $items[] = ['text' => __('documents.attention.driver', ['name' => $driver->name, 'documents' => $text]), 'url' => DriverResource::getUrl('index'), 'color' => 'danger'];
             }
         }
 

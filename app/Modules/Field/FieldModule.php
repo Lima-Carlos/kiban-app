@@ -32,6 +32,7 @@ use App\Modules\Field\Services\FieldPeople;
 use App\Modules\Field\Services\FieldReports;
 use App\Modules\Module;
 use App\Modules\Step;
+use App\People\Documents\PersonDocumentService;
 use App\People\Person;
 
 /**
@@ -106,10 +107,25 @@ class FieldModule extends Module
         return in_array(app(FieldAccess::class)->role($user), [FieldRole::Manager, FieldRole::Dispatcher, FieldRole::Viewer], true) ? [FieldNowWidget::class, FieldMonthWidget::class] : [];
     }
 
-    /** The office: a technician who has not arrived, orders handed back and urgent orders without a technician. */
+    /**
+     * The office: a technician who has not arrived, orders handed back, urgent orders without a technician and
+     * technicians with an expired safety training (NR-10, NR-35...; only "expired", the document stays with HR).
+     */
     public function attention(User $user): array
     {
-        return in_array(app(FieldAccess::class)->role($user), [FieldRole::Manager, FieldRole::Dispatcher], true) ? app(FieldReports::class)->attention() : [];
+        if (! in_array(app(FieldAccess::class)->role($user), [FieldRole::Manager, FieldRole::Dispatcher], true)) {
+            return [];
+        }
+
+        $technicians = app(FieldAccess::class)->technicians()->keyBy(fn (User $technician): int => $technician->getKey());
+        $expired = app(PersonDocumentService::class)->expiredTexts(self::KEY, $technicians->keys()->all());
+
+        return array_merge(app(FieldReports::class)->attention(), collect($expired)
+            ->map(fn (string $documents, int $userId): array => [
+                'text' => __('documents.attention.technician', ['name' => $technicians->get($userId)?->name, 'documents' => $documents]),
+                'url' => null,
+                'color' => 'danger',
+            ])->values()->all());
     }
 
     /** The technician: today's services and the button to open them, on the start page. */

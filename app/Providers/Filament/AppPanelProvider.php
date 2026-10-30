@@ -4,8 +4,12 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\AccessProfilesPage;
 use App\Filament\Pages\CompanyProfilePage;
+use App\Filament\Pages\DocumentsPage;
+use App\Filament\Pages\DocumentTypesPage;
 use App\Filament\Pages\Home;
+use App\Filament\Pages\MyDocumentsPage;
 use App\Filament\Pages\PeoplePage;
+use App\Filament\Pages\PersonDocumentsPage;
 use App\Filament\Pages\TeamsPage;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\IdentifyTenant;
@@ -56,6 +60,10 @@ class AppPanelProvider extends PanelProvider
                 AccessProfilesPage::class,
                 TeamsPage::class,
                 CompanyProfilePage::class,
+                DocumentsPage::class,
+                DocumentTypesPage::class,
+                PersonDocumentsPage::class,
+                MyDocumentsPage::class,
                 ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())
@@ -66,6 +74,12 @@ class AppPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedUserCircle)
                     ->url(fn (): string => config('kiban.core.url').'/conta')
                     ->openUrlInNewTab(),
+                // The person's own documents (driver's license, medical exam...), read only, when there are any.
+                Action::make('my_documents')
+                    ->label(fn (): string => __('documents.mine.title'))
+                    ->icon(Heroicon::OutlinedIdentification)
+                    ->visible(fn (): bool => MyDocumentsPage::hasDocuments())
+                    ->url(fn (): string => MyDocumentsPage::getUrl()),
                 // LGPD: the privacy channel, "download my data" and requests, in the Kiban account.
                 Action::make('privacy')
                     ->label(fn (): string => __('app.menu.privacy'))

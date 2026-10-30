@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AccessLog;
 use Illuminate\Support\Facades\Schedule;
 
 // Every company's license and first steps, every 5 minutes (works offline with the last license).
@@ -15,7 +16,10 @@ Schedule::command('kiban:notices-cleanup')->dailyAt('03:30');
 Schedule::command('kiban:timeclock')->hourlyAt(20)->withoutOverlapping();
 
 // Marco Civil: access records older than the retention period (at least 6 months) are removed.
-Schedule::command('model:prune', ['--model' => [App\Models\AccessLog::class]])->dailyAt('03:45');
+Schedule::command('model:prune', ['--model' => [AccessLog::class]])->dailyAt('03:45');
 
 // Campo: addresses of new customers searched on the map (one per second, a few per minute).
 Schedule::command('kiban:field')->everyMinute()->withoutOverlapping();
+
+// Documents of the people (driver's license, medical exam, trainings): the bell warns before they expire (07:00 in Brasília).
+Schedule::command('kiban:documents')->dailyAt('10:00')->withoutOverlapping();

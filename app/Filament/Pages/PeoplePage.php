@@ -12,6 +12,9 @@ use App\Models\User;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
 use App\People\AccessNotice;
+use App\People\Documents\DocumentStatus;
+use App\People\Documents\PersonDocument;
+use App\People\Documents\PersonDocumentService;
 use App\People\PeopleService;
 use App\People\Person;
 use App\People\PersonRuleException;
@@ -191,7 +194,8 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
         $tenant = $this->tenant();
 
         return $table
-            ->query(fn (): Builder => Person::query()->with(['user', 'team']))
+            ->query(fn (): Builder => Person::query()->with(['user', 'team'])
+                ->when($this->canManageDocuments(), fn (Builder $query) => $query->with(['documents' => fn ($documents) => $documents->current()->with('type')])))
             ->defaultSort('name')
             ->columns([
                 TextColumn::make('name')
@@ -217,6 +221,14 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                         ->filter()->values()->all())
                     ->badge()
                     ->color('success'),
+                // Expired or expiring documents (only for who takes care of them).
+                TextColumn::make('documents_alert')
+                    ->label(__('documents.person.column'))
+                    ->state(fn (Person $record): ?string => $this->documentsAlert($record)[0])
+                    ->color(fn (Person $record): string => $this->documentsAlert($record)[1])
+                    ->badge()
+                    ->placeholder('—')
+                    ->visible(fn (): bool => $this->canManageDocuments()),
                 TextColumn::make('status')
                     ->label(__('app.people.status'))
                     ->state(fn (Person $record): string => $this->statusOf($record))
@@ -363,6 +375,13 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
 
                         Notification::make()->success()->title(__('app.people.deactivated'))->send();
                     }),
+                // Documents with a validity (driver's license, medical exam, trainings): owners, administrators and HR.
+                Action::make('documents')
+                    ->label(__('documents.person.open'))
+                    ->icon(Heroicon::OutlinedIdentification)
+                    ->iconButton()
+                    ->visible(fn (): bool => app(PersonDocumentService::class)->canManage(auth()->user()))
+                    ->url(fn (Person $record): string => PersonDocumentsPage::getUrl(['pessoa' => $record->getKey()])),
                 // LGPD (art. 18): the company, controller of its employees' data, hands the person a copy of it.
                 Action::make('exportData')
                     ->label(__('app.people.export_data'))
@@ -382,6 +401,8 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                             ],
                             'systems' => collect(static::modules())->mapWithKeys(fn (Module $module): array => [$module->key() => $module->exportPerson($record)])
                                 ->filter(fn (array $part): bool => $part !== [])->all(),
+                            // Driver's license, medical exam, trainings (health data only for who may see it; no files).
+                            'documents' => app(PersonDocumentService::class)->exportPerson($record, auth()->user()),
                         ];
 
                         return response()->streamDownload(
@@ -494,6 +515,35 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
             'document_type' => $data['document_type'] ?? null,
             'team_id' => filled($data['team_id'] ?? null) ? (int) $data['team_id'] : null,
         ];
+    }
+
+    protected function canManageDocuments(): bool
+    {
+        return app(PersonDocumentService::class)->canManage(auth()->user());
+    }
+
+    /**
+     * "1 vencido" (red) or "2 vencendo" (yellow) from the person's current documents.
+     *
+     * @return array{0: ?string, 1: string}
+     */
+    protected function documentsAlert(Person $person): array
+    {
+        if (! $person->relationLoaded('documents')) {
+            return [null, 'gray'];
+        }
+
+        $statuses = $person->documents->filter(fn (PersonDocument $document): bool => $document->type->is_active)
+            ->map(fn (PersonDocument $document): DocumentStatus => $document->status());
+        $overdue = $statuses->filter(fn (DocumentStatus $status): bool => $status === DocumentStatus::Overdue)->count();
+        $soon = $statuses->filter(fn (DocumentStatus $status): bool => $status === DocumentStatus::Soon)->count();
+
+        return match (true) {
+            $overdue > 0 => [trans_choice('documents.attention.overdue', $overdue, ['count' => $overdue]), 'danger'],
+            $soon > 0 => [trans_choice('documents.attention.soon', $soon, ['count' => $soon]), 'warning'],
+            $person->documents->isNotEmpty() => [__('documents.status.ok'), 'success'],
+            default => [null, 'gray'],
+        };
     }
 
     protected function canSeeDocuments(): bool
