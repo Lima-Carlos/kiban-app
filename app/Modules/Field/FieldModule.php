@@ -6,8 +6,16 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\Filament\Customers\CustomerResource;
+use App\Modules\Field\Filament\FieldSettingsPage;
+use App\Modules\Field\Filament\Materials\MaterialResource;
+use App\Modules\Field\Filament\ServiceTypes\ServiceTypeResource;
 use App\Modules\Field\Models\Customer;
+use App\Modules\Field\Models\FieldSetting;
+use App\Modules\Field\Models\Material;
+use App\Modules\Field\Models\ServiceType;
 use App\Modules\Field\Policies\CustomerPolicy;
+use App\Modules\Field\Policies\MaterialPolicy;
+use App\Modules\Field\Policies\ServiceTypePolicy;
 use App\Modules\Field\Services\FieldAccess;
 use App\Modules\Field\Services\FieldPeople;
 use App\Modules\Module;
@@ -46,6 +54,21 @@ class FieldModule extends Module
     {
         return [
             new Step(
+                key: 'business',
+                labelKey: 'field.steps.business',
+                descriptionKey: 'field.steps.business_help',
+                done: fn (Tenant $tenant): bool => FieldSetting::query()->whereNotNull('configured_at')->exists(),
+                url: fn (): string => FieldSettingsPage::getUrl(),
+            ),
+            new Step(
+                key: 'service_types',
+                labelKey: 'field.steps.service_types',
+                descriptionKey: 'field.steps.service_types_help',
+                requires: ['business'],
+                done: fn (Tenant $tenant): bool => ServiceType::query()->active()->exists(),
+                url: fn (): string => ServiceTypeResource::getUrl('index'),
+            ),
+            new Step(
                 key: 'customers',
                 labelKey: 'field.steps.customers',
                 descriptionKey: 'field.steps.customers_help',
@@ -57,7 +80,12 @@ class FieldModule extends Module
 
     public function resources(): array
     {
-        return [CustomerResource::class];
+        return [CustomerResource::class, ServiceTypeResource::class, MaterialResource::class];
+    }
+
+    public function pages(): array
+    {
+        return [FieldSettingsPage::class];
     }
 
     public function showsSetupTo(User $user): bool
@@ -110,6 +138,8 @@ class FieldModule extends Module
     {
         return [
             Customer::class => CustomerPolicy::class,
+            ServiceType::class => ServiceTypePolicy::class,
+            Material::class => MaterialPolicy::class,
         ];
     }
 }

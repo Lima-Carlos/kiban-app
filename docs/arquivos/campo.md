@@ -7,8 +7,8 @@ A ordem das partes (aprovada em 30/10/2026):
 | Parte | O quê | Situação |
 |---|---|---|
 | O1 | Clientes, endereços com ponto no mapa, planilha | ✔ pronta (30/10/2026) |
-| O2 | Tipos de serviço, checklists e modelos prontos por ramo | próxima |
-| O2b | Orçamentos aprovados pelo cliente por link (viram OS) | |
+| O2 | Tipos de serviço, roteiro do técnico, materiais e modelos prontos por ramo | ✔ pronta (30/10/2026) |
+| O2b | Orçamentos aprovados pelo cliente por link (viram OS) | próxima |
 | O3 | Abertura e distribuição das OS: agenda e mapa do dia | |
 | O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | |
 | O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | |
@@ -83,3 +83,69 @@ Novos perfis sugeridos: **"Técnico de campo"** (técnico no Campo e funcionári
 - `tests/Feature/FieldCustomersTest.php`: os testes (CPF/CNPJ, CEP, busca no mapa, planilha, quem vê, separação entre empresas).
 - Configuração (`config/kiban.php` → `field`): `KIBAN_FIELD_LOCATOR` ("openstreetmap" ou "off"), `KIBAN_FIELD_LOCATOR_CONTACT` (e-mail que o OpenStreetMap pede) e a pausa entre buscas.
 - Peça compartilhada nova: `App\Support\Country::formatPhone()` mostra qualquer celular guardado como as pessoas leem.
+
+## O2: Configurações, tipos de serviço e materiais
+
+### Configurações do Campo (só o gestor)
+- **O seu ramo:** Provedor de internet, Ar-condicionado e refrigeração, Segurança eletrônica, Manutenção e assistência técnica, ou "Outro ramo (começar do zero)". Ao salvar, o sistema **cria os tipos de serviço mais comuns do ramo**, cada um com o roteiro do técnico, **e os materiais**.
+  - O modelo é criado **no idioma de quem escolhe** e passa a ser da empresa, que pode renomear, mudar ou desligar qualquer coisa.
+  - Escolher outro ramo depois **só acrescenta o que falta**, sem repetir nomes.
+- **Moeda dos preços** (vem do país da empresa) e **"Cliente assina ao final"**, o padrão para os novos tipos.
+- É o primeiro passo do assistente: sem ele, ainda não dá para criar tipos de serviço (a tela explica).
+
+### Tipos de serviço
+- Cada tipo tem:
+  - nome e cor (para a agenda da O3);
+  - descrição;
+  - **tempo previsto** (a agenda usa para não marcar serviços em cima um do outro);
+  - **preço** (opcional, sugerido nos orçamentos);
+  - se o cliente assina e se a foto é obrigatória ao final.
+- **Roteiro do técnico** (checklist): as perguntas que o técnico responde no celular, em ordem (arrastar muda a ordem). Cada pergunta pode ser:
+  - marcar como feito;
+  - sim ou não;
+  - número com unidade (dBm, Mbps, °C...);
+  - texto;
+  - uma opção de uma lista;
+  - foto.
+
+  Cada pergunta pode ser obrigatória.
+- Cada pergunta ganha um **código fixo**, assim as respostas continuam ligadas à pergunta certa mesmo se ela for renomeada.
+  - A partir da O3, a ordem de serviço copia o roteiro na abertura: mudar o tipo não muda as ordens já abertas.
+- **Duplicar** cria uma cópia para ajustar (ex.: "Instalação empresarial").
+- Na lista, o gestor arrasta para mudar a ordem. O atendimento e a consulta só veem; o técnico não vê esta tela.
+
+### Materiais
+- Nome, código no estoque da empresa, unidade (unidade, metro, quilo, litro, hora, caixa, peça) e preço por unidade.
+- O técnico anota o que usou em cada OS (O4), e os orçamentos (O2b) pegam os preços daqui.
+
+### O que vem em cada modelo
+- **Provedor:**
+  - Instalação: potência do sinal em dBm, serial da ONU, foto da CTO, teste de velocidade, Wi-Fi explicado, local limpo;
+  - Sem sinal / lentidão: com a causa numa lista;
+  - Mudança de endereço;
+  - Retirada de equipamento;
+  - Visita técnica;
+  - materiais: cabo drop, conector, ONU, roteador, esticador, cordão óptico.
+- **Ar-condicionado:**
+  - Instalação de split: BTU, tubulação, vácuo, pressão, temperatura, dreno, fotos;
+  - Limpeza e higienização;
+  - Manutenção corretiva;
+  - Carga de gás: tipo de gás e quantidade;
+  - materiais: tubo de cobre, gases, suporte, dreno, isolamento.
+- **Segurança eletrônica:**
+  - Instalação de câmeras: aplicativo configurado, fotos;
+  - Instalação de alarme: zonas, teste;
+  - Manutenção;
+  - Visita técnica;
+  - materiais: câmera, gravador, HD, cabo de rede, fonte, sensor, sirene.
+- **Manutenção e assistência técnica:** Visita técnica, Manutenção preventiva, Manutenção corretiva, Instalação; materiais genéricos.
+
+## Arquivos (parte O2)
+- `app/Modules/Field/Models/FieldSetting.php`, `ServiceType.php` (com a limpeza do roteiro: só perguntas válidas, código fixo e único) e `Material.php`.
+- `app/Modules/Field/Services/FieldTemplates.php`: os modelos prontos por ramo (perguntas, opções, tempos e materiais; os textos ficam em `lang/*/field.php` → `templates`).
+- `app/Modules/Field/Services/FieldFormat.php`: dinheiro na moeda da empresa e tempos ("1 h 30 min").
+- `app/Modules/Field/Filament/FieldSettingsPage.php`, `ServiceTypes/`, `Materials/` e `FieldFields.php` (preço digitado em reais e guardado em centavos).
+- `app/Modules/Field/Policies/ServiceTypePolicy.php` e `MaterialPolicy.php`.
+- `database/migrations/2026_10_30_210000_create_field_setup_tables.php`: `fd_settings`, `fd_service_types`, `fd_materials`.
+- `tests/Feature/FieldSetupTest.php`.
+- Peça compartilhada nova: `App\Support\Country::currency()` (moeda de cada país).

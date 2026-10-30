@@ -19,6 +19,18 @@ class Country
         'FR' => '33', 'DE' => '49', 'IT' => '39',
     ];
 
+    /** Currency of each country (others: US dollar). */
+    public const CURRENCIES = [
+        'BR' => 'BRL', 'US' => 'USD', 'PT' => 'EUR', 'ES' => 'EUR', 'FR' => 'EUR', 'DE' => 'EUR', 'IT' => 'EUR',
+        'MX' => 'MXN', 'AR' => 'ARS', 'CL' => 'CLP', 'CO' => 'COP', 'PE' => 'PEN', 'UY' => 'UYU', 'PY' => 'PYG',
+        'GB' => 'GBP', 'CA' => 'CAD', 'BO' => 'BOB', 'EC' => 'USD',
+    ];
+
+    public static function currency(?string $country = null): string
+    {
+        return self::CURRENCIES[strtoupper($country ?? static::current())] ?? 'USD';
+    }
+
     /** The current company's country (ISO code, e.g. "BR"). */
     public static function current(): string
     {

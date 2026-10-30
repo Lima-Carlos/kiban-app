@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Modules\Field\Models;
+
+use App\Modules\ReportsFirstSteps;
+use App\Support\Country;
+use App\Tenancy\BelongsToTenant;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Kiban Campo settings of the company: its business (the ready model of types of service and materials comes
+ * from it), the currency of the prices and whether the customer signs at the end of the work by default.
+ */
+class FieldSetting extends Model
+{
+    use BelongsToTenant, ReportsFirstSteps;
+
+    public const BUSINESSES = ['isp', 'hvac', 'security', 'general', 'none'];
+
+    protected $table = 'fd_settings';
+
+    protected $fillable = ['business', 'currency', 'signature_required', 'configured_at'];
+
+    protected function casts(): array
+    {
+        return [
+            'signature_required' => 'boolean',
+            'configured_at' => 'datetime',
+        ];
+    }
+
+    public static function current(): self
+    {
+        return static::query()->first() ?? static::create(['currency' => Country::currency(), 'signature_required' => true]);
+    }
+
+    public function isConfigured(): bool
+    {
+        return $this->configured_at !== null;
+    }
+}
