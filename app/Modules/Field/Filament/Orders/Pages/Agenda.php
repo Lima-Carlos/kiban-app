@@ -6,9 +6,12 @@ use App\Models\User;
 use App\Modules\Field\Enums\OrderStatus;
 use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Models\WorkOrder;
+use App\Modules\Field\Services\DayPlanner;
 use App\Modules\Field\Services\FieldAccess;
+use App\Modules\Field\Services\FieldException;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
@@ -125,6 +128,41 @@ class Agenda extends Page
                 ]))
             ->values()
             ->all();
+    }
+
+    /**
+     * "Suggest order" of a technician's day: the shortest way (nearest service next, from the company's base) with
+     * the times one after the other. The office sees the list first and confirms.
+     */
+    public function suggestAction(): Action
+    {
+        $plan = fn (array $arguments): array => app(DayPlanner::class)->suggest(
+            app(FieldAccess::class)->technicians()->firstWhere('id', (int) ($arguments['technician'] ?? 0)) ?? abort(404),
+            $this->date(),
+        );
+
+        return Action::make('suggest')
+            ->label(__('field.agenda.suggest'))
+            ->icon(Heroicon::OutlinedSparkles)
+            ->color('gray')
+            ->size('xs')
+            ->link()
+            ->visible(fn (): bool => OrderResource::canCreate())
+            ->modalHeading(__('field.agenda.suggest_title'))
+            ->modalDescription(__('field.agenda.suggest_help'))
+            ->modalSubmitActionLabel(__('field.agenda.suggest_apply'))
+            ->modalContent(fn (array $arguments) => view('field.agenda-suggest', ['plan' => $plan($arguments), 'timezone' => OrderResource::timezone()]))
+            ->action(function (array $arguments) use ($plan): void {
+                try {
+                    app(DayPlanner::class)->apply($plan($arguments), auth()->user());
+                } catch (FieldException $exception) {
+                    Notification::make()->title($exception->getMessage())->danger()->send();
+
+                    return;
+                }
+
+                Notification::make()->title(__('field.agenda.suggest_done'))->success()->send();
+            });
     }
 
     protected function getHeaderActions(): array

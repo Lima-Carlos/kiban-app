@@ -238,7 +238,14 @@ class OrderResource extends ModuleResource
                     ->sortable(),
                 TextColumn::make('status')
                     ->label(__('field.fields.status'))
-                    ->badge(),
+                    ->badge()
+                    // Flags of the day: a return, a delay told by the technician, passed on by a technician, the customer's stars.
+                    ->description(fn (WorkOrder $record): ?string => collect([
+                        $record->return_of_id ? '↩ '.__('field.orders.flag_return') : null,
+                        $record->delay_minutes && ! $record->status->isClosed() ? '⏱ +'.$record->delay_minutes.' min' : null,
+                        $record->handoff_reason && $record->status === OrderStatus::Open ? '⇄ '.__('field.orders.flag_handoff') : null,
+                        $record->rating ? $record->rating.' ★' : null,
+                    ])->filter()->implode(' · ') ?: null),
                 TextColumn::make('priority')
                     ->label(__('field.fields.priority'))
                     ->badge()
@@ -320,6 +327,28 @@ class OrderResource extends ModuleResource
                         TextEntry::make('technician.name')->label(__('field.fields.technician'))->placeholder(__('field.orders.no_technician')),
                         TextEntry::make('scheduled_at')->label(__('field.fields.scheduled_at'))->state(fn (WorkOrder $record): string => static::when($record)),
                         TextEntry::make('cancel_reason')->label(__('field.fields.cancel_reason'))->visible(fn (WorkOrder $record): bool => $record->status === OrderStatus::Canceled),
+                        TextEntry::make('delay_minutes')
+                            ->label(__('field.orders.delay'))
+                            ->state(fn (WorkOrder $record): string => __('field.orders.delay_value', ['minutes' => $record->delay_minutes]).($record->delay_reason ? ' · '.$record->delay_reason : ''))
+                            ->color('warning')
+                            ->visible(fn (WorkOrder $record): bool => $record->delay_minutes !== null && ! $record->status->isClosed()),
+                        TextEntry::make('handoff_reason')
+                            ->label(__('field.orders.handoff'))
+                            ->color('warning')
+                            ->visible(fn (WorkOrder $record): bool => $record->handoff_reason !== null && $record->status === OrderStatus::Open),
+                        TextEntry::make('return_of_id')
+                            ->label(__('field.orders.return_of'))
+                            ->state(fn (WorkOrder $record): ?string => $record->returnOf ? __('field.orders.return_value', ['order' => $record->returnOf->label(), 'date' => $record->returnOf->finished_at?->setTimezone(static::timezone())->translatedFormat(__('app.date_format'))]) : null)
+                            ->url(fn (WorkOrder $record): ?string => $record->return_of_id ? static::getUrl('view', ['record' => $record->return_of_id]) : null)
+                            ->badge()
+                            ->color('danger')
+                            ->visible(fn (WorkOrder $record): bool => $record->return_of_id !== null),
+                        TextEntry::make('rating')
+                            ->label(__('field.orders.rating'))
+                            ->state(fn (WorkOrder $record): string => str_repeat('★', (int) $record->rating).str_repeat('☆', 5 - (int) $record->rating))
+                            ->helperText(fn (WorkOrder $record): ?string => $record->rating_comment)
+                            ->color(fn (WorkOrder $record): string => $record->rating >= 4 ? 'success' : 'danger')
+                            ->visible(fn (WorkOrder $record): bool => $record->rated_at !== null),
                     ]),
                 Section::make(__('field.orders.sections.execution'))
                     ->columnSpanFull()
@@ -419,6 +448,10 @@ class OrderResource extends ModuleResource
             'checked_in' => __('field.events.checked_in').(isset($data['distance']) ? ' · '.__('field.orders.distance', ['meters' => $data['distance']]) : '').(isset($data['km']) ? ' · '.number_format((int) $data['km'], 0, ',', '.').' km' : '').(isset($data['km_note']) ? ' ('.$data['km_note'].')' : ''),
             'paused' => __('field.events.paused', ['reason' => $data['reason'] ?? '']),
             'finished' => __('field.events.finished'),
+            'on_the_way' => __('field.events.on_the_way'),
+            'delayed' => __('field.events.delayed', ['minutes' => $data['minutes'] ?? '—']).(filled($data['reason'] ?? null) ? ': '.$data['reason'] : ''),
+            'handed_off' => __('field.events.handed_off', ['technician' => $data['technician'] ?? '—', 'reason' => $data['reason'] ?? '']),
+            'rated' => __('field.events.rated', ['rating' => $data['rating'] ?? '—']).(filled($data['comment'] ?? null) ? ': '.$data['comment'] : ''),
             default => $event->type,
         };
     }

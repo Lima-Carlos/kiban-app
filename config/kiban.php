@@ -111,6 +111,16 @@ return [
     ],
 
     /*
+    | Alerts on the phone (web push, free, no external account): the server's key pair, made once with
+    | "php artisan kiban:push-keys" and kept in the .env (never in Git). Without them, no alerts on the phone.
+    */
+    'push' => [
+        'public_key' => env('KIBAN_PUSH_PUBLIC_KEY'),
+        'private_key' => env('KIBAN_PUSH_PRIVATE_KEY'),
+        'subject' => env('KIBAN_PUSH_SUBJECT', 'mailto:privacidade@kibancore.com.br'),
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Brand (same as the Core)
     |--------------------------------------------------------------------------

@@ -20,6 +20,33 @@ self.addEventListener('activate', (event) => event.waitUntil((async () => {
     await self.clients.claim();
 })()));
 
+// Alerts sent by the server (e.g. "time to leave for the next service"), also with the app closed.
+self.addEventListener('push', (event) => {
+    let alert = {};
+    try { alert = event.data ? event.data.json() : {}; } catch (e) { alert = { title: event.data?.text() }; }
+    event.waitUntil(self.registration.showNotification(alert.title || 'Kiban', {
+        body: alert.body || '',
+        icon: '/images/brand/icon-192.png',
+        badge: '/images/brand/icon-192.png',
+        tag: alert.tag || undefined,
+        renotify: Boolean(alert.tag),
+        vibrate: [200, 100, 200],
+        data: { url: alert.url || '/' },
+    }));
+});
+
+// Touching the alert opens the screen it is about (or brings the app forward).
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const url = event.notification.data?.url || '/';
+    event.waitUntil((async () => {
+        const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        const open = windows.find((client) => new URL(client.url).pathname === new URL(url, self.location.origin).pathname);
+        if (open) { return open.focus(); }
+        return self.clients.openWindow(url);
+    })());
+});
+
 self.addEventListener('fetch', (event) => {
     const request = event.request;
     const url = new URL(request.url);

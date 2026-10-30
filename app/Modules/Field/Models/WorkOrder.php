@@ -51,6 +51,11 @@ class WorkOrder extends Model
             'check_in_distance' => 'integer',
             'check_in_km' => 'integer',
             'signed_at' => 'immutable_datetime',
+            'delay_minutes' => 'integer',
+            'on_the_way_at' => 'immutable_datetime',
+            'handoff_at' => 'immutable_datetime',
+            'rating' => 'integer',
+            'rated_at' => 'immutable_datetime',
         ];
     }
 
@@ -116,6 +121,16 @@ class WorkOrder extends Model
     public function opener(): BelongsTo
     {
         return $this->belongsTo(User::class, 'opened_by');
+    }
+
+    /**
+     * The done service this one is a "return" of (same customer, a few days later).
+     *
+     * @return BelongsTo<WorkOrder, $this>
+     */
+    public function returnOf(): BelongsTo
+    {
+        return $this->belongsTo(WorkOrder::class, 'return_of_id');
     }
 
     /**

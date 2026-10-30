@@ -2,22 +2,28 @@
 
 namespace App\Modules\Field\Filament;
 
+use App\Models\CompanyProfile;
 use App\Modules\Concerns\InModuleMenu;
 use App\Modules\Field\Enums\OrderStatus;
 use App\Modules\Field\FieldModule;
+use App\Modules\Field\Filament\Orders\OrderResource;
+use App\Modules\Field\Models\FieldSetting;
 use App\Modules\Field\Models\Material;
 use App\Modules\Field\Models\OrderMaterial;
 use App\Modules\Field\Models\OrderPhoto;
 use App\Modules\Field\Models\WorkOrder;
+use App\Modules\Field\Services\DayPlanner;
 use App\Modules\Field\Services\OrderExecutionService;
 use App\Modules\Field\Services\OrderReport;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Support\Country;
+use App\Support\PhoneAlerts;
 use App\Tenancy\TenantContext;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Str;
 
 /**
  * The work at the customer's place, on the technician's phone, also without signal: "I arrived" (location and
@@ -71,7 +77,7 @@ class ExecuteOrderPage extends Page
     public function payload(): array
     {
         $order = $this->record();
-        $tenant = app(TenantContext::class)->get();
+        $settings = FieldSetting::current();
 
         return [
             'id' => $order->getKey(),
@@ -92,6 +98,48 @@ class ExecuteOrderPage extends Page
             'needsPoint' => $order->site !== null && ! $order->site->hasPoint(),
             // The report link is ready even before the order reaches the server (it works once it does).
             'reportWhatsapp' => app(OrderReport::class)->whatsappUrl($order),
+            // The technician's day: the next service, until when to finish here, the alert to leave.
+            'next' => $this->nextService($order),
+            'onTheWay' => $order->on_the_way_at !== null,
+            'delayMinutes' => $order->delay_minutes,
+            'site' => $order->site?->hasPoint() ? ['lat' => (float) $order->site->latitude, 'lng' => (float) $order->site->longitude] : null,
+            'travel' => ['speed' => max(5, (int) $settings->travel_speed_kmh), 'factor' => (float) $settings->route_factor],
+            'onTheWayMessage' => __('field.execute.on_the_way_message', ['name' => Str::before($order->customer->name, ' '), 'technician' => Str::before((string) auth()->user()->name, ' '), 'company' => CompanyProfile::current()->name()]),
+            'customerPhone' => preg_replace('/\D/', '', (string) $order->customer->phone),
+            'pushKey' => app(PhoneAlerts::class)->enabled() ? config('kiban.push.public_key') : null,
+            'pushUrl' => route('phone-alerts.subscribe'),
+            // Written on each photo, with the date, time and place.
+            'stamp' => $order->label().' · '.$order->customer->displayName(),
+        ];
+    }
+
+    /**
+     * The next service of the day (for the card "Next" and the alert to leave), with its own sync address so
+     * "I will be late" for it also works without signal.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function nextService(WorkOrder $order): ?array
+    {
+        $plan = app(DayPlanner::class)->plan($order);
+
+        if ($plan === null) {
+            return null;
+        }
+
+        $timezone = OrderResource::timezone();
+        $next = $plan['next'];
+
+        return [
+            'id' => $next->getKey(),
+            'label' => $next->label(),
+            'customer' => $next->customer->displayName(),
+            'time' => $next->scheduled_at->setTimezone($timezone)->format('H:i'),
+            'travel' => $plan['travel'],
+            'finishBy' => $plan['finish_by']->setTimezone($timezone)->format('H:i'),
+            'alertAt' => $plan['alert_at']->toIso8601ZuluString(),
+            'url' => static::getUrl(['order' => $next->getKey()]),
+            'sync' => route('field.sync', ['order' => $next->getKey()]),
         ];
     }
 

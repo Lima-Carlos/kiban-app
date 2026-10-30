@@ -27,6 +27,12 @@
         .footer { font-size: 12px; color: #6b7280; margin-top: 22px; white-space: pre-line; }
         .button { display: inline-block; margin-top: 18px; padding: 11px 18px; background: {{ $color }}; color: #fff; border-radius: 8px; text-decoration: none; font-weight: bold; }
         .code { font-family: monospace; font-weight: bold; }
+        .stars { display: inline-flex; flex-direction: row-reverse; margin-bottom: 8px; }
+        .stars input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        .stars label { font-size: 36px; color: #d1d5db; cursor: pointer; padding: 0 2px; }
+        .stars input:checked ~ label, .stars label:hover, .stars label:hover ~ label { color: #f59e0b; }
+        .stars input:focus-visible + label { outline: 2px solid {{ $color }}; border-radius: 4px; }
+        .stars-show { color: #f59e0b; font-size: 20px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -80,6 +86,25 @@
             <h2>{{ __('field.report.signature') }}</h2>
             <div class="signature"><img src="{{ $signature }}" alt=""></div>
             <div style="font-size:14px">{{ $order->signed_by }} · {{ $order->signed_at?->setTimezone(\App\Modules\Field\Filament\Orders\OrderResource::timezone())->translatedFormat(__('app.datetime_format')) }}</div>
+        @endif
+
+        {{-- The customer's rating (once). --}}
+        <h2 id="rating">{{ __('field.report.rating_title') }}</h2>
+        @if ($order->rated_at)
+            <p style="font-size:14px;margin:0"><span class="stars-show">{{ str_repeat('★', $order->rating) }}<span style="color:#d1d5db">{{ str_repeat('★', 5 - $order->rating) }}</span></span> · {{ __('field.report.rating_thanks') }}</p>
+        @else
+            <form method="POST" action="{{ $rateUrl }}">
+                @csrf
+                <p style="font-size:14px;margin:0 0 4px">{{ __('field.report.rating_question', ['company' => $company]) }}</p>
+                <div class="stars">
+                    @foreach ([5, 4, 3, 2, 1] as $star)
+                        <input type="radio" name="rating" id="star{{ $star }}" value="{{ $star }}" required>
+                        <label for="star{{ $star }}" title="{{ $star }}">★</label>
+                    @endforeach
+                </div>
+                <textarea name="comment" rows="2" maxlength="1000" placeholder="{{ __('field.report.rating_comment') }}" style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:10px;font-size:14px;font-family:inherit"></textarea>
+                <button type="submit" class="button" style="border:0;cursor:pointer;margin-top:8px">{{ __('field.report.rating_send') }}</button>
+            </form>
         @endif
 
         <a class="button" href="{{ $pdfUrl }}">{{ __('field.report.download') }}</a>

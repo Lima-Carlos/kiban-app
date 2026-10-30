@@ -29,7 +29,7 @@
         </div>
     </x-filament::section>
 
-    <script src="{{ asset('js/field-queue.js') }}?v=1"></script>
+    <script src="{{ asset('js/field-queue.js') }}?v=2"></script>
     <div
         wire:ignore
         x-data="{
@@ -54,7 +54,19 @@
             drawing: false,
             pauseReason: '',
             showPause: false,
+            position: null,
+            eta: null,
+            showLate: false,
+            lateReason: '',
+            lateSent: null,
+            lateNextSent: null,
+            showHandoff: false,
+            handoffReason: '',
+            leaveNow: false,
+            push: 'unsupported',
             init() {
+                this.watchLeave();
+                this.checkPush();
                 window.addEventListener('online', () => { this.online = true; this.flush(); });
                 window.addEventListener('offline', () => { this.online = false; });
                 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { this.flush(); } });
@@ -77,6 +89,15 @@
                 if (piece.type === 'signature') { this.signed = true; this.signer = data.name; }
                 if (piece.type === 'pause') { this.order.status = 'paused'; }
                 if (piece.type === 'finish') { this.order.status = 'done'; this.order.closed = true; }
+                if (piece.type === 'on_the_way') { this.order.onTheWay = true; }
+                if (piece.type === 'delay') { this.order.delayMinutes = data.minutes; }
+                if (piece.type === 'handoff') { this.order.status = 'open'; this.order.closed = true; }
+            },
+            // A piece of another order (e.g. late for the next service): it goes in the same queue.
+            async queueFor(order, url, type, data = {}) {
+                const item = await KibanFieldQueue.add(this.owner, order, url, type, data);
+                this.pending.push(item);
+                this.flush();
             },
             async queue(type, data = {}) {
                 const item = await KibanFieldQueue.add(this.owner, this.order.id, this.url, type, data);
@@ -101,13 +122,16 @@
                         await KibanFieldQueue.remove(item.id);
                         this.pending = this.pending.filter((p) => p.id !== item.id);
                         if (answer.result === 'ok') {
+                            if (item.order !== this.order.id) { continue; }
                             this.order.missing = answer.data.missing;
                             this.order.status = answer.data.order_status;
-                            this.order.closed = ['done', 'canceled'].includes(answer.data.order_status);
+                            this.order.closed = ['done', 'canceled', 'open'].includes(answer.data.order_status);
                         } else {
                             // A rule said no (e.g. something required missing to finish): show it and undo locally.
                             this.problem = answer.data?.message ?? this.texts.invalid;
+                            if (item.order !== this.order.id) { continue; }
                             if (item.piece.type === 'finish') { this.order.status = 'in_progress'; this.order.closed = false; }
+                            if (item.piece.type === 'handoff') { this.order.status = this.order.checkedIn ? 'in_progress' : 'scheduled'; this.order.closed = false; }
                         }
                     }
                 } finally {
@@ -118,6 +142,7 @@
                 this.locating = true;
                 const send = (coords) => {
                     this.locating = false;
+                    if (coords) { this.position = coords; }
                     this.queue('check_in', {
                         latitude: coords?.latitude ?? null, longitude: coords?.longitude ?? null, accuracy: coords?.accuracy ?? null,
                         km: this.km === '' ? null : parseInt(this.km, 10), vehicle_id: this.km === '' ? null : this.vehicle,
@@ -134,7 +159,13 @@
                 const file = event.target.files?.[0];
                 event.target.value = '';
                 if (!file) { return; }
-                const image = await KibanFieldQueue.shrink(file);
+                // Stamped on the picture: date and time (server-corrected clock), the place and the order.
+                const coords = await this.locate(4000);
+                const image = await KibanFieldQueue.shrink(file, 1280, [
+                    new Date(KibanFieldQueue.now()).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+                    coords ? coords.latitude.toFixed(5) + ', ' + coords.longitude.toFixed(5) + ' (±' + Math.round(coords.accuracy) + ' m)' : null,
+                    this.order.stamp,
+                ]);
                 this.queue('photo', { key, image });
             },
             addMaterial() {
@@ -164,6 +195,91 @@
                 if (this.order.photoRequired && Object.values(this.order.photos).reduce((a, b) => a + b, 0) === 0) { missing.push(this.texts.photo_required); }
                 if (this.order.signatureRequired && !this.signed) { missing.push(this.texts.signature_required); }
                 return missing;
+            },
+            locate(timeout = 15000) {
+                return new Promise((resolve) => {
+                    if (!navigator.geolocation) { resolve(this.position); return; }
+                    navigator.geolocation.getCurrentPosition((p) => { this.position = p.coords; resolve(p.coords); }, () => resolve(this.position), { enableHighAccuracy: true, timeout, maximumAge: 120000 });
+                });
+            },
+            clockText(time) { return new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); },
+            // Same estimate as the server (DayPlanner): straight line × road factor ÷ speed, rounded up to 5 min.
+            travelMinutes(from, to) {
+                const rad = (d) => d * Math.PI / 180;
+                const a = Math.sin(rad(to.lat - from.latitude) / 2) ** 2 + Math.cos(rad(from.latitude)) * Math.cos(rad(to.lat)) * Math.sin(rad(to.lng - from.longitude) / 2) ** 2;
+                const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * this.order.travel.factor;
+                return Math.max(5, Math.ceil(km / this.order.travel.speed * 60 / 5) * 5);
+            },
+            async onTheWay() {
+                this.queue('on_the_way');
+                const coords = this.order.site ? await this.locate(8000) : null;
+                this.eta = coords ? this.clockText(KibanFieldQueue.now() + this.travelMinutes(coords, this.order.site) * 60000) : null;
+            },
+            whatsappOnTheWay() {
+                const text = this.order.onTheWayMessage + (this.eta ? this.texts.arrive_at.replace(':time', this.eta) : '');
+                return 'https://wa.me/' + this.order.customerPhone + '?text=' + encodeURIComponent(text);
+            },
+            late(minutes) {
+                const data = { minutes, reason: this.lateReason || null };
+                if (this.order.checkedIn && this.order.next) {
+                    this.queueFor(this.order.next.id, this.order.next.sync, 'delay', data);
+                    this.lateNextSent = minutes;
+                } else {
+                    this.queue('delay', data);
+                    this.lateSent = minutes;
+                }
+                this.showLate = false;
+                this.lateReason = '';
+            },
+            handoff() {
+                if (!this.handoffReason.trim()) { return; }
+                this.queue('handoff', { reason: this.handoffReason.trim() });
+                this.showHandoff = false;
+            },
+            // While the screen is open: the warning to leave for the next service (the server also sends it to the phone).
+            watchLeave() {
+                const check = () => {
+                    if (!this.order.next || this.order.closed || !this.order.checkedIn) { return; }
+                    if (KibanFieldQueue.now() < Date.parse(this.order.next.alertAt) || this.leaveNow) { return; }
+                    this.leaveNow = true;
+                    if ('vibrate' in navigator) { navigator.vibrate([200, 100, 200]); }
+                };
+                check();
+                setInterval(check, 20000);
+            },
+            async registration() {
+                if (!this.order.pushKey || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) { return null; }
+                return (await navigator.serviceWorker.getRegistration()) || null;
+            },
+            async checkPush() {
+                const registration = await this.registration();
+                if (!registration) { this.push = 'unsupported'; return; }
+                if (Notification.permission === 'denied') { this.push = 'blocked'; return; }
+                const subscription = await registration.pushManager.getSubscription();
+                this.push = subscription && Notification.permission === 'granted' ? 'on' : 'off';
+                // The same phone may be used in another company: the server keeps it for this one too.
+                if (this.push === 'on' && this.online) { this.savePush(subscription); }
+            },
+            async enablePush() {
+                const registration = await this.registration();
+                if (!registration) { return; }
+                if (await Notification.requestPermission() !== 'granted') { this.push = 'blocked'; return; }
+                const key = this.order.pushKey.replace(/-/g, '+').replace(/_/g, '/');
+                const bytes = Uint8Array.from(atob(key + '='.repeat((4 - key.length % 4) % 4)), (c) => c.charCodeAt(0));
+                const subscription = (await registration.pushManager.getSubscription()) || await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes });
+                if (await this.savePush(subscription)) { this.push = 'on'; }
+            },
+            async savePush(subscription) {
+                try {
+                    const response = await fetch(this.order.pushUrl, {
+                        method: 'POST', credentials: 'same-origin',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': this.token, 'X-Requested-With': 'XMLHttpRequest' },
+                        body: JSON.stringify(subscription.toJSON()),
+                    });
+                    return response.ok;
+                } catch (e) {
+                    return false;
+                }
             },
             finish() {
                 const missing = this.localMissing();
@@ -195,6 +311,61 @@
             </div>
         </div>
 
+        {{-- Passed to another technician: the order is back with the company. --}}
+        <div x-show="order.status === 'open'" x-cloak style="{{ $box }};text-align:center;color:#92400e">
+            <div style="font-size:26px">↩</div>
+            <strong x-text="texts.handed_off"></strong>
+        </div>
+
+        {{-- Alerts on this phone (the time to leave for the next service, also with the app closed). --}}
+        <div x-show="!order.closed && (push === 'off' || push === 'blocked')" x-cloak style="{{ $box }};display:flex;flex-direction:column;gap:6px">
+            <template x-if="push === 'off'">
+                <div>
+                    <x-filament::button color="gray" icon="heroicon-o-bell-alert" size="sm" x-on:click="enablePush()"><span x-text="texts.alerts_on"></span></x-filament::button>
+                    <p style="font-size:12px;opacity:.75;margin:6px 0 0" x-text="texts.alerts_help"></p>
+                </div>
+            </template>
+            <p x-show="push === 'blocked'" style="font-size:13px;color:#b45309;margin:0" x-text="texts.alerts_blocked"></p>
+        </div>
+
+        {{-- Before arriving: on the way (message to the customer), late, or pass to another technician. --}}
+        <div x-show="!order.closed && !order.checkedIn" style="{{ $box }};display:flex;flex-direction:column;gap:8px">
+            <strong style="font-size:16px" x-text="texts.trip"></strong>
+            <template x-if="!order.onTheWay">
+                <x-filament::button color="primary" icon="heroicon-o-truck" x-on:click="onTheWay()" style="width:100%"><span x-text="texts.on_the_way"></span></x-filament::button>
+            </template>
+            <template x-if="order.onTheWay && order.customerPhone">
+                <div>
+                    <p style="font-size:13px;margin:0 0 6px;color:#15803d" x-text="'✓ ' + texts.on_the_way_done"></p>
+                    <x-filament::button tag="a" x-bind:href="whatsappOnTheWay()" target="_blank" color="success" icon="heroicon-o-chat-bubble-left-right" style="width:100%"><span x-text="texts.tell_customer"></span></x-filament::button>
+                </div>
+            </template>
+            <p x-show="order.onTheWay && !order.customerPhone" x-cloak style="font-size:13px;margin:0;color:#15803d" x-text="'✓ ' + texts.on_the_way"></p>
+
+            <p x-show="order.delayMinutes" x-cloak style="font-size:13px;margin:0;color:#b45309" x-text="texts.late_sent.replace(':minutes', order.delayMinutes)"></p>
+            <x-filament::button color="warning" outlined icon="heroicon-o-clock" x-on:click="showLate = !showLate; showHandoff = false"><span x-text="texts.late"></span></x-filament::button>
+            <x-filament::button color="gray" outlined icon="heroicon-o-arrows-right-left" x-on:click="showHandoff = !showHandoff; showLate = false"><span x-text="texts.handoff"></span></x-filament::button>
+        </div>
+
+        {{-- "I will be late": 15, 30 or 60 minutes, with an optional reason (for this service or the next one). --}}
+        <div x-show="showLate && !order.closed" x-cloak style="{{ $box }}">
+            <p style="font-size:13px;opacity:.75;margin:0 0 8px" x-text="texts.late_help"></p>
+            <input type="text" x-model="lateReason" :placeholder="texts.late_reason" style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:10px;font-size:15px;margin-bottom:8px">
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+                <template x-for="minutes in @js(\App\Modules\Field\Services\OrderExecutionService::DELAYS)" :key="minutes">
+                    <button type="button" x-on:click="late(minutes)" x-text="texts.late_minutes.replace(':minutes', minutes)"
+                        style="padding:12px;border-radius:8px;border:1px solid #f59e0b;background:rgba(245,158,11,.12);color:#92400e;font-weight:700"></button>
+                </template>
+            </div>
+        </div>
+
+        {{-- "Pass to another technician": the reason, then the order goes back to the company. --}}
+        <div x-show="showHandoff && !order.closed" x-cloak style="{{ $box }}">
+            <p style="font-size:13px;opacity:.75;margin:0 0 8px" x-text="texts.handoff_help"></p>
+            <textarea rows="2" x-model="handoffReason" :placeholder="texts.handoff_reason" style="width:100%;border:1px solid #d1d5db;border-radius:8px;padding:10px;font-size:15px"></textarea>
+            <x-filament::button color="danger" size="sm" x-on:click="handoff()" x-bind:disabled="!handoffReason.trim()" style="margin-top:8px"><span x-text="texts.handoff_confirm"></span></x-filament::button>
+        </div>
+
         {{-- 1. Arrival. --}}
         <div x-show="!order.closed && !order.checkedIn" style="{{ $box }}">
             <strong style="font-size:16px" x-text="texts.arrival"></strong>
@@ -211,6 +382,21 @@
                 <span x-text="locating ? texts.locating : texts.arrived"></span>
             </x-filament::button>
         </div>
+
+        {{-- The next service of the day: until when to finish here, and the warning when it is time to leave. --}}
+        <template x-if="order.next && order.checkedIn && !order.closed">
+            <div :style="'{{ $box }};' + (leaveNow ? 'border-color:#f59e0b;background:rgba(245,158,11,.12)' : '')">
+                <div x-show="leaveNow" style="font-weight:700;color:#92400e;margin-bottom:6px" x-text="'⏰ ' + texts.time_to_leave"></div>
+                <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.7" x-text="texts.next_title"></div>
+                <a :href="order.next.url" style="display:block;font-weight:700;font-size:15px;margin-top:2px" x-text="texts.next_line.replace(':time', order.next.time).replace(':customer', order.next.customer)"></a>
+                <div style="font-size:13px;margin-top:4px">
+                    <span x-show="order.next.travel" x-text="texts.next_travel.replace(':minutes', order.next.travel) + ' '"></span>
+                    <strong x-text="texts.finish_by.replace(':time', order.next.finishBy)"></strong>
+                </div>
+                <p x-show="lateNextSent" style="font-size:13px;margin:6px 0 0;color:#b45309" x-text="texts.late_sent.replace(':minutes', lateNextSent)"></p>
+                <x-filament::button color="warning" outlined size="sm" icon="heroicon-o-clock" x-on:click="showLate = !showLate" style="margin-top:8px"><span x-text="texts.late_next"></span></x-filament::button>
+            </div>
+        </template>
 
         {{-- 2. Checklist. --}}
         <div x-show="order.checkedIn || order.closed" style="{{ $box }}">

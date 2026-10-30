@@ -77,6 +77,7 @@ class OrderReport
             'finished' => $order->finished_at?->setTimezone($timezone),
             'code' => $this->verificationCode($order),
             'pdfUrl' => $this->pdfUrl($order),
+            'rateUrl' => URL::signedRoute('field.report.rate', ['order' => $order->getKey()]),
         ];
     }
 

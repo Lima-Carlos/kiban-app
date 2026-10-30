@@ -45,7 +45,7 @@
     @endforeach
 
     {{-- With signal, each order of the list is kept on the phone (and the queue script it uses), so the day's work opens without signal too. --}}
-    <script src="{{ asset('js/field-queue.js') }}?v=1"></script>
+    <script src="{{ asset('js/field-queue.js') }}?v=2"></script>
     <script>
         (() => {
             if (!navigator.onLine || !('serviceWorker' in navigator)) { return; }

@@ -33,6 +33,9 @@
                     <strong>{{ $column['technician']->name }}</strong>
                     <span style="margin-left:auto;font-size:12px;opacity:.7">{{ trans_choice('field.agenda.count', $column['orders']->count(), ['count' => $column['orders']->count()]) }}</span>
                 </div>
+                @if ($column['orders']->where('status', \App\Modules\Field\Enums\OrderStatus::Scheduled)->count() > 1)
+                    <div style="margin-bottom:8px">{{ ($this->suggestAction)(['technician' => $column['technician']->getKey()]) }}</div>
+                @endif
                 @forelse ($column['orders'] as $order)
                     <a href="{{ $resource::getUrl('view', ['record' => $order]) }}" style="{{ $card }};border-left:4px solid {{ $order->serviceType->color ?: $column['color'] }}">
                         <div style="display:flex;justify-content:space-between;gap:6px;font-size:13px">
@@ -67,6 +70,9 @@
                     </div>
                     <div style="font-weight:600;margin-top:2px">{{ $order->customer->displayName() }}</div>
                     <div style="font-size:12px;opacity:.75">{{ $order->serviceType->name }}</div>
+                    @if ($order->handoff_reason)
+                        <div style="font-size:12px;color:#b45309;margin-top:2px">↩ {{ __('field.agenda.handed_off', ['reason' => $order->handoff_reason]) }}</div>
+                    @endif
                 </a>
             @empty
                 <p style="font-size:13px;opacity:.6;margin:4px 0">{{ __('field.agenda.nothing_to_schedule') }}</p>

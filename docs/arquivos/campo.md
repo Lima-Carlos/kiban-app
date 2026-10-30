@@ -307,3 +307,47 @@ Na tela Pessoas, dar a função "Técnico" a mais gente do que o plano permite �
 - `app/Http/Controllers/Field/OrderReportController.php`: `/<empresa>/os/<id>/relatorio` e `/pdf`.
 - `resources/views/field/report.blade.php` (página) e `report-pdf.blade.php` (PDF).
 - `tests/Feature/FieldReportTest.php`.
+
+## Dia do técnico (30/10/2026)
+Feito para o técnico não se atrasar e para o escritório saber na hora quando algo sai do plano. Não usa mapa pago: o tempo de deslocamento é uma **estimativa** pela distância (linha reta × fator das ruas ÷ velocidade média), arredondada para cima de 5 em 5 minutos.
+
+### Na tela do técnico (a OS no celular)
+- **Antes de chegar:**
+  - **"Estou a caminho"**: registra a saída e prepara a mensagem para o cliente no WhatsApp ("Estou a caminho, devo chegar por volta das 10:40"). Por enquanto a mensagem sai do WhatsApp do técnico; pelo WhatsApp oficial da empresa só depois do CNPJ (janeiro de 2027).
+  - **"Vou atrasar"**: 15, 30 ou 60 minutos, com motivo opcional. O escritório recebe o aviso no sino na hora.
+  - **"Passar para outro técnico"**: com o motivo. A OS volta para "Em aberto", sem técnico, e o escritório é avisado. Na Agenda, ela aparece em "Para agendar" com o motivo.
+- **No serviço:** o cartão **"Próximo serviço"** mostra a hora e o cliente do próximo, o tempo de deslocamento e **"Termine aqui até 13:55"**. Na hora de sair, o cartão fica amarelo e o celular vibra. Também há "Vou atrasar para o próximo".
+- **Avisos no celular:** o botão "Ativar avisos no celular" faz o aviso da hora de sair chegar **mesmo com o app fechado** (notificação do próprio navegador, de graça, sem conta em serviço externo).
+- **Fotos com carimbo:** toda foto sai com data, hora, local (latitude e longitude) e o número da OS escritos na própria imagem.
+
+### Avisos automáticos (a cada minuto, comando `kiban:field`)
+Cada um sai só uma vez:
+- para o técnico no serviço: o **alerta para sair** (padrão: 15 minutos antes da hora de sair);
+- para o escritório (gestor e atendimento):
+  - **risco de atraso**, quando o técnico ainda está no serviço depois da hora de sair;
+  - **técnico não chegou**, 15 minutos depois do horário (ou depois do atraso avisado).
+
+### Na Agenda
+- **"Sugerir ordem"** em cada técnico com 2 ou mais serviços no dia: monta o caminho mais curto (sempre o mais perto em seguida, saindo da base da empresa) com os horários um depois do outro. Mostra a lista antes; só muda a agenda ao clicar em "Aplicar na agenda".
+
+### Nota do cliente e retorno
+- **Nota do cliente:** na página do relatório, o cliente dá de 1 a 5 estrelas e um comentário (uma vez só). Nota 3 ou menor avisa o escritório. A nota aparece na ficha da OS e na lista.
+- **Retorno:** uma OS nova do mesmo cliente e endereço, até 30 dias depois de um serviço feito, é marcada como **retorno** (com o link da OS anterior). Ajuda a ver serviço mal feito.
+
+### Configurações do Campo → "Dia do técnico" (só o gestor)
+Velocidade média na cidade (25 km/h), fator das ruas (1,4), minutos do alerta para sair (15), dias para contar como retorno (30) e a base da empresa (latitude e longitude de onde os técnicos saem).
+
+## Arquivos (dia do técnico)
+- `database/migrations/2026_10_31_120000_create_field_day_tables.php`: os campos novos das configurações e da OS (atraso, a caminho, devolvida, retorno, nota) e a tabela `push_subscriptions` (os celulares que recebem avisos).
+- `app/Modules/Field/Services/DayPlanner.php`: tempo de deslocamento, próximo serviço, "termine até", hora do alerta e a ordem sugerida do dia.
+- `app/Modules/Field/Services/DayWatch.php`: os avisos automáticos do dia (cada um uma vez).
+- `app/Modules/Field/Services/FieldNotices.php`: manda um aviso ao escritório (gestor e atendimento) com o link da OS.
+- `app/Modules/Field/Services/OrderExecutionService.php`: as peças novas `on_the_way`, `delay` e `handoff` (também sem internet).
+- `app/Modules/Field/Services/WorkOrderService.php`: `returnOf()` (retorno) e `rate()` (nota do cliente).
+- `app/Support/PhoneAlerts.php`, `app/Models/PushSubscription.php`, `app/Http/Controllers/PhoneAlertController.php` (`POST /<empresa>/avisos/celular`) e `app/Console/Commands/MakePushKeys.php` (`kiban:push-keys`): os avisos no celular. As duas chaves ficam no `.env` (`KIBAN_PUSH_PUBLIC_KEY` e `KIBAN_PUSH_PRIVATE_KEY`), nunca no Git; na VPS, gerar uma vez com `php artisan kiban:push-keys` e manter. Sem elas, os avisos no celular ficam desligados (o resto funciona).
+- `public/sw.js`: mostra o aviso e abre a tela certa ao tocar.
+- `public/js/field-queue.js`: o carimbo nas fotos.
+- `resources/views/field/execute.blade.php`: os botões e o cartão do próximo serviço.
+- `resources/views/field/agenda-suggest.blade.php`: a lista da ordem sugerida.
+- `tests/Feature/FieldDayTest.php`.
+- Conferido no Chrome do estúdio: `C:\Projetos\kiban-videos\scripts\testar-campo-dia.mjs`.

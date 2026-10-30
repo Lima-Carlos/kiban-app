@@ -13,6 +13,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -62,7 +63,7 @@ class FieldSettingsPage extends Page
 
     public function mount(): void
     {
-        $this->form->fill(FieldSetting::current()->only(['business', 'currency', 'signature_required']));
+        $this->form->fill(FieldSetting::current()->only(['business', 'currency', 'signature_required', 'travel_speed_kmh', 'route_factor', 'leave_alert_minutes', 'return_days', 'base_latitude', 'base_longitude']));
     }
 
     public function form(Schema $schema): Schema
@@ -93,6 +94,34 @@ class FieldSettingsPage extends Page
                             ->label(__('field.fields.signature_required'))
                             ->helperText(__('field.settings.signature_help'))
                             ->inline(false),
+                    ]),
+                Section::make(__('field.settings.day'))
+                    ->description(__('field.settings.day_help'))
+                    ->columns(['default' => 1, 'sm' => 2])
+                    ->components([
+                        TextInput::make('travel_speed_kmh')
+                            ->label(__('field.settings.travel_speed'))
+                            ->helperText(__('field.settings.travel_speed_help'))
+                            ->numeric()->integer()->minValue(5)->maxValue(120)->suffix('km/h')->required(),
+                        TextInput::make('route_factor')
+                            ->label(__('field.settings.route_factor'))
+                            ->helperText(__('field.settings.route_factor_help'))
+                            ->numeric()->minValue(1)->maxValue(3)->step(0.05)->required(),
+                        TextInput::make('leave_alert_minutes')
+                            ->label(__('field.settings.leave_alert'))
+                            ->helperText(__('field.settings.leave_alert_help'))
+                            ->numeric()->integer()->minValue(0)->maxValue(120)->suffix('min')->required(),
+                        TextInput::make('return_days')
+                            ->label(__('field.settings.return_days'))
+                            ->helperText(__('field.settings.return_days_help'))
+                            ->numeric()->integer()->minValue(0)->maxValue(365)->required(),
+                        TextInput::make('base_latitude')
+                            ->label(__('field.settings.base_latitude'))
+                            ->helperText(__('field.settings.base_help'))
+                            ->numeric()->minValue(-90)->maxValue(90)->requiredWith('base_longitude'),
+                        TextInput::make('base_longitude')
+                            ->label(__('field.settings.base_longitude'))
+                            ->numeric()->minValue(-180)->maxValue(180)->requiredWith('base_latitude'),
                     ]),
             ]);
     }

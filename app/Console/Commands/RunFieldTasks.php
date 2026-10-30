@@ -4,29 +4,56 @@ namespace App\Console\Commands;
 
 use App\Models\Tenant;
 use App\Modules\Field\FieldModule;
-use App\Modules\Field\Models\Site;
 use App\Modules\Field\Services\AddressLocator;
+use App\Modules\Field\Services\DayWatch;
+use App\Modules\Field\Models\Site;
 use App\Tenancy\TenantContext;
+use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Kiban Campo routine, every minute: searches on the map the addresses still without a point (new customers,
- * spreadsheets), a few per run and one per second at most (rule of the free OpenStreetMap service).
- * The oldest waiting addresses go first, whatever the company.
+ * Kiban Campo routine, every minute:
+ * - the technicians' day (DayWatch): the alert on the phone to leave for the next service, and the office told
+ *   about a risk of being late or a technician who has not arrived yet (each warning only once);
+ * - addresses still without a point searched on the map (new customers, spreadsheets), a few per run and one per
+ *   second at most (rule of the free OpenStreetMap service), the oldest first, whatever the company.
  */
 class RunFieldTasks extends Command
 {
     protected $signature = 'kiban:field {--max=40 : Addresses searched in this run}';
 
-    protected $description = 'Kiban Campo routine (addresses searched on the map)';
+    protected $description = 'Kiban Campo routine (technicians\' day alerts, addresses searched on the map)';
 
     public function handle(TenantContext $context, AddressLocator $locator): int
     {
-        if (! $locator->enabled()) {
-            return self::SUCCESS;
-        }
+        $alerts = 0;
 
+        // Only companies with work on the agenda today (a cheap look without choosing a company first).
+        $busy = DB::table('fd_orders')->whereIn('status', ['scheduled', 'in_progress'])
+            ->whereBetween('scheduled_at', [now()->subDay(), now()->addDay()])->distinct()->pluck('tenant_id');
+
+        Tenant::query()->whereIn('id', $busy)->each(function (Tenant $tenant) use ($context, &$alerts): void {
+            if (! $tenant->license()->hasModule(FieldModule::KEY)) {
+                return;
+            }
+
+            FilamentTimezone::set($tenant->license()->tenant('timezone') ?: config('kiban.timezone'));
+            $alerts += $context->run($tenant, fn (): int => app(DayWatch::class)->scan());
+        });
+
+        [$searched, $found] = $locator->enabled() ? $this->locate($context, $locator) : [0, 0];
+
+        $this->components->info(__('field.console.ran', ['searched' => $searched, 'found' => $found, 'alerts' => $alerts]));
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * @return array{0: int, 1: int}
+     */
+    protected function locate(TenantContext $context, AddressLocator $locator): array
+    {
         $pause = (int) config('kiban.field.locator_pause_ms');
         $found = 0;
         $searched = 0;
@@ -54,8 +81,6 @@ class RunFieldTasks extends Command
             });
         }
 
-        $this->components->info(__('field.console.ran', ['searched' => $searched, 'found' => $found]));
-
-        return self::SUCCESS;
+        return [$searched, $found];
     }
 }

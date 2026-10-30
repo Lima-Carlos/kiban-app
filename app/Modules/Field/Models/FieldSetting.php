@@ -19,19 +19,26 @@ class FieldSetting extends Model
 
     protected $table = 'fd_settings';
 
-    protected $fillable = ['business', 'currency', 'signature_required', 'configured_at'];
+    protected $fillable = ['business', 'currency', 'signature_required', 'configured_at', 'travel_speed_kmh', 'route_factor', 'leave_alert_minutes', 'return_days', 'base_latitude', 'base_longitude', 'quote_valid_days'];
 
     protected function casts(): array
     {
         return [
             'signature_required' => 'boolean',
             'configured_at' => 'datetime',
+            'travel_speed_kmh' => 'integer',
+            'route_factor' => 'float',
+            'leave_alert_minutes' => 'integer',
+            'return_days' => 'integer',
+            'base_latitude' => 'float',
+            'base_longitude' => 'float',
         ];
     }
 
     public static function current(): self
     {
-        return static::query()->first() ?? static::create(['currency' => Country::currency(), 'signature_required' => true]);
+        // Refreshed after creating: the defaults of the database (speed, alerts...) come back with it.
+        return static::query()->first() ?? static::create(['currency' => Country::currency(), 'signature_required' => true])->refresh();
     }
 
     public function isConfigured(): bool

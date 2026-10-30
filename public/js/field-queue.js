@@ -45,8 +45,12 @@
         try { localStorage.setItem(OFFSET, String(serverNow - Date.now())); } catch (e) { /* private mode */ }
     }
 
-    /** A photo from the camera, reduced on the phone (at most 1280 px, JPEG) before going to the queue. */
-    function shrink(file, max = 1280) {
+    /**
+     * A photo from the camera, reduced on the phone (at most 1280 px, JPEG) before going to the queue. The lines
+     * of "stamp" (date and time, place) are written on the bottom of the picture, like a stamp that cannot be
+     * removed later.
+     */
+    function shrink(file, max = 1280, stamp = []) {
         return new Promise((resolve, reject) => {
             const image = new Image();
             image.onload = () => {
@@ -54,7 +58,19 @@
                 const canvas = document.createElement('canvas');
                 canvas.width = Math.round(image.width * scale);
                 canvas.height = Math.round(image.height * scale);
-                canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+                const context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                const lines = stamp.filter(Boolean);
+                if (lines.length) {
+                    const size = Math.max(14, Math.round(canvas.width / 40));
+                    const height = lines.length * size * 1.35 + size * 0.6;
+                    context.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                    context.fillRect(0, canvas.height - height, canvas.width, height);
+                    context.fillStyle = '#fff';
+                    context.font = `600 ${size}px sans-serif`;
+                    context.textBaseline = 'top';
+                    lines.forEach((line, index) => context.fillText(String(line), size * 0.6, canvas.height - height + size * 0.3 + index * size * 1.35, canvas.width - size * 1.2));
+                }
                 URL.revokeObjectURL(image.src);
                 resolve(canvas.toDataURL('image/jpeg', 0.72));
             };

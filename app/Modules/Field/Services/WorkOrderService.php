@@ -74,6 +74,7 @@ class WorkOrderService
                 'photo_required' => $type->photo_required,
                 'origin' => $data['origin'] ?? WorkOrder::MANUAL,
                 'opened_by' => $by?->getKey(),
+                'return_of_id' => $this->returnOf($customer, $site, (int) $settings->return_days)?->getKey(),
             ])->save();
 
             $this->log($order, 'opened', ['origin' => $order->origin], $by);
@@ -87,6 +88,47 @@ class WorkOrderService
         }
 
         return $order->refresh();
+    }
+
+    /**
+     * A "return": the same customer (and address) had a service done in the last days, so the technician may have
+     * to come back for the same problem. Zero days turns it off.
+     */
+    public function returnOf(Customer $customer, ?Site $site, int $days): ?WorkOrder
+    {
+        if ($days <= 0) {
+            return null;
+        }
+
+        return WorkOrder::query()
+            ->where('customer_id', $customer->getKey())
+            ->when($site !== null, fn ($query) => $query->where('site_id', $site->getKey()))
+            ->where('status', OrderStatus::Done->value)
+            ->where('finished_at', '>=', now()->subDays($days))
+            ->latest('finished_at')
+            ->first();
+    }
+
+    /**
+     * The customer's rating of a done service (stars from 1 to 5 and a comment), from the report page. Only the
+     * first one counts. A low rating (3 or less) is told to the office.
+     */
+    public function rate(WorkOrder $order, int $rating, ?string $comment): bool
+    {
+        if ($order->status !== OrderStatus::Done || $order->rated_at !== null || $rating < 1 || $rating > 5) {
+            return false;
+        }
+
+        $comment = filled($comment) ? mb_substr(trim($comment), 0, 1000) : null;
+        $order->forceFill(['rating' => $rating, 'rating_comment' => $comment, 'rated_at' => now()])->save();
+        $this->log($order, 'rated', ['rating' => $rating, 'comment' => $comment], null);
+
+        if ($rating <= 3) {
+            app(FieldNotices::class)->office($order, 'field.notices.low_rating', ['rating' => $rating, 'customer' => $order->customer->displayName()],
+                'field.notices.low_rating_body', ['order' => $order->label(), 'comment' => $comment ?? '—'], 'heroicon-o-star', 'danger');
+        }
+
+        return true;
     }
 
     /** Puts the order on a technician's agenda at a time (or moves it). */

@@ -4,6 +4,7 @@ namespace App\Modules\Field\Services;
 
 use App\Models\User;
 use App\Modules\Field\Enums\OrderStatus;
+use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Models\Material;
 use App\Modules\Field\Models\OrderAnswer;
 use App\Modules\Field\Models\OrderEvent;
@@ -35,7 +36,10 @@ use Illuminate\Support\Str;
  */
 class OrderExecutionService
 {
-    public const TYPES = ['check_in', 'answer', 'photo', 'material', 'material_removed', 'note', 'signature', 'pause', 'finish'];
+    public const TYPES = ['check_in', 'answer', 'photo', 'material', 'material_removed', 'note', 'signature', 'pause', 'finish', 'on_the_way', 'delay', 'handoff'];
+
+    /** Delays the technician can announce (minutes). */
+    public const DELAYS = [15, 30, 60];
 
     /** Pieces older than this are refused (the office fixes it by hand). */
     public const MAX_DAYS = 7;
@@ -85,6 +89,9 @@ class OrderExecutionService
                 'signature' => $this->signature($order, $data, $at),
                 'pause' => $this->pause($order, $technician, $data, $at),
                 'finish' => $this->finish($order, $technician, $at),
+                'on_the_way' => $this->onTheWay($order, $technician, $at),
+                'delay' => $this->delay($order, $technician, $data, $at),
+                'handoff' => $this->handoff($order, $technician, $data, $at),
             };
 
             DB::table('fd_order_sync')->insert([
@@ -305,6 +312,61 @@ class OrderExecutionService
 
         $order->forceFill(['status' => OrderStatus::Paused, 'pause_reason' => mb_substr($reason, 0, 2000)])->save();
         $this->log($order, 'paused', ['reason' => $reason, 'at' => $at->toIso8601ZuluString()], $technician);
+    }
+
+    /** Left for this service (the message to the customer goes from the phone). */
+    protected function onTheWay(WorkOrder $order, User $technician, CarbonImmutable $at): void
+    {
+        $order->forceFill(['on_the_way_at' => $at])->save();
+        $this->log($order, 'on_the_way', ['at' => $at->toIso8601ZuluString()], $technician);
+    }
+
+    /**
+     * "I will be late": the minutes and the reason; the office is told at once.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function delay(WorkOrder $order, User $technician, array $data, CarbonImmutable $at): void
+    {
+        $minutes = (int) ($data['minutes'] ?? 0);
+
+        if ($minutes < 5 || $minutes > 480) {
+            throw new FieldException(__('field.errors.delay_invalid'));
+        }
+
+        $reason = filled($data['reason'] ?? null) ? mb_substr(trim((string) $data['reason']), 0, 1000) : null;
+        $order->forceFill(['delay_minutes' => $minutes, 'delay_reason' => $reason])->save();
+        $this->log($order, 'delayed', ['minutes' => $minutes, 'reason' => $reason, 'at' => $at->toIso8601ZuluString()], $technician);
+
+        $expected = $order->scheduled_at?->addMinutes($minutes)->setTimezone(OrderResource::timezone())->format('H:i');
+        app(FieldNotices::class)->office($order, 'field.notices.delayed', ['technician' => $technician->name, 'minutes' => $minutes, 'customer' => $order->customer->displayName()],
+            'field.notices.delayed_body', ['order' => $order->label(), 'time' => $expected ?? '—', 'reason' => $reason ?? '—'], 'heroicon-o-clock', 'warning', 'delay-'.$order->getKey().'-'.$minutes);
+    }
+
+    /**
+     * "Pass to another technician": the order goes back to "to schedule", with the reason; the office is told.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function handoff(WorkOrder $order, User $technician, array $data, CarbonImmutable $at): void
+    {
+        $reason = trim((string) ($data['reason'] ?? ''));
+
+        if ($reason === '') {
+            throw new FieldException(__('field.errors.reason_required'));
+        }
+
+        $order->forceFill([
+            'status' => OrderStatus::Open,
+            'technician_id' => null,
+            'scheduled_at' => null,
+            'handoff_reason' => mb_substr($reason, 0, 1000),
+            'handoff_at' => $at,
+        ])->save();
+        $this->log($order, 'handed_off', ['technician' => $technician->name, 'reason' => $reason], $technician);
+
+        app(FieldNotices::class)->office($order, 'field.notices.handoff', ['technician' => $technician->name, 'customer' => $order->customer->displayName()],
+            'field.notices.handoff_body', ['order' => $order->label(), 'reason' => $reason], 'heroicon-o-arrows-right-left', 'danger', 'handoff-'.$order->getKey().'-'.$at->getTimestamp());
     }
 
     protected function finish(WorkOrder $order, User $technician, CarbonImmutable $at): void
