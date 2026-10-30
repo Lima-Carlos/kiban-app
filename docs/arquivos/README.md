@@ -12,3 +12,4 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [ponto.md](ponto.md): o sistema Kiban Ponto (regras por país, locais de trabalho com ponto no mapa, funcionários com ou sem login).
 - [pessoas.md](pessoas.md): um sistema com vários módulos; quem acessa o quê (perfis de acesso); cadastrar pessoas, enviar o acesso pelo WhatsApp, entrar pelo celular e o app na tela do celular.
 - [avisos.md](avisos.md): os avisos dentro do sistema (o sino e o quadro "Atenção"), sem e-mail.
+- [registros-de-acesso.md](registros-de-acesso.md): Marco Civil, o que fica guardado de cada acesso (IP, porta, aparelho), por quanto tempo e como exportar numa ordem judicial.

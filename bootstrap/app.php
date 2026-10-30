@@ -18,8 +18,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Behind a proxy that adds the padlock (Caddy in the external tests, the VPS later): trust it to say the
-        // visit came by HTTPS and by which address and port. TRUSTED_PROXIES="*" by default; on the VPS, the proxy address.
-        $proxies = (string) env('TRUSTED_PROXIES', '*');
+        // visit came by HTTPS and by which address and port (TRUSTED_PROXIES).
+        // Default: only the internal network (the PC, Docker and the server's own proxy), never the internet, so nobody
+        // can fake the IP and port kept in the access records (Marco Civil). "*" trusts anyone: never in production.
+        $proxies = (string) env('TRUSTED_PROXIES', '127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16');
         $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
 
         $middleware->alias([

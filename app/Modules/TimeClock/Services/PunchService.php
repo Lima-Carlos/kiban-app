@@ -9,6 +9,7 @@ use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\People\PersonRuleException;
 use App\Support\Geo;
+use App\Support\ClientPort;
 use App\Tenancy\TenantContext;
 use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Support\Facades\DB;
@@ -98,6 +99,9 @@ class PunchService
                 'flags' => array_values(array_unique($flags)),
                 'photo_path' => $data['photo_path'] ?? null,
                 'device' => isset($data['device']) ? mb_substr((string) $data['device'], 0, 255) : null,
+                // Marco Civil: where the punch came from (the tablet has no login, so this is its access record).
+                'ip' => $this->fromVisit() ? request()->ip() : null,
+                'port' => $this->fromVisit() ? ClientPort::of() : null,
                 'hash' => $hash,
             ])->save();
 
@@ -105,6 +109,12 @@ class PunchService
 
             return $punch;
         });
+    }
+
+    /** A real visit (phone or tablet), not a command such as the demo data: only then the IP and port mean something. */
+    protected function fromVisit(): bool
+    {
+        return ! app()->runningInConsole() || app()->runningUnitTests();
     }
 
     /** The punch's link in the chain: the previous hash, its number, its time and the employee. */

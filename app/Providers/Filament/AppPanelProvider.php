@@ -8,6 +8,7 @@ use App\Filament\Pages\PeoplePage;
 use App\Filament\Pages\TeamsPage;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\IdentifyTenant;
+use App\Http\Middleware\RecordAccess;
 use App\Http\Middleware\RevalidateMembership;
 use App\Http\Middleware\SetLocale;
 use Filament\Actions\Action;
@@ -99,6 +100,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                RecordAccess::class,
             ]);
     }
 

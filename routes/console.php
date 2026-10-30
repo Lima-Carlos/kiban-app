@@ -13,3 +13,6 @@ Schedule::command('kiban:notices-cleanup')->dailyAt('03:30');
 
 // Ponto: the warnings of the bell (forgotten punches, month not closed) and the removal of old punch photos.
 Schedule::command('kiban:timeclock')->hourlyAt(20)->withoutOverlapping();
+
+// Marco Civil: access records older than the retention period (at least 6 months) are removed.
+Schedule::command('model:prune', ['--model' => [App\Models\AccessLog::class]])->dailyAt('03:45');

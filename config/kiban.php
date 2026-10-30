@@ -87,6 +87,9 @@ return [
     // Fallback when the company has no time zone in its license.
     'timezone' => env('KIBAN_TIMEZONE', 'America/Sao_Paulo'),
 
+    // Marco Civil access records (access_logs): days kept, never less than 6 months (183).
+    'access_log_days' => (int) env('KIBAN_ACCESS_LOG_DAYS', 365),
+
     /*
     |--------------------------------------------------------------------------
     | Brand (same as the Core)
