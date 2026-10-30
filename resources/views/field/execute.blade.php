@@ -187,6 +187,12 @@
         <div x-show="order.status === 'done'" x-cloak style="{{ $box }};text-align:center;color:#166534">
             <div style="font-size:30px">✓</div>
             <strong x-text="texts.done"></strong>
+            <div style="margin-top:12px">
+                <x-filament::button tag="a" x-bind:href="order.reportWhatsapp" target="_blank" icon="heroicon-o-chat-bubble-left-right" color="success">
+                    {{ __('field.report.send_whatsapp') }}
+                </x-filament::button>
+                <p style="font-size:12px;opacity:.75;margin:6px 0 0" x-show="pending.length > 0" x-text="texts.report_after_sync"></p>
+            </div>
         </div>
 
         {{-- 1. Arrival. --}}

@@ -11,7 +11,7 @@ A ordem das partes (aprovada em 30/10/2026):
 | O3 | Ordens de serviço, agenda do dia por técnico e mapa | ✔ pronta (30/10/2026, antes da O2b) |
 | O2b | Orçamentos aprovados pelo cliente por link (viram OS) | ✔ pronta (30/10/2026) |
 | O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | ✔ pronta (30/10/2026) |
-| O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | próxima |
+| O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | ✔ pronta (30/10/2026) |
 | Depois | O6 painel e avisos, O7 ligação completa com Ponto e Frota, PMOC | |
 
 ## Quem faz o quê (função no Campo)
@@ -278,3 +278,32 @@ Na tela Pessoas, dar a função "Técnico" a mais gente do que o plano permite �
 - `database/migrations/2026_10_31_100000_create_field_execution_tables.php`.
 - Frota: nova origem do km, `OdometerSource::WorkOrder`.
 - `tests/Feature/FieldExecutionTest.php`. Teste num Chrome de verdade, sem internet: `docker compose run --rm studio node scripts/testar-campo-offline.mjs`, no projeto `kiban-videos`.
+
+## O5: Relatório da OS, com a cara da empresa
+**Com a O5, a primeira versão vendável do Kiban Campo (O1 a O5, com O2b) está completa.**
+
+### Identidade da empresa (Empresa → Identidade da empresa)
+- Tela nova, comum a todos os sistemas, só para o dono e os administradores.
+- Guarda: logo (PNG ou JPG), cor principal, nome da empresa, CNPJ ou documento, telefone, e-mail, site, endereço e o **rodapé dos relatórios** (ex.: "Garantia de 90 dias").
+- Sem nada preenchido, os relatórios usam o nome da empresa e o azul da Kiban.
+
+### O relatório
+- Só existe para uma OS **concluída**.
+- **Topo na cor da empresa**, com o logo. Depois:
+  - cliente, endereço, técnico e quando (chegada e conclusão);
+  - o que o cliente pediu e o que foi feito;
+  - o roteiro com as respostas;
+  - os materiais e as fotos (até 12; as demais ficam no sistema);
+  - a assinatura do cliente, com o nome e a hora;
+  - o rodapé da empresa e um **código de verificação** (feito com a chave secreta do sistema: uma cópia alterada não confere).
+- **Página do cliente:** link assinado (sem login; um link alterado não abre), no endereço da empresa, com o botão **"Baixar em PDF"** (A4).
+- **Enviar:**
+  - na ficha da OS, os botões "Enviar relatório pelo WhatsApp" (mensagem pronta com o link), "Baixar PDF" e "Ver relatório";
+  - na tela do técnico, ao concluir, aparece "Enviar relatório pelo WhatsApp". Mesmo sem sinal, o link já sai pronto e funciona assim que o celular enviar tudo.
+
+## Arquivos (parte O5)
+- `app/Models/CompanyProfile.php`, `app/Filament/Pages/CompanyProfilePage.php` e `database/migrations/2026_10_31_110000_create_company_profiles_table.php`: a identidade da empresa (compartilhada).
+- `app/Modules/Field/Services/OrderReport.php`: os dados, o link assinado, o PDF, o WhatsApp e o código de verificação.
+- `app/Http/Controllers/Field/OrderReportController.php`: `/<empresa>/os/<id>/relatorio` e `/pdf`.
+- `resources/views/field/report.blade.php` (página) e `report-pdf.blade.php` (PDF).
+- `tests/Feature/FieldReportTest.php`.

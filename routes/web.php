@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
+use App\Http\Controllers\Field\OrderReportController;
 use App\Http\Controllers\Field\OrderSyncController;
 use App\Http\Controllers\Field\QuoteLinkController;
 use App\Http\Controllers\Fleet\StationCheckController;
@@ -41,6 +42,10 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::post('/relogio/pin', [KioskController::class, 'pin'])->name('timeclock.kiosk.pin');
     Route::post('/relogio/bater', [KioskController::class, 'punch'])->name('timeclock.kiosk.punch');
     Route::post('/relogio/ciente', [KioskController::class, 'acknowledge'])->name('timeclock.kiosk.acknowledge');
+
+    // Campo: the report of a done work order for the customer (signed link, no login) and its PDF.
+    Route::get('/os/{order}/relatorio', [OrderReportController::class, 'show'])->middleware('signed')->whereNumber('order')->name('field.report');
+    Route::get('/os/{order}/relatorio/pdf', [OrderReportController::class, 'pdf'])->middleware('signed')->whereNumber('order')->name('field.report.pdf');
 
     // Campo: the customer's page of a quote (no login; a long random link). Few answers per minute.
     Route::get('/orcamento/{token}', [QuoteLinkController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('field.quote');

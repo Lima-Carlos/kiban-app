@@ -10,6 +10,7 @@ use App\Modules\Field\Models\OrderMaterial;
 use App\Modules\Field\Models\OrderPhoto;
 use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\OrderExecutionService;
+use App\Modules\Field\Services\OrderReport;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetAccess;
@@ -89,6 +90,8 @@ class ExecuteOrderPage extends Page
             'catalog' => Material::query()->active()->orderBy('name')->get(['id', 'name', 'unit'])->map(fn (Material $material): array => ['id' => $material->getKey(), 'name' => $material->name, 'unit' => $material->unit])->values(),
             'vehicles' => $this->vehicles(),
             'needsPoint' => $order->site !== null && ! $order->site->hasPoint(),
+            // The report link is ready even before the order reaches the server (it works once it does).
+            'reportWhatsapp' => app(OrderReport::class)->whatsappUrl($order),
         ];
     }
 

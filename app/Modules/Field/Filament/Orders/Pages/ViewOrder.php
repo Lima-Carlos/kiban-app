@@ -7,6 +7,7 @@ use App\Modules\Field\Enums\OrderStatus;
 use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\FieldException;
+use App\Modules\Field\Services\OrderReport;
 use App\Modules\Field\Services\WorkOrderService;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
@@ -70,7 +71,28 @@ class ViewOrder extends ViewRecord
             $this->getRecord()->refresh();
         };
 
+        $report = app(OrderReport::class);
+        $done = fn (): bool => $this->getRecord()->status === OrderStatus::Done;
+
         return [
+            // The report of a done order: to the customer by WhatsApp, or the PDF.
+            Action::make('reportWhatsapp')
+                ->label(__('field.report.send_whatsapp'))
+                ->icon(Heroicon::OutlinedChatBubbleLeftRight)
+                ->url(fn (): string => $report->whatsappUrl($this->getRecord()), shouldOpenInNewTab: true)
+                ->visible($done),
+            Action::make('reportPdf')
+                ->label(__('field.report.pdf'))
+                ->icon(Heroicon::OutlinedDocumentArrowDown)
+                ->color('gray')
+                ->url(fn (): string => $report->pdfUrl($this->getRecord()), shouldOpenInNewTab: true)
+                ->visible($done),
+            Action::make('reportOpen')
+                ->label(__('field.report.open'))
+                ->icon(Heroicon::OutlinedEye)
+                ->color('gray')
+                ->url(fn (): string => $report->url($this->getRecord()), shouldOpenInNewTab: true)
+                ->visible($done),
             Action::make('schedule')
                 ->label(fn (): string => $this->getRecord()->scheduled_at ? __('field.orders.reschedule') : __('field.orders.schedule'))
                 ->icon(Heroicon::OutlinedCalendarDays)

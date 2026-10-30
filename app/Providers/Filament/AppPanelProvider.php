@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\AccessProfilesPage;
+use App\Filament\Pages\CompanyProfilePage;
 use App\Filament\Pages\Home;
 use App\Filament\Pages\PeoplePage;
 use App\Filament\Pages\TeamsPage;
@@ -54,6 +55,7 @@ class AppPanelProvider extends PanelProvider
                 PeoplePage::class,
                 AccessProfilesPage::class,
                 TeamsPage::class,
+                CompanyProfilePage::class,
                 ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())
