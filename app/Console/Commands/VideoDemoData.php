@@ -24,10 +24,12 @@ use App\Modules\Fleet\Models\Workshop;
 use App\Modules\Fleet\Services\FuelService;
 use App\Modules\Fleet\Services\MaintenanceService;
 use App\Modules\Fleet\Services\VehicleService;
+use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Services\AdjustmentService;
 use App\Modules\TimeClock\Services\HolidayCalendar;
 use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\PhotoNoticeService;
@@ -57,6 +59,9 @@ class VideoDemoData extends ResetDemoData
     protected $description = 'Erase and refill only the company used to record the videos (only on the PC)';
 
     public const SUBDOMAIN = 'rede-exemplo';
+
+    /** True when the recordings happen on a weekend: the demo team then works (and clocks in) every day. */
+    protected bool $everyDay = false;
 
     protected const NOT_FOUND = 'A empresa "rede-exemplo" não foi encontrada no Core. Rode "php artisan kiban:video-demo" no Core primeiro.';
 
@@ -144,7 +149,17 @@ class VideoDemoData extends ResetDemoData
             'name' => 'Base Centro', 'address' => 'Avenida Afonso Pena, 1500', 'city' => 'Belo Horizonte', 'state' => 'MG',
             'timezone' => self::TZ, 'latitude' => self::BASE['latitude'], 'longitude' => self::BASE['longitude'], 'radius_meters' => 300,
         ]);
-        $schedule = Schedule::create(['name' => 'Comercial (8h às 18h)'] + ScheduleService::presets()['office']);
+        // On a weekend the recordings would show "day off" everywhere: the team then works every day.
+        $office = ScheduleService::presets()['office'];
+        $this->everyDay = ! $this->realNow()->isWeekday();
+        $everyDay = $this->everyDay;
+
+        if ($everyDay) {
+            $office['week']['6'] = $office['week']['7'] = $office['week']['1'];
+            $this->at($start->setTime(9, 30));
+        }
+
+        $schedule = Schedule::create(['name' => $everyDay ? 'Todos os dias (8h às 18h)' : 'Comercial (8h às 18h)'] + $office);
         $people->saveModules($person('rh.video@exemplo.test'), ['ponto' => ['role' => 'manager']]);
 
         $employees = [];
@@ -173,6 +188,13 @@ class VideoDemoData extends ResetDemoData
 
         $this->teamPunches($employees, $base, $users['rh.video@exemplo.test']);
         $this->closeMonth($users);
+
+        // One correction request waiting for HR (the "approve corrections" video needs it): a medical appointment.
+        $this->at($this->today->subDay()->setTime(9, 0));
+        app(AdjustmentService::class)->request($employees['tecnico.video@exemplo.test'], [
+            'date' => $this->today->subDay()->toDateString(), 'type' => Adjustment::EXCUSE, 'minutes' => 45,
+            'reason' => 'Consulta médica no início da manhã.',
+        ], $users['tecnico.video@exemplo.test']);
 
         if ($withField) {
             $this->field($users);
@@ -464,7 +486,7 @@ class VideoDemoData extends ResetDemoData
             $offset++;
 
             for ($day = $this->today->startOfMonth()->subMonth(), $position = 0; $day->lt($this->today); $day = $day->addDay()) {
-                if (! $day->isWeekday() || $holidays->holidayOn($day) !== null) {
+                if ((! $day->isWeekday() && ! $this->everyDay) || $holidays->holidayOn($day) !== null) {
                     continue;
                 }
 
@@ -477,7 +499,7 @@ class VideoDemoData extends ResetDemoData
 
             $all = (bool) $this->option('all-working');
             $startsToday = $all || ! in_array($who, ['tecnica.video@exemplo.test', 'empleado.video@exemplo.test', 'employee.video@exemplo.test'], true);
-            if ($startsToday && ($all || ($this->today->isWeekday() && $this->realNow()->format('H:i') > '08:05'))) {
+            if ($startsToday && ($all || $this->today->isWeekday() || $this->everyDay)) {
                 $this->clockIn($employee, $this->today, '07:5'.($offset % 10), $base, $hr);
             }
         }
