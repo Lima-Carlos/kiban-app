@@ -34,6 +34,8 @@ use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\PunchPhotoStore;
 use App\Modules\TimeClock\Services\PunchService;
 use App\Modules\TimeClock\Services\ScheduleService;
+use App\People\Documents\DocumentType;
+use App\People\Documents\PersonDocumentService;
 use App\People\Epi\EpiDelivery;
 use App\People\Epi\EpiService;
 use App\People\PeopleService;
@@ -50,7 +52,7 @@ use Illuminate\Support\Str;
  */
 class VideoDemoData extends ResetDemoData
 {
-    protected $signature = 'kiban:video-demo {--yes : Do not ask for confirmation}';
+    protected $signature = 'kiban:video-demo {--yes : Do not ask for confirmation} {--all-working : Everyone has clocked in today, at any hour or weekday (the dashboard video)}';
 
     protected $description = 'Erase and refill only the company used to record the videos (only on the PC)';
 
@@ -176,10 +178,53 @@ class VideoDemoData extends ResetDemoData
             $this->field($users);
         }
 
+        $this->documents($users, $person);
         $this->epi($users, $person);
 
         // The window "your systems now work together" (also the new ones, e.g. PPE + Campo) never shows up in the recordings.
         app(ConnectionCatalog::class)->dismissAllFor($tenant->users()->get());
+    }
+
+    /**
+     * Documents with an expiry date (People): the field team's driver license, medical exams and NR trainings,
+     * all valid, with two close to the expiry so the "Attention" box and the status column have something to show.
+     * Bruno Dias has no NR-35 on purpose: the video adds it and shows the expiry filled in by itself.
+     *
+     * @param  array<string, User>  $users  by e-mail
+     * @param  \Closure(string): Person  $person
+     */
+    protected function documents(array $users, \Closure $person): void
+    {
+        $service = app(PersonDocumentService::class);
+        $service->types();
+        $hr = $users['rh.video@exemplo.test'];
+        $type = fn (string $key): int => (int) DocumentType::query()->where('key', $key)->value('id');
+        $named = fn (string $name): ?Person => Person::query()->where('name', $name)->first();
+        $this->at($this->today->subDays(30)->setTime(10, 0));
+
+        $add = function (?Person $who, string $key, ?string $number, CarbonImmutable $issued, ?CarbonImmutable $expires = null) use ($service, $type, $hr): void {
+            if ($who === null) {
+                return;
+            }
+
+            $service->add($who, array_filter([
+                'document_type_id' => $type($key), 'number' => $number, 'issued_on' => $issued->toDateString(), 'expires_on' => $expires?->toDateString(),
+            ], fn ($value): bool => $value !== null), $hr);
+        };
+
+        $add($person('tecnico.video@exemplo.test'), 'cnh', '04512378900', $this->today->subYears(2), $this->today->addYears(3));
+        $add($person('tecnico.video@exemplo.test'), 'aso', null, $this->today->subMonths(5));
+        $add($person('tecnico.video@exemplo.test'), 'nr10', null, $this->today->subMonths(8));
+        $add($person('tecnico.video@exemplo.test'), 'nr35', null, $this->today->subMonths(23)->subDays(5));
+        $add($person('tecnica.video@exemplo.test'), 'aso', null, $this->today->subMonths(3));
+        $add($person('tecnica.video@exemplo.test'), 'nr10', null, $this->today->subMonths(6));
+        $add($person('tecnica.video@exemplo.test'), 'nr35', null, $this->today->subMonths(6));
+        $add($named('Pedro Rocha'), 'aso', null, $this->today->subMonths(11)->subDays(18));
+        $add($named('Pedro Rocha'), 'nr10', null, $this->today->subMonths(10));
+        $add($named('Bruno Dias'), 'aso', null, $this->today->subMonths(4));
+        $add($named('Bruno Dias'), 'nr10', null, $this->today->subMonths(9));
+        $add($named('Carla Mendes'), 'aso', null, $this->today->subMonths(2));
+        $add($named('Fernanda Lopes'), 'aso', null, $this->today->subMonths(7));
     }
 
     /**
@@ -201,11 +246,11 @@ class VideoDemoData extends ResetDemoData
             'glasses' => ['ca_number' => '10346', 'ca_expires_on' => $this->today->addYear()->toDateString(), 'unit_cost_cents' => 1290, 'stock' => 20, 'min_stock' => 5],
             'insulating_gloves' => ['ca_number' => '28420', 'ca_expires_on' => $this->today->addDays(20)->toDateString(), 'unit_cost_cents' => 18900, 'stock' => 4, 'min_stock' => 2],
             'leather_gloves' => ['ca_number' => '15532', 'ca_expires_on' => $this->today->addYears(3)->toDateString(), 'unit_cost_cents' => 1890, 'stock' => 30, 'min_stock' => 10],
-            'harness' => ['ca_number' => '35529', 'ca_expires_on' => $this->today->addYears(2)->toDateString(), 'unit_cost_cents' => 32900, 'stock' => 3, 'min_stock' => 1],
+            'harness' => ['ca_number' => '35529', 'ca_expires_on' => $this->today->addYears(2)->toDateString(), 'unit_cost_cents' => 32900, 'stock' => 8, 'min_stock' => 1],
             'safety_boots' => ['ca_number' => '40877', 'ca_expires_on' => $this->today->addYears(2)->toDateString(), 'unit_cost_cents' => 12900, 'size' => '41', 'stock' => 6, 'min_stock' => 2],
             'ear_protection' => ['ca_number' => '5745', 'ca_expires_on' => $this->today->addYears(4)->toDateString(), 'unit_cost_cents' => 290, 'stock' => 40, 'min_stock' => 10],
-            'multimeter' => ['unit_cost_cents' => 21900, 'stock' => 2, 'min_stock' => 1, 'code' => 'FER-012'],
-            'ladder' => ['unit_cost_cents' => 54900, 'stock' => 3, 'min_stock' => 1, 'code' => 'FER-020'],
+            'multimeter' => ['unit_cost_cents' => 21900, 'stock' => 6, 'min_stock' => 1, 'code' => 'FER-012'],
+            'ladder' => ['unit_cost_cents' => 54900, 'stock' => 5, 'min_stock' => 1, 'code' => 'FER-020'],
             'pliers' => ['unit_cost_cents' => 6900, 'stock' => 8, 'min_stock' => 2, 'code' => 'FER-001'],
         ];
 
@@ -430,8 +475,9 @@ class VideoDemoData extends ResetDemoData
                 }
             }
 
-            $startsToday = ! in_array($who, ['tecnica.video@exemplo.test', 'empleado.video@exemplo.test', 'employee.video@exemplo.test'], true);
-            if ($startsToday && $this->today->isWeekday() && $this->realNow()->format('H:i') > '08:05') {
+            $all = (bool) $this->option('all-working');
+            $startsToday = $all || ! in_array($who, ['tecnica.video@exemplo.test', 'empleado.video@exemplo.test', 'employee.video@exemplo.test'], true);
+            if ($startsToday && ($all || ($this->today->isWeekday() && $this->realNow()->format('H:i') > '08:05'))) {
                 $this->clockIn($employee, $this->today, '07:5'.($offset % 10), $base, $hr);
             }
         }

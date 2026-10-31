@@ -145,6 +145,10 @@ class DemoDataTest extends TestCase
             $this->assertSame(1, EpiDelivery::query()->whereNull('signed_at')->count());
             $this->assertTrue(EpiDelivery::query()->whereNotNull('signed_at')->get()->every(fn (EpiDelivery $delivery): bool => app(EpiService::class)->verify($delivery)));
 
+            // Documents with an expiry: all valid, two about to expire (the video shows the warning).
+            $this->assertSame(13, \App\People\Documents\PersonDocument::query()->count());
+            $this->assertSame(2, \App\People\Documents\PersonDocument::query()->where('expires_on', '<=', now()->addDays(30)->toDateString())->where('expires_on', '>=', now()->toDateString())->count());
+
             // The window "your systems now work together" never shows up in the recordings.
             foreach (Tenant::query()->whereKey(app(TenantContext::class)->get()->getKey())->sole()->users as $user) {
                 $this->assertSame([], app(ConnectionCatalog::class)->pending($user), $user->email);
