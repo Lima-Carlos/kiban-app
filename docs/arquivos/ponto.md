@@ -444,3 +444,8 @@ Funciona como o WhatsApp: **sem sinal, a batida fica guardada no celular e é en
 - `database/migrations/2026_10_30_100000_add_client_id_to_tc_punches.php`: o código único de cada batida.
 - `tests/Feature/TimeClockOfflineTest.php`: os testes automáticos.
 - Teste num Chrome de verdade (corta a internet de fato): `docker compose run --rm studio node scripts/testar-offline.mjs`, no projeto `kiban-videos`.
+
+## Ponto junto com o Campo e a Frota (31/10/2026)
+Explicação completa em `conexoes.md`.
+- **Com o Campo:** o técnico que chega na primeira OS sem ter batido a entrada recebe o lembrete "Bater a entrada agora?" (e o da saída depois da última OS). É só um lembrete com o link para "Bater ponto": a batida continua sendo do funcionário, com selfie e local (Portaria 671). No painel do Campo, o gestor vê o aproveitamento de cada técnico (horas em OS ÷ horas trabalhadas no Ponto).
+- **Com a Frota:** depois de bater a entrada, o motorista vê no topo da tela "Fazer a vistoria do veículo agora" para cada veículo dele ainda sem vistoria no período (segue a frequência da Frota; só sugestão). Fica na tela do ponto, não no comprovante.

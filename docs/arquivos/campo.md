@@ -13,7 +13,8 @@ A ordem das partes (aprovada em 30/10/2026):
 | O4 | Execução pelo celular, também **sem internet**: check-in com local, checklist, fotos, material, assinatura e km do veículo | ✔ pronta (30/10/2026) |
 | O5 | Fechamento: relatório em PDF por link e WhatsApp, com a marca da empresa | ✔ pronta (30/10/2026) |
 | O6 | Painel do gestor: técnicos agora, resultado do mês, avisos em "Atenção", técnico mais perto | ✔ pronta (30/10/2026) |
-| Depois | O7 ligação completa com Ponto e Frota, PMOC, estoque no carro | |
+| O7 | Ligação com o Ponto e a Frota: lembrete do ponto na primeira/última OS, aproveitamento e custo do deslocamento (veja `conexoes.md`) | ✔ pronta (31/10/2026) |
+| Depois | PMOC, estoque no carro | |
 
 ## Quem faz o quê (função no Campo)
 Ela é escolhida na tela **Pessoas** (ou por um perfil de acesso):
@@ -379,3 +380,10 @@ Depois de "Vou atrasar", o técnico tem o botão **"Avisar o cliente do atraso p
 - `resources/views/field/dashboard/now.blade.php` e `technicians.blade.php`: as telas desses blocos.
 - `tests/Feature/FieldDashboardTest.php`.
 - Conferido no Chrome do estúdio: `C:\Projetos\kiban-videos\scripts\testar-campo-painel.mjs`.
+
+## O7: o Campo junto com o Ponto e a Frota (31/10/2026)
+Explicação completa e decisões em `conexoes.md`.
+- **Lembrete do ponto (com o Ponto):** ao tocar em "Cheguei" na primeira OS do dia sem ter batido a entrada, o técnico vê "Você ainda não bateu o ponto. Bater a entrada agora?", com o botão para a tela do ponto. Ao concluir a última OS do dia, "Bater a saída agora?". A batida continua sendo do técnico (selfie e local); o Campo nunca bate o ponto por ele. Funciona sem sinal (conta também as batidas ainda na fila do celular).
+- **Aproveitamento (com o Ponto):** no Painel → Por técnico, só para o gestor: horas em atendimento ÷ horas trabalhadas no Ponto (ex.: "39% · 3,5 h de 9 h").
+- **Custo do deslocamento (com a Frota):** na ficha da OS concluída e no Painel → Por técnico, só para o gestor: "≈ R$ 30,00 · 25 km", calculado pelo km da chegada menos a leitura anterior do mesmo dia × custo por km do veículo. Sem os dados, nada aparece.
+- No celular, a tabela "Por técnico" vira um cartão por técnico.

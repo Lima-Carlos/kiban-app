@@ -331,3 +331,8 @@ Os avisos ficam só dentro do sistema (sem e-mail). O funcionamento geral está 
 - `database/migrations/2026_10_12_100000_create_fleet_tables.php`.
 - Textos: `lang/*/fleet.php`.
 - Testes: `tests/Feature/FleetVehiclesTest.php`.
+
+## Frota junto com o Campo e o Ponto (31/10/2026)
+Explicação completa em `conexoes.md`.
+- **Com o Ponto:** o motorista que bate a entrada e ainda não fez a vistoria do veículo vê "Fazer a vistoria do veículo agora" na tela do ponto (só sugestão; com a frequência "livre", nunca aparece).
+- **Com o Campo:** o km da chegada do técnico entra no histórico do veículo (desde a O4) e, com o custo por km do painel da Frota, o Campo mostra ao gestor o **custo estimado do deslocamento** de cada OS.

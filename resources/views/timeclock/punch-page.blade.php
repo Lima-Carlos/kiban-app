@@ -8,6 +8,22 @@
 @endphp
 
 <x-filament-panels::page>
+    {{-- Frota + Ponto: right after clocking in, the vehicle still waiting for its inspection (only a suggestion). --}}
+    @php($inspections = $this->inspectionSuggestions())
+    @if ($inspections->isNotEmpty())
+        <div data-inspection-suggestion style="border-radius:12px;padding:12px 14px;border:1px solid rgba(4,66,153,.35);background:rgba(4,66,153,.07);display:flex;flex-direction:column;gap:8px">
+            <strong style="font-size:15px">{{ __('connections.inspection.title') }}</strong>
+            <span style="font-size:13px;opacity:.8">{{ __('connections.inspection.help') }}</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+                @foreach ($inspections as $item)
+                    <x-filament::button tag="a" :href="$item['url']" icon="heroicon-o-clipboard-document-check">
+                        {{ __('connections.inspection.do', ['vehicle' => $item['vehicle']->displayName()]) }}
+                    </x-filament::button>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
         <x-filament::section icon="heroicon-o-finger-print">
             <x-slot name="heading">{{ ucfirst($today->translatedFormat(__('timeclock.holidays.day_month_weekday_format'))) }}</x-slot>

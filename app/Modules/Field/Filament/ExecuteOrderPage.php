@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field\Filament;
 
+use App\Connections\Bridges\FieldTimeClock;
 use App\Models\CompanyProfile;
 use App\Modules\Concerns\InModuleMenu;
 use App\Modules\Field\Enums\OrderStatus;
@@ -113,6 +114,8 @@ class ExecuteOrderPage extends Page
             'pushUrl' => route('phone-alerts.subscribe'),
             // Written on each photo, with the date, time and place.
             'stamp' => $order->label().' · '.$order->customer->displayName(),
+            // Campo + Ponto: "you have not clocked in yet" at the first order, "clock out" after the last one.
+            'clock' => app(FieldTimeClock::class)->reminder(auth()->user(), $order),
         ];
     }
 

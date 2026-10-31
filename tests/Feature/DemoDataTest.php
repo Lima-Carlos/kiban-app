@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Access\AccessManager;
+use App\Connections\ConnectionCatalog;
 use App\Models\CompanyProfile;
 use App\Models\Tenant;
 use App\Models\User;
@@ -136,6 +137,11 @@ class DemoDataTest extends TestCase
             $this->assertSame(3, WorkOrder::query()->where('status', 'open')->count());
             $this->assertSame(['approved', 'sent', 'draft'], Quote::query()->orderBy('number')->pluck('status')->map(fn ($status) => $status->value)->all());
             $this->assertSame('Rede Exemplo Fibra Ltda', CompanyProfile::current()->name());
+
+            // The window "your systems now work together" never shows up in the recordings.
+            foreach (Tenant::query()->whereKey(app(TenantContext::class)->get()->getKey())->sole()->users as $user) {
+                $this->assertSame([], app(ConnectionCatalog::class)->pending($user), $user->email);
+            }
         });
     }
 

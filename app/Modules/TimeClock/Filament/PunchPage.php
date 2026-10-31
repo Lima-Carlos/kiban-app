@@ -2,7 +2,9 @@
 
 namespace App\Modules\TimeClock\Filament;
 
+use App\Connections\Bridges\FleetTimeClock;
 use App\Modules\Concerns\InModuleMenu;
+use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\PhotoNoticeService;
@@ -98,6 +100,16 @@ class PunchPage extends Page
             ->whereBetween('punched_at', [$today->startOfDay()->utc(), $today->endOfDay()->utc()])
             ->orderBy('punched_at')
             ->get();
+    }
+
+    /**
+     * Frota + Ponto: the person's vehicles still waiting for the inspection, right after clocking in (a suggestion).
+     *
+     * @return Collection<int, array{vehicle: Vehicle, url: string}>
+     */
+    public function inspectionSuggestions(): Collection
+    {
+        return app(FleetTimeClock::class)->inspectionsAfterPunch(auth()->user(), $this->todayPunches()->count());
     }
 
     /**

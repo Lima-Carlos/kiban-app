@@ -114,14 +114,8 @@ class FieldReports
      */
     public function month(CarbonImmutable $month): array
     {
-        $timezone = OrderResource::timezone();
-        $start = $month->shiftTimezone($timezone)->startOfMonth()->utc();
-        $end = $start->setTimezone($timezone)->endOfMonth()->utc();
-
-        $done = WorkOrder::query()
-            ->where('status', OrderStatus::Done->value)
-            ->whereBetween('finished_at', [$start, $end])
-            ->get();
+        [$start, $end] = $this->monthRange($month);
+        $done = $this->doneIn($month);
 
         $quotes = Quote::query()->whereBetween('sent_at', [$start, $end])->get();
 
@@ -143,10 +137,36 @@ class FieldReports
     }
 
     /**
+     * Orders done in the month (company time zone).
+     *
+     * @return Collection<int, WorkOrder>
+     */
+    public function doneIn(CarbonImmutable $month): Collection
+    {
+        return WorkOrder::query()
+            ->where('status', OrderStatus::Done->value)
+            ->whereBetween('finished_at', $this->monthRange($month))
+            ->get();
+    }
+
+    /**
+     * A month in the company time zone (UTC limits).
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    protected function monthRange(CarbonImmutable $month): array
+    {
+        $timezone = OrderResource::timezone();
+        $start = $month->shiftTimezone($timezone)->startOfMonth()->utc();
+
+        return [$start, $start->setTimezone($timezone)->endOfMonth()->utc()];
+    }
+
+    /**
      * @param  Collection<int, WorkOrder>  $orders
      * @return array{done: int, revenue: int, average_minutes: ?int, on_time: ?int, returns: int, rating: ?float, ratings: int}
      */
-    protected function totals(Collection $orders): array
+    public function totals(Collection $orders): array
     {
         $minutes = $orders
             ->map(fn (WorkOrder $order): ?int => ($from = $order->checked_in_at ?? $order->started_at) && $order->finished_at ? (int) $from->diffInMinutes($order->finished_at) : null)

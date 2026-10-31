@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Access\AccessManager;
+use App\Connections\ConnectionCatalog;
 use App\Models\CompanyProfile;
 use App\Models\Tenant;
 use App\Models\User;
@@ -172,6 +173,9 @@ class VideoDemoData extends ResetDemoData
         if ($withField) {
             $this->field($users);
         }
+
+        // The window "your systems now work together" must never show up in the recordings.
+        app(ConnectionCatalog::class)->dismissAllFor($tenant->users()->get());
     }
 
     /** Clearly invented customers around the base (no real business), each with a point on the map. */

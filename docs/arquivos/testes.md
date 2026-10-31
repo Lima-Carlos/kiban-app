@@ -30,6 +30,7 @@
 | `TimeClockEmployeesTest` | Ponto (P1): pessoa sem login que ganha login depois, CPF (válido, único, obrigatório no Brasil), documento e celular de outro país, limite de funcionários, quem vê o CPF, locais com ponto no mapa, equipes, separação entre empresas |
 | `AccessProfilesTest` | Um sistema com vários módulos: sem acesso por padrão, perfis sugeridos e editáveis, Início com os resumos |
 | `LocaleTest` | Troca de idioma no sistema e nas páginas simples |
+| `ConnectionsTest` | Conexões entre os sistemas: quais funcionam com os sistemas da empresa, quem vê cada uma (técnico, RH, gestor), a janela ("não mostrar novamente" por pessoa, conexão e empresa; sem a caixa volta no dia seguinte; conexão nova reaparece; empresa com um sistema só não vê), a página Sistemas juntos, o lembrete do ponto na primeira/última OS (nunca bate o ponto), o aproveitamento, o custo do deslocamento e a vistoria depois do ponto |
 | `FirstStepsTest` | Passos em ordem, dependências, envio ao Core só quando muda |
 
 Fábricas de dados de teste: `database/factories/` (`TenantFactory`, `UserFactory`).

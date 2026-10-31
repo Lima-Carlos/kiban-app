@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
+use App\Http\Controllers\ConnectionsController;
 use App\Http\Controllers\Field\OrderReportController;
 use App\Http\Controllers\Field\OrderSyncController;
 use App\Http\Controllers\Field\QuoteLinkController;
@@ -61,6 +62,9 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
 
         // Alerts on the person's phone (web push): the phone is kept when the person allows it.
         Route::post('/avisos/celular', PhoneAlertController::class)->middleware('throttle:20,1')->name('phone-alerts.subscribe');
+
+        // "Your systems now work together": "Got it" / "Do not show again" of the window (ConnectionCatalog).
+        Route::post('/sistemas-juntos/ok', [ConnectionsController::class, 'dismiss'])->middleware('throttle:30,1')->name('connections.dismiss');
 
         // Campo: the pieces of a work order sent by the technician's phone (also later, without signal).
         Route::post('/campo/os/{order}/enviar', OrderSyncController::class)->whereNumber('order')->middleware('throttle:120,1')->name('field.sync');

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field\Filament\Orders;
 
+use App\Connections\Bridges\FieldFleet;
 use App\Filament\Support\ModuleResource;
 use App\Modules\Field\Enums\OrderPriority;
 use App\Modules\Field\Enums\OrderStatus;
@@ -15,6 +16,8 @@ use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\FieldAccess;
 use App\Modules\Field\Services\FieldFormat;
 use App\Modules\Field\Services\FieldReports;
+use App\Modules\Fleet\Models\FleetSetting;
+use App\Modules\Fleet\Services\FleetFormat;
 use App\People\Documents\PersonDocumentService;
 use App\Support\Country;
 use App\Support\Geo;
@@ -434,6 +437,20 @@ class OrderResource extends ModuleResource
                             ->label(__('field.orders.finished'))
                             ->state(fn (WorkOrder $record): ?string => $record->finished_at?->setTimezone(static::timezone())->translatedFormat(__('app.datetime_format')))
                             ->placeholder(fn (WorkOrder $record): string => $record->pause_reason ? __('field.events.paused', ['reason' => $record->pause_reason]) : '—'),
+                        // Campo + Frota: the estimated cost of going to the customer (managers only; nothing without the data).
+                        TextEntry::make('travel_cost')
+                            ->label(__('connections.order.travel'))
+                            ->state(function (WorkOrder $record): ?string {
+                                $estimate = app(FieldFleet::class)->estimate($record);
+
+                                return $estimate ? '≈ '.FleetFormat::money($estimate['cost_cents']).' · '.FleetFormat::distance($estimate['km']) : null;
+                            })
+                            ->helperText(function (WorkOrder $record): ?string {
+                                $estimate = app(FieldFleet::class)->estimate($record);
+
+                                return $estimate ? __('connections.order.travel_help', ['cost' => FleetFormat::money($estimate['per_km_cents']), 'unit' => FleetSetting::current()->distance_unit]) : null;
+                            })
+                            ->visible(fn (WorkOrder $record): bool => $record->status === OrderStatus::Done && app(FieldAccess::class)->isManager() && app(FieldFleet::class)->estimate($record) !== null),
                         TextEntry::make('answers_list')
                             ->label(__('field.service_types.checklist'))
                             ->state(fn (WorkOrder $record): array => static::answerLines($record))

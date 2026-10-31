@@ -30,11 +30,18 @@
     </x-filament::section>
 
     <script src="{{ asset('js/field-queue.js') }}?v=2"></script>
+    @if ($payload['clock'])
+        <script src="{{ asset('js/punch-queue.js') }}?v=1"></script>
+    @endif
     <div
         wire:ignore
         x-data="{
             order: @js($payload),
             texts: @js(__('field.execute')),
+            clockTexts: @js(__('connections.clock')),
+            askClockIn: false,
+            askClockOut: false,
+            localPunches: 0,
             owner: @js(app(\App\Tenancy\TenantContext::class)->get()->getKey().':'.auth()->id()),
             url: @js(route('field.sync', ['order' => $order->getKey()])),
             clockUrl: @js(route('timeclock.clock')),
@@ -73,7 +80,19 @@
                 setInterval(() => this.flush(), 30000);
                 KibanFieldQueue.clock(this.clockUrl).then((clock) => { if (clock?.token) { this.token = clock.token; } });
                 this.load().then(() => this.flush());
+                this.countLocalPunches();
             },
+            // Campo + Ponto: punches of today still in the phone's own queue (time clock without signal) also count.
+            async countLocalPunches() {
+                if (!this.order.clock || !window.KibanPunchQueue) { return; }
+                try {
+                    const today = new Date(KibanPunchQueue.now()).toDateString();
+                    this.localPunches = (await KibanPunchQueue.queue.all()).filter((item) => item.owner === this.owner && new Date(item.taken_at).toDateString() === today).length;
+                } catch (e) {
+                    this.localPunches = 0;
+                }
+            },
+            clockedIn() { return ((this.order.clock?.punches || 0) + this.localPunches) % 2 === 1; },
             // What is still waiting on the phone is shown as already done (it goes by itself).
             async load() {
                 try { this.pending = await KibanFieldQueue.pending(this.owner, this.order.id); } catch (e) { this.pending = []; }
@@ -140,13 +159,16 @@
             },
             checkIn() {
                 this.locating = true;
-                const send = (coords) => {
+                const arriving = !this.order.checkedIn;
+                const send = async (coords) => {
                     this.locating = false;
                     if (coords) { this.position = coords; }
-                    this.queue('check_in', {
+                    await this.queue('check_in', {
                         latitude: coords?.latitude ?? null, longitude: coords?.longitude ?? null, accuracy: coords?.accuracy ?? null,
                         km: this.km === '' ? null : parseInt(this.km, 10), vehicle_id: this.km === '' ? null : this.vehicle,
                     });
+                    // First service of the day and no punch yet: offer the time clock (the punch stays the employee's act).
+                    if (arriving && this.order.clock?.first && !this.clockedIn()) { this.askClockIn = true; }
                 };
                 if (!navigator.geolocation) { send(null); return; }
                 navigator.geolocation.getCurrentPosition((p) => send(p.coords), () => send(null), { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
@@ -291,7 +313,10 @@
                 const missing = this.localMissing();
                 if (missing.length) { this.problem = this.texts.missing.replace(':items', missing.join(', ')); return; }
                 this.problem = null;
-                this.queue('finish');
+                this.queue('finish').then(() => {
+                    // Last service of the day while still clocked in: offer to clock out.
+                    if (this.order.clock?.last && this.clockedIn()) { this.askClockOut = true; }
+                });
             },
         }"
         style="display:flex;flex-direction:column;gap:14px"
@@ -304,6 +329,22 @@
         </div>
         <div x-show="problem" x-cloak style="font-size:14px;padding:10px 12px;border-radius:10px;background:rgba(220,38,38,.1);color:#991b1b" x-text="problem"></div>
         <div x-show="signIn" x-cloak style="font-size:13px;padding:10px 12px;border-radius:10px;background:rgba(220,38,38,.1);color:#991b1b" x-text="texts.sign_in"></div>
+
+        {{-- Campo + Ponto: a reminder with a link; the punch itself is done by the employee on the time clock. --}}
+        <template x-for="ask in ['in', 'out']" :key="ask">
+            <div x-show="ask === 'in' ? askClockIn : askClockOut" x-cloak :data-connection="'punch_' + ask"
+                 style="{{ $box }};border-color:rgba(4,66,153,.45);background:rgba(4,66,153,.07)">
+                {{-- x-show controls the outer box; the layout lives inside (x-show would drop a display on the same element). --}}
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <strong style="font-size:16px" x-text="'⏱ ' + clockTexts[ask]"></strong>
+                    <span style="font-size:13px;opacity:.8" x-text="clockTexts[ask + '_help']"></span>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <x-filament::button tag="a" x-bind:href="order.clock?.url" icon="heroicon-o-finger-print"><span x-text="clockTexts[ask + '_button']"></span></x-filament::button>
+                        <x-filament::button color="gray" x-on:click="askClockIn = false; askClockOut = false"><span x-text="clockTexts.later"></span></x-filament::button>
+                    </div>
+                </div>
+            </div>
+        </template>
 
         {{-- Done. --}}
         <div x-show="order.status === 'done'" x-cloak style="{{ $box }};text-align:center;color:#166534">

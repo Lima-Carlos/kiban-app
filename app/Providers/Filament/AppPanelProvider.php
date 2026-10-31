@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\AccessProfilesPage;
 use App\Filament\Pages\CompanyProfilePage;
+use App\Filament\Pages\ConnectionsPage;
 use App\Filament\Pages\DocumentsPage;
 use App\Filament\Pages\DocumentTypesPage;
 use App\Filament\Pages\Home;
@@ -60,6 +61,7 @@ class AppPanelProvider extends PanelProvider
                 AccessProfilesPage::class,
                 TeamsPage::class,
                 CompanyProfilePage::class,
+                ConnectionsPage::class,
                 DocumentsPage::class,
                 DocumentTypesPage::class,
                 PersonDocumentsPage::class,
@@ -98,6 +100,8 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.trial-banner'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.install-hint'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.license-notice'))
+            // "News: your systems now work together" (ConnectionCatalog), until each person dismisses it.
+            ->renderHook(PanelsRenderHook::BODY_END, fn () => view('filament.connections-modal'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
