@@ -23,3 +23,6 @@ Schedule::command('kiban:field')->everyMinute()->withoutOverlapping();
 
 // Documents of the people (driver's license, medical exam, trainings): the bell warns before they expire (07:00 in Brasília).
 Schedule::command('kiban:documents')->dailyAt('10:00')->withoutOverlapping();
+
+// PPE and tools: replacements, CA, deliveries waiting for the signature and low stock (07:10 in Brasília).
+Schedule::command('kiban:epi')->dailyAt('10:10')->withoutOverlapping();

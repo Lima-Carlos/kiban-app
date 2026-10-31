@@ -34,6 +34,8 @@ use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\PunchPhotoStore;
 use App\Modules\TimeClock\Services\PunchService;
 use App\Modules\TimeClock\Services\ScheduleService;
+use App\People\Epi\EpiDelivery;
+use App\People\Epi\EpiService;
 use App\People\PeopleService;
 use App\People\Person;
 use Carbon\CarbonImmutable;
@@ -174,8 +176,110 @@ class VideoDemoData extends ResetDemoData
             $this->field($users);
         }
 
-        // The window "your systems now work together" must never show up in the recordings.
+        $this->epi($users, $person);
+
+        // The window "your systems now work together" (also the new ones, e.g. PPE + Campo) never shows up in the recordings.
         app(ConnectionCatalog::class)->dismissAllFor($tenant->users()->get());
+    }
+
+    /**
+     * PPE and tools (People): the catalog with CA numbers and stock, the field team's kits signed with the finger
+     * a month ago, gloves already replaced, and one delivery of today still waiting for the signature.
+     *
+     * @param  array<string, User>  $users  by e-mail
+     * @param  \Closure(string): Person  $person
+     */
+    protected function epi(array $users, \Closure $person): void
+    {
+        $service = app(EpiService::class);
+        $hr = $users['rh.video@exemplo.test'];
+        $this->at($this->today->subDays(40)->setTime(8, 30));
+
+        $items = $service->items()->keyBy('key');
+        $details = [
+            'helmet' => ['ca_number' => '31469', 'ca_expires_on' => $this->today->addYears(2)->toDateString(), 'unit_cost_cents' => 4590, 'stock' => 12, 'min_stock' => 3],
+            'glasses' => ['ca_number' => '10346', 'ca_expires_on' => $this->today->addYear()->toDateString(), 'unit_cost_cents' => 1290, 'stock' => 20, 'min_stock' => 5],
+            'insulating_gloves' => ['ca_number' => '28420', 'ca_expires_on' => $this->today->addDays(20)->toDateString(), 'unit_cost_cents' => 18900, 'stock' => 4, 'min_stock' => 2],
+            'leather_gloves' => ['ca_number' => '15532', 'ca_expires_on' => $this->today->addYears(3)->toDateString(), 'unit_cost_cents' => 1890, 'stock' => 30, 'min_stock' => 10],
+            'harness' => ['ca_number' => '35529', 'ca_expires_on' => $this->today->addYears(2)->toDateString(), 'unit_cost_cents' => 32900, 'stock' => 3, 'min_stock' => 1],
+            'safety_boots' => ['ca_number' => '40877', 'ca_expires_on' => $this->today->addYears(2)->toDateString(), 'unit_cost_cents' => 12900, 'size' => '41', 'stock' => 6, 'min_stock' => 2],
+            'ear_protection' => ['ca_number' => '5745', 'ca_expires_on' => $this->today->addYears(4)->toDateString(), 'unit_cost_cents' => 290, 'stock' => 40, 'min_stock' => 10],
+            'multimeter' => ['unit_cost_cents' => 21900, 'stock' => 2, 'min_stock' => 1, 'code' => 'FER-012'],
+            'ladder' => ['unit_cost_cents' => 54900, 'stock' => 3, 'min_stock' => 1, 'code' => 'FER-020'],
+            'pliers' => ['unit_cost_cents' => 6900, 'stock' => 8, 'min_stock' => 2, 'code' => 'FER-001'],
+        ];
+
+        foreach ($details as $key => $values) {
+            $items[$key]->update($values);
+        }
+
+        $kit = fn (): array => collect(['helmet', 'glasses', 'leather_gloves', 'harness', 'safety_boots', 'multimeter', 'pliers'])
+            ->map(fn (string $key): array => ['item_id' => $items[$key]->getKey(), 'quantity' => $key === 'leather_gloves' ? 2 : 1])->all();
+        $sign = function (EpiDelivery $delivery, bool $own) use ($service, $hr): void {
+            $user = $own ? $delivery->person->user : $hr;
+            $service->sign($delivery, $this->signatureImage($delivery->person->name), $delivery->person->name, $user, $own, '192.0.2.10',
+                'Mozilla/5.0 (Linux; Android 14; moto g54) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36');
+        };
+
+        foreach (['tecnico.video@exemplo.test', 'tecnica.video@exemplo.test'] as $index => $email) {
+            if (! isset($users[$email])) {
+                continue;
+            }
+
+            // The kit on the first day, signed on HR's phone.
+            $this->at($this->today->subDays(38 - $index)->setTime(8, 15));
+            $first = $service->deliver($person($email), $kit(), ['delivered_on' => now()->toDateString(), 'reason' => 'first'], $hr);
+            $this->at(CarbonImmutable::now()->addMinutes(3));
+            $sign($first, false);
+
+            // The gloves replaced after a month, signed later on the technician's own phone.
+            $this->at($this->today->subDays(6 + $index)->setTime(7, 50));
+            $gloves = $first->lines()->where('item_id', $items['leather_gloves']->getKey())->sole();
+            $exchange = $service->exchange($gloves, ['reason' => 'wear', 'outcome' => 'discard', 'delivered_on' => now()->toDateString()], $hr);
+            $this->at(CarbonImmutable::now()->addHours(2));
+            $sign($exchange, true);
+        }
+
+        // Today: hearing protection for Pedro (no login), waiting for the signature on HR's phone.
+        $this->at($this->today->setTime(7, 40));
+        $pedro = Person::query()->where('name', 'Pedro Rocha')->first();
+
+        if ($pedro !== null) {
+            $service->deliver($pedro, [['item_id' => $items['ear_protection']->getKey(), 'quantity' => 2]], ['delivered_on' => now()->toDateString(), 'reason' => 'first'], $hr);
+        }
+    }
+
+    /** A handwritten-looking signature (a few waves, transparent background), drawn with GD. */
+    protected function signatureImage(string $name): string
+    {
+        if (! function_exists('imagecreatetruecolor')) {
+            return 'data:image/png;base64,';
+        }
+
+        $image = imagecreatetruecolor(600, 180);
+        imagesavealpha($image, true);
+        imagefill($image, 0, 0, imagecolorallocatealpha($image, 255, 255, 255, 127));
+        $ink = imagecolorallocate($image, 17, 24, 39);
+        imagesetthickness($image, 4);
+        $seed = crc32($name);
+        $previous = null;
+
+        for ($x = 40; $x <= 560; $x += 4) {
+            $y = (int) (95 + 38 * sin(($x + $seed % 50) / 23) * cos($x / (61 + $seed % 17)) - ($x > 300 ? 10 : 0));
+
+            if ($previous !== null) {
+                imageline($image, $previous[0], $previous[1], $x, $y, $ink);
+            }
+
+            $previous = [$x, $y];
+        }
+
+        imageline($image, 60, 150, 520, 140, $ink);
+        ob_start();
+        imagepng($image);
+        imagedestroy($image);
+
+        return 'data:image/png;base64,'.base64_encode((string) ob_get_clean());
     }
 
     /** Clearly invented customers around the base (no real business), each with a point on the map. */

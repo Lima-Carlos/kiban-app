@@ -5,6 +5,7 @@ namespace App\Connections;
 use App\Access\AccessManager;
 use App\Access\CurrentModule;
 use App\Filament\Pages\DocumentsPage;
+use App\Filament\Pages\EpiPage;
 use App\Filament\Pages\Home;
 use App\Filament\Pages\PeoplePage;
 use App\Models\Tenant;
@@ -22,6 +23,7 @@ use App\Modules\TimeClock\Filament\PunchPage;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\TimeClockModule;
 use App\People\Documents\PersonDocumentService;
+use App\People\Epi\EpiService;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 
@@ -99,6 +101,13 @@ class ConnectionCatalog
             new Connection('documents_training', [$clock, $field], 'heroicon-o-academic-cap',
                 audience: fn (User $user): bool => $this->is($user, $clock, 'manager') || $this->is($user, $field, 'manager', 'dispatcher'),
                 url: fn (User $user): string => $this->documentsUrl($user, $field),
+            ),
+            // Ponto (HR delivers the PPE in People) + Campo: the technician without the PPE the type of service needs
+            // (e.g. work at height → harness) is warned when scheduled and when starting. Never blocks.
+            new Connection('epi_field', [$clock, $field], 'heroicon-o-wrench-screwdriver',
+                // Not the technicians: the warning on their phone explains itself (one window less for them).
+                audience: fn (User $user): bool => $this->is($user, $clock, 'manager') || $this->is($user, $field, 'manager', 'dispatcher'),
+                url: fn (User $user): string => app(EpiService::class)->canHandle($user) ? EpiPage::getUrl() : Home::getUrl([CurrentModule::QUERY => $field]),
             ),
             // Any pair: one register of people, one login, profiles that give two systems at once.
             new Connection('one_person', [$fleet, $clock, $field], 'heroicon-o-users',

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field\Filament\Orders;
 
+use App\Connections\Bridges\FieldEpi;
 use App\Connections\Bridges\FieldFleet;
 use App\Filament\Support\ModuleResource;
 use App\Modules\Field\Enums\OrderPriority;
@@ -264,9 +265,11 @@ class OrderResource extends ModuleResource
                 ->helperText(fn (): ?string => static::technicianOptions() === [] ? __('field.helpers.no_technicians') : ($order !== null ? __('field.orders.nearest_help') : null))
                 // An expired safety training (NR-10, NR-35...) is shown, but never blocks the schedule.
                 ->live()
-                ->belowContent(fn (Get $get): ?Text => ($warning = static::technicianWarning($get('technician_id'))) !== null
-                    ? Text::make($warning)->color('danger')->icon(Heroicon::OutlinedExclamationTriangle)
-                    : null)
+                // The same for the PPE the type of service needs (People → PPE and tools): a warning only.
+                ->belowContent(fn (Get $get): array => collect([
+                    static::technicianWarning($get('technician_id')),
+                    app(FieldEpi::class)->warning($get('technician_id'), $order?->service_type_id ?? $get('service_type_id')),
+                ])->filter()->map(fn (string $warning): Text => Text::make($warning)->color('danger')->icon(Heroicon::OutlinedExclamationTriangle))->values()->all())
                 ->requiredWith('scheduled_at')
                 ->required($required)
                 ->validationMessages(['required' => __('field.validation.technician'), 'required_with' => __('field.validation.technician_with_time')]),

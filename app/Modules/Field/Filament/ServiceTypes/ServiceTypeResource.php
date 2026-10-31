@@ -8,6 +8,8 @@ use App\Modules\Field\Filament\FieldFields;
 use App\Modules\Field\Models\FieldSetting;
 use App\Modules\Field\Models\ServiceType;
 use App\Modules\Field\Services\FieldFormat;
+use App\People\Epi\EpiKind;
+use App\People\Epi\EpiService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -109,6 +111,14 @@ class ServiceTypeResource extends ModuleResource
                         ->label(__('field.fields.photo_required'))
                         ->helperText(__('field.helpers.photo_required'))
                         ->columnSpan(['sm' => 2]),
+                    // PPE and tools (People): the technician without these items gets a warning (never a block).
+                    Select::make('required_epi')
+                        ->label(__('epi.field.required'))
+                        ->helperText(__('epi.field.required_help'))
+                        ->multiple()
+                        ->options(fn (): array => app(EpiService::class)->items([EpiKind::Epi->value])->mapWithKeys(fn ($item): array => [$item->getKey() => $item->fullLabel()])->all())
+                        ->visible(fn (): bool => app(EpiService::class)->enabled())
+                        ->columnSpanFull(),
                 ]),
                 Section::make(__('field.service_types.checklist'))
                     ->description(__('field.service_types.checklist_help'))

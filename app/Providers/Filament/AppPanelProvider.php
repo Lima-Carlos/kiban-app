@@ -7,10 +7,14 @@ use App\Filament\Pages\CompanyProfilePage;
 use App\Filament\Pages\ConnectionsPage;
 use App\Filament\Pages\DocumentsPage;
 use App\Filament\Pages\DocumentTypesPage;
+use App\Filament\Pages\EpiItemsPage;
+use App\Filament\Pages\EpiPage;
 use App\Filament\Pages\Home;
 use App\Filament\Pages\MyDocumentsPage;
+use App\Filament\Pages\MyEpiPage;
 use App\Filament\Pages\PeoplePage;
 use App\Filament\Pages\PersonDocumentsPage;
+use App\Filament\Pages\PersonEpiPage;
 use App\Filament\Pages\TeamsPage;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\IdentifyTenant;
@@ -66,6 +70,10 @@ class AppPanelProvider extends PanelProvider
                 DocumentTypesPage::class,
                 PersonDocumentsPage::class,
                 MyDocumentsPage::class,
+                EpiPage::class,
+                EpiItemsPage::class,
+                PersonEpiPage::class,
+                MyEpiPage::class,
                 ...$this->modulePages(),
             ])
             ->resources($this->moduleResources())
@@ -82,6 +90,12 @@ class AppPanelProvider extends PanelProvider
                     ->icon(Heroicon::OutlinedIdentification)
                     ->visible(fn (): bool => MyDocumentsPage::hasDocuments())
                     ->url(fn (): string => MyDocumentsPage::getUrl()),
+                // The person's PPE and tools (and the deliveries to sign), when there are any.
+                Action::make('my_epi')
+                    ->label(fn (): string => __('epi.mine.title'))
+                    ->icon(Heroicon::OutlinedWrenchScrewdriver)
+                    ->visible(fn (): bool => MyEpiPage::hasDeliveries())
+                    ->url(fn (): string => MyEpiPage::getUrl()),
                 // LGPD: the privacy channel, "download my data" and requests, in the Kiban account.
                 Action::make('privacy')
                     ->label(fn (): string => __('app.menu.privacy'))

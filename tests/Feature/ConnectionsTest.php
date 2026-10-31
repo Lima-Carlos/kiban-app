@@ -184,7 +184,7 @@ class ConnectionsTest extends TestCase
         $this->company(['campo' => [], 'ponto' => []]);
         $catalog = app(ConnectionCatalog::class);
 
-        $this->assertSame(['documents_training', 'one_person', 'punch_reminder', 'utilization'], $this->sortedKeys($catalog->active()));
+        $this->assertSame(['documents_training', 'epi_field', 'one_person', 'punch_reminder', 'utilization'], $this->sortedKeys($catalog->active()));
 
         // With the Frota, four more would start working by themselves.
         $potential = $catalog->potential();
@@ -214,7 +214,7 @@ class ConnectionsTest extends TestCase
             ->assertSee(__('connections.items.punch_reminder.title'))
             ->assertSee(__('connections.items.inspection_after_punch.title'));
 
-        $this->assertCount(8, app(ConnectionCatalog::class)->pending($this->owner));
+        $this->assertCount(9, app(ConnectionCatalog::class)->pending($this->owner));
     }
 
     public function test_each_person_sees_only_what_matters_to_them(): void
@@ -235,11 +235,11 @@ class ConnectionsTest extends TestCase
 
         // HR (time clock manager only): the documents it registers reach the other systems; the people register.
         $rh = $this->member('Rita RH', ['ponto' => 'manager']);
-        $this->assertSame(['documents_license', 'documents_training', 'one_person', 'punch_reminder'], $this->sortedKeys($catalog->relevant($rh)));
+        $this->assertSame(['documents_license', 'documents_training', 'epi_field', 'one_person', 'punch_reminder'], $this->sortedKeys($catalog->relevant($rh)));
 
         // Service desk: only the safety trainings when scheduling.
         $desk = $this->member('Davi Atendimento', ['campo' => 'dispatcher']);
-        $this->assertSame(['documents_training'], $this->sortedKeys($catalog->relevant($desk)));
+        $this->assertSame(['documents_training', 'epi_field'], $this->sortedKeys($catalog->relevant($desk)));
 
         // Someone without any role: nothing, and no window.
         $this->assertSame([], $catalog->relevant($this->member('Sem Acesso')));
@@ -311,7 +311,7 @@ class ConnectionsTest extends TestCase
 
         // Dismissals belong to the company where they were made.
         $this->assertSame(0, ConnectionDismissal::query()->count());
-        $this->assertCount(8, app(ConnectionCatalog::class)->pending($this->owner));
+        $this->assertCount(9, app(ConnectionCatalog::class)->pending($this->owner));
     }
 
     public function test_a_new_connection_shows_up_even_for_who_dismissed_the_old_ones(): void

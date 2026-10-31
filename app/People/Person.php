@@ -6,6 +6,8 @@ use App\Models\Team;
 use App\Models\User;
 use App\People\Documents\PersonDocument;
 use App\People\Documents\PersonDocumentService;
+use App\People\Epi\EpiDelivery;
+use App\People\Epi\EpiService;
 use App\Rules\Cpf;
 use App\Support\Country;
 use App\Tenancy\BelongsToTenant;
@@ -39,8 +41,21 @@ class Person extends Model
 
     protected static function booted(): void
     {
-        // When the system deletes a person's data, their documents and files go with it.
-        static::deleting(fn (Person $person) => app(PersonDocumentService::class)->purgePerson($person));
+        // When the system deletes a person's data, their documents, PPE deliveries and files go with it.
+        static::deleting(function (Person $person): void {
+            app(PersonDocumentService::class)->purgePerson($person);
+            app(EpiService::class)->purgePerson($person);
+        });
+    }
+
+    /**
+     * Deliveries of PPE and tools (signed with the finger), with their items and returns.
+     *
+     * @return HasMany<EpiDelivery, $this>
+     */
+    public function epiDeliveries(): HasMany
+    {
+        return $this->hasMany(EpiDelivery::class);
     }
 
     /**

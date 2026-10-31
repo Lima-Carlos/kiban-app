@@ -142,8 +142,12 @@ No celular, toda lista (pessoas, veículos, abastecimentos, batidas, solicitaç�
   - cadastro e equipe;
   - no Ponto: dados do funcionário, batidas (com local e IP), correções e espelhos;
   - na Frota: dados do motorista e abastecimentos;
-  - os documentos com validade (CNH, ASO, treinamentos), sem os anexos. O ASO e outros dados de saúde só entram se quem baixa pode vê-los (veja `documentos.md`).
+  - os documentos com validade (CNH, ASO, treinamentos), sem os anexos. O ASO e outros dados de saúde só entram se quem baixa pode vê-los (veja `documentos.md`);
+  - o EPI e as ferramentas: entregas, devoluções e o registro de cada assinatura (data, IP, aparelho, texto), sem a imagem (veja `epi.md`).
 - O CPF só entra no arquivo se quem baixa pode ver documentos (dono, administradores e RH). As fotos não entram.
 - Cada sistema diz o que exporta em `exportPerson()` (`app/Modules/Module.php`). Um sistema novo, como o Campo, precisa implementar esse método.
 - O menu do usuário tem o link **"Privacidade"**, que leva à página de privacidade da conta Kiban (canal, "baixar meus dados" e pedidos).
 - **Ainda não existe** a exclusão ou anonimização de uma pessoa, nem a exclusão automática dos dados da empresa depois do cancelamento. Faltam decisões do dono e do advogado, porque as batidas precisam ficar guardadas por 5 anos. Veja o roteiro.
+
+## EPI e ferramentas (31/10/2026)
+No menu **⋮** de cada pessoa, o botão **EPI e ferramentas** abre o que está com ela, as entregas (assinadas com o dedo no celular), devoluções, trocas e a **ficha em PDF** da NR-6. Dono, administradores e RH cuidam de tudo; os gestores da Frota e do Campo, só das ferramentas. A pessoa vê e assina as dela em **Minhas entregas** (menu do usuário). Quando o sistema apagar os dados de uma pessoa, as entregas e as assinaturas vão junto. Explicação completa: `epi.md`.

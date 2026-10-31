@@ -19,6 +19,10 @@
         @if ($order->reported)
             <div style="font-size:14px;margin-top:8px;white-space:pre-line"><strong>{{ __('field.fields.reported') }}:</strong> {{ $order->reported }}</div>
         @endif
+        {{-- PPE the type of service needs and the technician does not have (People → PPE and tools): only a warning. --}}
+        @if ($epiWarning = app(\App\Connections\Bridges\FieldEpi::class)->technicianNotice(auth()->id(), $order->serviceType))
+            <div style="margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.35);color:#b91c1c;font-size:14px">⚠ {{ $epiWarning }}</div>
+        @endif
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
             @if ($directions)
                 <x-filament::button :href="$directions" tag="a" target="_blank" color="gray" icon="heroicon-o-map" size="sm">{{ __('field.my_orders.directions') }}</x-filament::button>

@@ -50,6 +50,10 @@ return [
             'title' => 'Os treinamentos NR avisam o Campo',
             'body' => 'A NR-10, a NR-35 e a NR-33 cadastradas pelo RH chegam ao escritório do Campo: o técnico com treinamento vencido aparece no "Atenção" e com um aviso na hora de agendar.',
         ],
+        'epi_field' => [
+            'title' => 'O EPI entregue avisa o Campo',
+            'body' => 'O tipo de serviço pode dizer qual EPI é necessário (ex.: trabalho em altura → cinto paraquedista). O técnico que não recebeu esse EPI aparece com um aviso na hora de agendar e ao abrir a OS no celular. É só um aviso: nada é bloqueado.',
+        ],
         'one_person' => [
             'title' => 'Uma pessoa, um cadastro só',
             'body' => 'Cada pessoa é cadastrada uma vez em Pessoas e entra com o mesmo login em todos os sistemas. Os perfis prontos, como "Técnico de campo" e "Motorista", já dão o acesso aos dois sistemas de uma vez.',

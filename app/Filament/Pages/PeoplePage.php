@@ -15,6 +15,7 @@ use App\People\AccessNotice;
 use App\People\Documents\DocumentStatus;
 use App\People\Documents\PersonDocument;
 use App\People\Documents\PersonDocumentService;
+use App\People\Epi\EpiService;
 use App\People\PeopleService;
 use App\People\Person;
 use App\People\PersonRuleException;
@@ -382,6 +383,12 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                         ->icon(Heroicon::OutlinedIdentification)
                         ->visible(fn (): bool => app(PersonDocumentService::class)->canManage(auth()->user()))
                         ->url(fn (Person $record): string => PersonDocumentsPage::getUrl(['pessoa' => $record->getKey()])),
+                    // PPE and tools with the person (owners, administrators, HR; the Frota/Campo managers: tools).
+                    Action::make('epi')
+                        ->label(__('epi.title'))
+                        ->icon(Heroicon::OutlinedWrenchScrewdriver)
+                        ->visible(fn (): bool => app(EpiService::class)->canHandle(auth()->user()))
+                        ->url(fn (Person $record): string => PersonEpiPage::getUrl(['pessoa' => $record->getKey()])),
                     // LGPD (art. 18): the company, controller of its employees' data, hands the person a copy of it.
                     Action::make('exportData')
                         ->label(__('app.people.export_data'))
@@ -402,6 +409,8 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                                     ->filter(fn (array $part): bool => $part !== [])->all(),
                                 // Driver's license, medical exam, trainings (health data only for who may see it; no files).
                                 'documents' => app(PersonDocumentService::class)->exportPerson($record, auth()->user()),
+                                // PPE and tools: deliveries, returns and the signature's record (no image).
+                                'epi' => app(EpiService::class)->exportPerson($record),
                             ];
 
                             return response()->streamDownload(

@@ -12,6 +12,7 @@
 | Frota + Ponto | Vistoria lembrada ao bater o ponto | Depois de bater a entrada, o motorista vê "Fazer a vistoria do veículo agora" para cada veículo dele ainda sem vistoria no período. Só sugestão. | motorista que bate ponto, gestor da Frota |
 | Ponto + Frota | A CNH cadastrada pelo RH avisa a Frota | A CNH de Pessoas → Documentos atualiza a ficha do motorista e aparece no "Atenção" da Frota quando vence (já existia). | RH, gestor e consulta da Frota |
 | Ponto + Campo | Os treinamentos NR avisam o Campo | NR-10, NR-35 e NR-33 vencidas aparecem no "Atenção" do Campo e ao agendar o técnico (já existia). | RH, gestor e atendimento do Campo |
+| Ponto + Campo | O EPI entregue avisa o Campo | O tipo de serviço diz o "EPI necessário" (ex.: cinto para altura). O técnico sem esse EPI entregue aparece com aviso ao agendar e ao abrir a OS no celular. Só aviso, nunca bloqueia (veja `epi.md`). | RH, gestor e atendimento do Campo (o técnico vê o aviso na própria OS) |
 | Quaisquer dois | Uma pessoa, um cadastro só | Uma ficha em Pessoas e um login para todos os sistemas; perfis prontos ("Técnico de campo", "Motorista", "Mecânico") dão os dois sistemas de uma vez (já existia). | quem cadastra pessoas |
 
 ## Decisões
@@ -44,7 +45,7 @@ O comando `kiban:video-demo` marca todas as conexões como vistas para as contas
 
 ## Arquivos
 - `app/Connections/Connection.php` (uma conexão), `ConnectionCatalog.php` (a lista e as regras de quem vê), `ConnectionDismissal.php` ("não mostrar novamente").
-- Pontes: `app/Connections/Bridges/FieldTimeClock.php` (lembrete do ponto e aproveitamento), `FieldFleet.php` (custo do deslocamento), `FleetTimeClock.php` (vistoria depois do ponto).
+- Pontes: `app/Connections/Bridges/FieldTimeClock.php` (lembrete do ponto e aproveitamento), `FieldFleet.php` (custo do deslocamento), `FleetTimeClock.php` (vistoria depois do ponto), `FieldEpi.php` (EPI necessário no Campo).
 - Janela: `resources/views/filament/connections-modal.blade.php` (no fim de toda tela, `AppPanelProvider`) e `app/Http/Controllers/ConnectionsController.php` (rota `connections.dismiss`, `/<empresa>/sistemas-juntos/ok`).
 - Página: `app/Filament/Pages/ConnectionsPage.php` + `resources/views/filament/pages/connections.blade.php` (`/<empresa>/empresa/sistemas-juntos`).
 - Onde aparecem as funções: `resources/views/field/execute.blade.php` + `ExecuteOrderPage` (lembrete), `resources/views/timeclock/punch-page.blade.php` + `PunchPage` (vistoria), `FieldTechniciansWidget` + `resources/views/field/dashboard/technicians.blade.php` (aproveitamento e deslocamento; no celular a tabela vira cartões), `OrderResource` (custo na OS).

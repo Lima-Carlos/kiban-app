@@ -50,6 +50,10 @@ return [
             'title' => 'Las capacitaciones de seguridad avisan a Campo',
             'body' => 'Las capacitaciones registradas por RR. HH. (en Brasil, NR-10, NR-35 y NR-33) llegan a la oficina de Campo: el técnico con una capacitación vencida aparece en "Atención" y con un aviso al agendarlo.',
         ],
+        'epi_field' => [
+            'title' => 'El EPP entregado avisa a Campo',
+            'body' => 'El tipo de servicio puede indicar qué EPP necesita (ej.: trabajo en altura → arnés de seguridad). El técnico que no recibió ese EPP aparece con un aviso al agendarlo y al abrir la orden en el celular. Es solo un aviso: nada se bloquea.',
+        ],
         'one_person' => [
             'title' => 'Una persona, un solo registro',
             'body' => 'Cada persona se registra una vez en Personas y entra con el mismo usuario en todos los sistemas. Los perfiles listos, como "Técnico de campo" y "Conductor", ya dan acceso a los dos sistemas a la vez.',

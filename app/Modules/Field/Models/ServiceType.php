@@ -23,7 +23,7 @@ class ServiceType extends Model
 
     protected $table = 'fd_service_types';
 
-    protected $fillable = ['name', 'description', 'color', 'duration_minutes', 'price_cents', 'checklist', 'signature_required', 'photo_required', 'is_active', 'sort'];
+    protected $fillable = ['name', 'description', 'color', 'duration_minutes', 'price_cents', 'checklist', 'signature_required', 'photo_required', 'required_epi', 'is_active', 'sort'];
 
     protected $attributes = ['checklist' => '[]', 'duration_minutes' => 60, 'signature_required' => true, 'photo_required' => false, 'is_active' => true, 'sort' => 0];
 
@@ -31,6 +31,8 @@ class ServiceType extends Model
     {
         return [
             'checklist' => 'array',
+            // PPE items (People → PPE and tools) the technician should have; only a warning.
+            'required_epi' => 'array',
             'duration_minutes' => 'integer',
             'price_cents' => 'integer',
             'signature_required' => 'boolean',

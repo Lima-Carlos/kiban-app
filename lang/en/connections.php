@@ -50,6 +50,10 @@ return [
             'title' => 'Safety trainings warn the Field team',
             'body' => 'The safety trainings registered by HR (NR-10, NR-35, NR-33 in Brazil) reach the Field office: a technician with an expired training shows up in "Attention" and with a warning when being scheduled.',
         ],
+        'epi_field' => [
+            'title' => 'Delivered PPE warns the Field team',
+            'body' => 'A type of service can say which PPE it needs (e.g. work at height → safety harness). A technician who did not receive that PPE shows a warning when being scheduled and when opening the work order on the phone. It is only a warning: nothing is blocked.',
+        ],
         'one_person' => [
             'title' => 'One person, one record',
             'body' => 'Each person is registered once in People and signs in with the same login to every system. Ready-made profiles, such as "Field technician" and "Driver", give access to both systems at once.',

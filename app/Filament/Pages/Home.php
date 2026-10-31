@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
 use App\People\Documents\PersonDocumentService;
+use App\People\Epi\EpiService;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -83,6 +84,8 @@ class Home extends Page
             ->flatMap(fn (Module $module): array => $module->attention(auth()->user()))
             // Common to every system: the people's documents expired or expiring (who takes care of them).
             ->merge(app(PersonDocumentService::class)->attention(auth()->user()))
+            // Common to every system: PPE to replace, CA expired, signatures waiting, low stock; my deliveries to sign.
+            ->merge(app(EpiService::class)->attention(auth()->user()))
             ->values()
             ->all();
     }

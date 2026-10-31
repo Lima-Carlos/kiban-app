@@ -20,6 +20,8 @@ use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\PunchService;
+use App\People\Epi\EpiDelivery;
+use App\People\Epi\EpiService;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -137,6 +139,11 @@ class DemoDataTest extends TestCase
             $this->assertSame(3, WorkOrder::query()->where('status', 'open')->count());
             $this->assertSame(['approved', 'sent', 'draft'], Quote::query()->orderBy('number')->pluck('status')->map(fn ($status) => $status->value)->all());
             $this->assertSame('Rede Exemplo Fibra Ltda', CompanyProfile::current()->name());
+
+            // PPE and tools: the technicians' kits and the replaced gloves signed; one delivery of today to sign.
+            $this->assertSame(4, EpiDelivery::query()->whereNotNull('signed_at')->count());
+            $this->assertSame(1, EpiDelivery::query()->whereNull('signed_at')->count());
+            $this->assertTrue(EpiDelivery::query()->whereNotNull('signed_at')->get()->every(fn (EpiDelivery $delivery): bool => app(EpiService::class)->verify($delivery)));
 
             // The window "your systems now work together" never shows up in the recordings.
             foreach (Tenant::query()->whereKey(app(TenantContext::class)->get()->getKey())->sole()->users as $user) {
