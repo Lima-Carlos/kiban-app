@@ -16,6 +16,9 @@ class ExpensesRelationManager extends RelationManager
 {
     protected static string $relationship = 'expenses';
 
+    /** Loaded with the page: no empty white box while the tab loads. */
+    protected static bool $isLazy = false;
+
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('fleet.expenses.plural_title');

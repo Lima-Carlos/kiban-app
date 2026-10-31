@@ -36,7 +36,8 @@ class FleetStatsWidget extends StatsOverviewWidget
             Stat::make(__('fleet.dashboard.volume'), FleetFormat::volume($totals['volume']))
                 ->icon(Heroicon::OutlinedBeaker),
             Stat::make(__('fleet.dashboard.distance'), FleetFormat::distance($totals['driven']))
-                ->description(__('fleet.dashboard.distance_help'))
+                // 0 km with a vehicle at 35,000 km looks wrong: it counts from the second reading on.
+                ->description($totals['driven'] > 0 ? __('fleet.dashboard.distance_help') : __('fleet.dashboard.distance_help_first'))
                 ->icon(Heroicon::OutlinedMapPin),
             Stat::make(__('fleet.dashboard.consumption'), FleetFormat::consumption($totals['consumption']))
                 ->icon(Heroicon::OutlinedArrowTrendingUp),

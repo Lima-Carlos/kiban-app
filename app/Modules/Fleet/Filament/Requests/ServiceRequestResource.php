@@ -34,6 +34,8 @@ class ServiceRequestResource extends ModuleResource
 
     protected static ?string $model = ServiceRequest::class;
 
+    protected static ?string $langGroup = 'fleet.requests';
+
     protected static ?string $slug = 'frota/solicitacoes';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftEllipsis;
@@ -109,7 +111,7 @@ class ServiceRequestResource extends ModuleResource
                 Action::make('photo')
                     ->label(__('fleet.actions.open_photo'))
                     ->icon(Heroicon::OutlinedPhoto)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (ServiceRequest $record): bool => filled($record->photo_path))
                     ->url(fn (ServiceRequest $record): string => Storage::disk('local')->temporaryUrl($record->photo_path, now()->addMinutes(10)))
                     ->openUrlInNewTab(),

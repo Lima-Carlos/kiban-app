@@ -12,6 +12,8 @@ use Illuminate\Contracts\Support\Htmlable;
  */
 abstract class ModuleRecordsPage extends ManageRecords
 {
+    use EmptyListShowsPendingStep;
+
     public function getSubheading(): string|Htmlable|null
     {
         $response = static::getResource()::getCreateAuthorizationResponse();

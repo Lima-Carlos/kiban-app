@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fleet\Filament\FuelUps\Pages;
 
+use App\Filament\Support\NewRecordTitle;
 use App\Modules\Fleet\Enums\FuelType;
 use App\Modules\Fleet\Filament\FleetFields;
 use App\Modules\Fleet\Filament\FuelUps\FuelUpResource;
@@ -27,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class CreateFuelUp extends CreateRecord
 {
+    use NewRecordTitle;
+
     protected static string $resource = FuelUpResource::class;
 
     public function form(Schema $schema): Schema

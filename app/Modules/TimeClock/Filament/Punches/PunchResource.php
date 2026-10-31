@@ -30,6 +30,8 @@ class PunchResource extends ModuleResource
 
     protected static ?string $model = Punch::class;
 
+    protected static ?string $langGroup = 'timeclock.punches';
+
     protected static ?string $slug = 'ponto/batidas';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
@@ -115,13 +117,13 @@ class PunchResource extends ModuleResource
                 Action::make('photo')
                     ->label(__('timeclock.punches.photo'))
                     ->icon(Heroicon::OutlinedPhoto)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Punch $record): bool => filled($record->photo_path))
                     ->url(fn (Punch $record): string => Storage::disk('local')->temporaryUrl($record->photo_path, now()->addMinutes(10)), shouldOpenInNewTab: true),
                 Action::make('receipt')
                     ->label(__('timeclock.receipt.short'))
                     ->icon(Heroicon::OutlinedDocumentText)
-                    ->iconButton()
+                    ->link()
                     ->url(fn (Punch $record): string => app(ReceiptService::class)->url($record), shouldOpenInNewTab: true),
             ])
             ->emptyStateHeading(__('timeclock.punches.none'));

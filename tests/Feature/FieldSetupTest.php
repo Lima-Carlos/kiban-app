@@ -9,6 +9,7 @@ use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\FieldModule;
 use App\Modules\Field\Filament\FieldSettingsPage;
 use App\Modules\Field\Filament\Materials\Pages\ManageMaterials;
+use App\Modules\Field\Filament\Orders\Pages\ListOrders;
 use App\Modules\Field\Filament\ServiceTypes\Pages\ManageServiceTypes;
 use App\Modules\Field\Filament\ServiceTypes\ServiceTypeResource;
 use App\Modules\Field\Models\FieldSetting;
@@ -170,5 +171,14 @@ class FieldSetupTest extends TestCase
         $this->actingAs($technician);
         $this->coreMember($this->company, $technician);
         $this->get(ServiceTypeResource::getUrl('index'))->assertForbidden();
+    }
+
+    public function test_the_empty_orders_list_points_to_the_missing_step(): void
+    {
+        // The new order waits for the service types, which wait for the business: the list points to the business.
+        Livewire::test(ListOrders::class)
+            ->assertSee(__('app.empty.step', ['step' => __('field.steps.business')]))
+            ->assertSee(FieldSettingsPage::getUrl(), false)
+            ->assertDontSee(__('field.orders.empty_help'));
     }
 }

@@ -1,9 +1,10 @@
 {{--
-    "Install the app" hint, only on phones and only while not installed. Android/Chrome: a button that opens the
-    install prompt. iPhone: how to do it in Safari. The person can close it (remembered on this phone).
+    "Install the app" hint, only on phones and only while not installed: one line. Android/Chrome: a button that
+    opens the install prompt. Otherwise "How?" opens the steps (iPhone: Safari). Closing it is remembered on this phone.
 --}}
 <div x-data="{
         show: false,
+        help: false,
         ios: /iphone|ipad|ipod/i.test(navigator.userAgent),
         prompt: null,
         init() {
@@ -19,13 +20,17 @@
     }"
     x-show="show"
     x-cloak
-    style="margin:0 0 16px;padding:12px 14px;border-radius:12px;background:rgba(4,66,153,.12);display:flex;gap:12px;align-items:center">
-    <img src="{{ asset('images/brand/icon-192.png') }}" alt="" style="width:40px;height:40px;border-radius:10px;flex:none">
-    <div style="flex:1;font-size:14px;line-height:1.4">
-        <strong>{{ __('app.install.title') }}</strong><br>
-        <span x-show="ios">{{ __('app.install.ios') }}</span>
-        <span x-show="! ios && ! prompt">{{ __('app.install.android') }}</span>
+    data-install-hint
+    style="margin:0 0 12px;padding:6px 8px 6px 10px;border-radius:10px;background:rgba(4,66,153,.08);font-size:13px;line-height:1.3">
+    <div style="display:flex;gap:8px;align-items:center">
+        <img src="{{ asset('images/brand/icon-192.png') }}" alt="" style="width:22px;height:22px;border-radius:6px;flex:none">
+        <strong style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ __('app.install.title') }}</strong>
+        <x-filament::button size="xs" x-show="prompt" x-on:click="install()">{{ __('app.install.button') }}</x-filament::button>
+        <button type="button" x-show="! prompt" x-on:click="help = ! help" style="background:none;border:0;padding:2px 4px;font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer;color:inherit;flex:none">{{ __('app.install.how') }}</button>
+        <button type="button" x-on:click="close()" aria-label="{{ __('app.install.close') }}" style="background:none;border:0;padding:0 4px;font-size:20px;line-height:1;cursor:pointer;opacity:.6;flex:none">×</button>
     </div>
-    <x-filament::button size="sm" x-show="prompt" x-on:click="install()">{{ __('app.install.button') }}</x-filament::button>
-    <button type="button" x-on:click="close()" aria-label="{{ __('app.install.close') }}" style="background:none;border:0;font-size:20px;line-height:1;cursor:pointer;opacity:.6">×</button>
+    <div x-show="help" x-cloak style="margin-top:6px">
+        <span x-show="ios">{{ __('app.install.ios') }}</span>
+        <span x-show="! ios">{{ __('app.install.android') }}</span>
+    </div>
 </div>

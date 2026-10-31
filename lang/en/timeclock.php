@@ -15,7 +15,7 @@ return [
     'settings' => [
         'title' => 'Time clock settings',
         'rules' => 'Country and labor rules',
-        'rules_help' => 'The details of the rules (workweek, overtime, night premium) come with the schedules and the calculation, in the next parts.',
+        'rules_help' => 'The country sets the rules. The details (overtime, night premium, tolerance) are in "Calculation rules", just below.',
         'country' => 'Company country',
         'labor_profile' => 'Rules',
         'save' => 'Save',
@@ -110,6 +110,7 @@ return [
     ],
     'workplaces' => [
         'singular' => 'workplace',
+        'new' => 'New workplace',
         'plural' => 'workplaces',
         'singular_title' => 'Workplace',
         'plural_title' => 'Workplaces',
@@ -119,6 +120,7 @@ return [
     ],
     'employees' => [
         'singular' => 'employee',
+        'new' => 'New employee',
         'plural' => 'employees',
         'plural_title' => 'Employees',
         'help' => 'Who clocks in. To add someone, use "Add employee" (opens the People screen).',
@@ -195,6 +197,7 @@ return [
     ],
     'schedules' => [
         'singular' => 'work schedule',
+        'new' => 'New work schedule',
         'plural' => 'work schedules',
         'singular_title' => 'Work schedule',
         'plural_title' => 'Work schedules',
@@ -238,6 +241,7 @@ return [
     ],
     'holidays' => [
         'singular' => 'holiday',
+        'new' => 'New holiday',
         'plural' => 'holidays',
         'plural_title' => 'Holidays',
         'name_placeholder' => 'E.g. City anniversary',
@@ -310,6 +314,7 @@ return [
     ],
     'punches' => [
         'singular' => 'punch',
+        'new' => 'New punch',
         'plural' => 'punches',
         'plural_title' => 'Punches',
         'help' => 'All punches, with photo, place and warnings. A punch never changes and is never deleted; anything to change goes in as a correction (Time Clock → Corrections).',
@@ -349,6 +354,7 @@ return [
     ],
     'kiosks' => [
         'singular' => 'clock (tablet)',
+        'new' => 'New clock (tablet)',
         'plural' => 'clocks (tablets)',
         'plural_title' => 'Clocks (tablets)',
         'name_placeholder' => 'E.g. Front desk tablet',
@@ -384,6 +390,7 @@ return [
         'title' => 'My time clock today',
     ],
     'timesheet' => [
+        'employee' => 'Employee',
         'title' => 'Calculation',
         'mine' => 'My time sheet',
         'previous' => 'Previous month',
@@ -424,6 +431,7 @@ return [
     ],
     'adjustments' => [
         'singular' => 'correction',
+        'new' => 'New correction',
         'plural' => 'corrections',
         'plural_title' => 'Corrections',
         'help' => 'Requests of the employees and corrections made by the manager. The original punch never changes: the correction stays apart, with the reason.',
@@ -505,6 +513,7 @@ return [
         'pending' => 'Corrections waiting',
         'pdf' => 'Time sheet (PDF)',
         'close' => 'Close the month',
+        'nobody' => 'Nobody worked in this month: there is nothing to close.',
         'close_all' => 'Close the month for everyone',
         'close_all_title' => 'Close :month for every employee?',
         'close_help' => 'The hours are frozen and the employee is asked to sign the time sheet. Anyone with a correction waiting for an answer is left out until you answer.',
@@ -551,7 +560,8 @@ return [
         'bank_expired' => 'Expired hour bank to pay (decimal hours)',
     ],
     'afd' => [
-        'download' => 'AFD file (preview)',
+        'download' => 'Labor inspection file (AFD)',
+        'what' => 'The official file of the punches that a labor inspector may ask for. It is still a preview.',
         'title' => 'AFD file (Portaria 671)',
         'preview' => 'PREVIEW: this file still has to be checked against the official layout and the validator of the Ministry of Labor before it is handed to an inspector. The digital signature with a certificate and the AEJ file are still missing.',
         'missing_employer' => 'The employer\'s CNPJ and legal name are missing in Time clock settings.',

@@ -268,7 +268,9 @@ São usadas no cálculo das horas a partir da parte 4:
   - **Não concorda** (com o motivo).
 - **"Fechar o mês de todos"** ou **"Fechar o mês"** em uma pessoa:
   - só depois que o mês termina: a partir do **meio-dia do dia 1º**, para o turno da noite do último dia ficar completo;
-  - quem tem **correção esperando resposta** fica de fora até o gestor responder (a tela mostra o nome e o motivo).
+  - quem tem **correção esperando resposta** fica de fora até o gestor responder (a tela mostra o nome e o motivo);
+  - num mês sem nenhum funcionário (ex.: todos entraram depois), o botão fica apagado, com a explicação "Ninguém trabalhou neste mês".
+- O botão **"Arquivo da fiscalização (AFD)"** (antes "Arquivo AFD (prévia)") explica o que é: o arquivo oficial das batidas que o fiscal do trabalho pode pedir. Ainda é uma prévia.
 - **Fechar congela o mês:**
   - o sistema guarda uma **cópia de todos os dias e dos totais**, com um código (SHA-256) que mostra se alguém mexeu na cópia;
   - dali em diante, a tela e o PDF mostram sempre essa cópia, mesmo que as regras mudem depois;

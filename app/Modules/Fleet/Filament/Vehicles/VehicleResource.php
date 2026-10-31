@@ -27,6 +27,7 @@ use App\Modules\Fleet\Rules\UniquePlate;
 use App\Modules\Fleet\Services\FleetAccess;
 use App\Modules\Fleet\Services\FleetFormat;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
@@ -49,6 +50,8 @@ class VehicleResource extends ModuleResource
     protected static string $moduleKey = FleetModule::KEY;
 
     protected static ?string $model = Vehicle::class;
+
+    protected static ?string $langGroup = 'fleet.vehicles';
 
     protected static ?string $slug = 'frota/veiculos';
 
@@ -309,10 +312,20 @@ class VehicleResource extends ModuleResource
                     ->options(VehicleType::class),
             ])
             ->emptyStateHeading(__('fleet.vehicles.empty'))
+            ->emptyStateDescription(fn (): ?string => static::getCreateAuthorizationResponse()->allowed() ? __('fleet.vehicles.empty_help') : null)
+            ->emptyStateIcon(Heroicon::OutlinedTruck)
+            ->emptyStateActions([
+                // Opens the same screen as the button at the top (VehicleService checks the plan limit).
+                Action::make('createVehicle')
+                    ->label(static::getNewRecordLabel())
+                    ->icon(Heroicon::OutlinedPlus)
+                    ->url(fn (): string => static::getUrl('create'))
+                    ->visible(fn (): bool => static::getCreateAuthorizationResponse()->allowed()),
+            ])
             ->recordUrl(fn (Vehicle $record): string => static::getUrl('view', ['record' => $record]))
             ->recordActions([
-                ViewAction::make()->iconButton(),
-                EditAction::make()->iconButton(),
+                ViewAction::make()->link(),
+                EditAction::make()->link(),
             ]);
     }
 

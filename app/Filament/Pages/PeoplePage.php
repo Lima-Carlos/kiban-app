@@ -23,6 +23,7 @@ use App\Support\Country;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Hidden;
@@ -255,7 +256,7 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                 Action::make('edit')
                     ->label(__('app.people.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Person $record): bool => $record->is_active)
                     ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
                     ->modalWidth('2xl')
@@ -304,7 +305,7 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                 Action::make('grantLogin')
                     ->label(__('app.people.grant_login'))
                     ->icon(Heroicon::OutlinedKey)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Person $record): bool => $record->is_active && ! $record->hasLogin())
                     ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
                     ->modalDescription(__('app.people.grant_login_help'))
@@ -335,86 +336,88 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                         $this->statuses = app(PeopleService::class)->statuses($this->tenant());
                         AccessNotice::send($this->tenant(), $result['user'], $result['invitation_url']);
                     }),
-                Action::make('access')
-                    ->label(__('app.people.send_access'))
-                    ->icon(Heroicon::OutlinedPaperAirplane)
-                    ->iconButton()
-                    ->visible(fn (Person $record): bool => $record->hasLogin() && $this->statusOf($record) === 'invited')
-                    ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
-                    ->requiresConfirmation()
-                    ->modalDescription(__('app.people.send_access_help'))
-                    ->action(function (Person $record): void {
-                        try {
-                            $url = app(PeopleService::class)->invitationLink($this->tenant(), $record->user, auth()->user());
-                        } catch (CoreUnavailableException) {
-                            Notification::make()->danger()->title(__('app.failed.core'))->send();
+                // The other actions with their names in a menu (on the phone, loose icons said nothing).
+                ActionGroup::make([
+                    Action::make('access')
+                        ->label(__('app.people.send_access'))
+                        ->icon(Heroicon::OutlinedPaperAirplane)
+                        ->visible(fn (Person $record): bool => $record->hasLogin() && $this->statusOf($record) === 'invited')
+                        ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
+                        ->requiresConfirmation()
+                        ->modalDescription(__('app.people.send_access_help'))
+                        ->action(function (Person $record): void {
+                            try {
+                                $url = app(PeopleService::class)->invitationLink($this->tenant(), $record->user, auth()->user());
+                            } catch (CoreUnavailableException) {
+                                Notification::make()->danger()->title(__('app.failed.core'))->send();
 
-                            return;
-                        }
+                                return;
+                            }
 
-                        AccessNotice::send($this->tenant(), $record->user, $url);
-                    }),
-                Action::make('deactivate')
-                    ->label(__('app.people.deactivate'))
-                    ->icon(Heroicon::OutlinedUserMinus)
-                    ->iconButton()
-                    ->color('danger')
-                    ->visible(fn (Person $record): bool => $record->is_active
-                        && ($record->user === null || ($record->user->roleIn($tenant) === User::ROLE_MEMBER && ! $record->user->is(auth()->user()))))
-                    ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
-                    ->requiresConfirmation()
-                    ->modalDescription(__('app.people.deactivate_help'))
-                    ->action(function (Person $record): void {
-                        try {
-                            app(PeopleService::class)->deactivate($this->tenant(), $record);
-                        } catch (CoreUnavailableException) {
-                            Notification::make()->danger()->title(__('app.failed.core'))->send();
+                            AccessNotice::send($this->tenant(), $record->user, $url);
+                        }),
+                    Action::make('deactivate')
+                        ->label(__('app.people.deactivate'))
+                        ->icon(Heroicon::OutlinedUserMinus)
+                        ->color('danger')
+                        ->visible(fn (Person $record): bool => $record->is_active
+                            && ($record->user === null || ($record->user->roleIn($tenant) === User::ROLE_MEMBER && ! $record->user->is(auth()->user()))))
+                        ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
+                        ->requiresConfirmation()
+                        ->modalDescription(__('app.people.deactivate_help'))
+                        ->action(function (Person $record): void {
+                            try {
+                                app(PeopleService::class)->deactivate($this->tenant(), $record);
+                            } catch (CoreUnavailableException) {
+                                Notification::make()->danger()->title(__('app.failed.core'))->send();
 
-                            return;
-                        }
+                                return;
+                            }
 
-                        Notification::make()->success()->title(__('app.people.deactivated'))->send();
-                    }),
-                // Documents with a validity (driver's license, medical exam, trainings): owners, administrators and HR.
-                Action::make('documents')
-                    ->label(__('documents.person.open'))
-                    ->icon(Heroicon::OutlinedIdentification)
-                    ->iconButton()
-                    ->visible(fn (): bool => app(PersonDocumentService::class)->canManage(auth()->user()))
-                    ->url(fn (Person $record): string => PersonDocumentsPage::getUrl(['pessoa' => $record->getKey()])),
-                // LGPD (art. 18): the company, controller of its employees' data, hands the person a copy of it.
-                Action::make('exportData')
-                    ->label(__('app.people.export_data'))
-                    ->icon(Heroicon::OutlinedArrowDownTray)
-                    ->iconButton()
-                    ->authorize(fn (): bool => static::canAccess())
-                    ->requiresConfirmation()
-                    ->modalDescription(__('app.people.export_data_help'))
-                    ->action(function (Person $record) {
-                        $data = [
-                            'generated_at_utc' => now()->toIso8601ZuluString(),
-                            'company' => $this->tenant()->name,
-                            'person' => [
-                                'name' => $record->name, 'phone' => $record->phone, 'email' => $record->email,
-                                'document' => app(PeopleService::class)->canSeeDocuments(auth()->user(), $this->tenant()) ? $record->document : null,
-                                'team' => $record->team?->name, 'active' => (bool) $record->is_active, 'has_login' => $record->hasLogin(),
-                            ],
-                            'systems' => collect(static::modules())->mapWithKeys(fn (Module $module): array => [$module->key() => $module->exportPerson($record)])
-                                ->filter(fn (array $part): bool => $part !== [])->all(),
-                            // Driver's license, medical exam, trainings (health data only for who may see it; no files).
-                            'documents' => app(PersonDocumentService::class)->exportPerson($record, auth()->user()),
-                        ];
+                            Notification::make()->success()->title(__('app.people.deactivated'))->send();
+                        }),
+                    // Documents with a validity (driver's license, medical exam, trainings): owners, administrators and HR.
+                    Action::make('documents')
+                        ->label(__('documents.person.open'))
+                        ->icon(Heroicon::OutlinedIdentification)
+                        ->visible(fn (): bool => app(PersonDocumentService::class)->canManage(auth()->user()))
+                        ->url(fn (Person $record): string => PersonDocumentsPage::getUrl(['pessoa' => $record->getKey()])),
+                    // LGPD (art. 18): the company, controller of its employees' data, hands the person a copy of it.
+                    Action::make('exportData')
+                        ->label(__('app.people.export_data'))
+                        ->icon(Heroicon::OutlinedArrowDownTray)
+                        ->authorize(fn (): bool => static::canAccess())
+                        ->requiresConfirmation()
+                        ->modalDescription(__('app.people.export_data_help'))
+                        ->action(function (Person $record) {
+                            $data = [
+                                'generated_at_utc' => now()->toIso8601ZuluString(),
+                                'company' => $this->tenant()->name,
+                                'person' => [
+                                    'name' => $record->name, 'phone' => $record->phone, 'email' => $record->email,
+                                    'document' => app(PeopleService::class)->canSeeDocuments(auth()->user(), $this->tenant()) ? $record->document : null,
+                                    'team' => $record->team?->name, 'active' => (bool) $record->is_active, 'has_login' => $record->hasLogin(),
+                                ],
+                                'systems' => collect(static::modules())->mapWithKeys(fn (Module $module): array => [$module->key() => $module->exportPerson($record)])
+                                    ->filter(fn (array $part): bool => $part !== [])->all(),
+                                // Driver's license, medical exam, trainings (health data only for who may see it; no files).
+                                'documents' => app(PersonDocumentService::class)->exportPerson($record, auth()->user()),
+                            ];
 
-                        return response()->streamDownload(
-                            fn () => print (json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
-                            'dados-'.str($record->name)->slug().'-'.now()->format('Y-m-d').'.json',
-                            ['Content-Type' => 'application/json; charset=utf-8'],
-                        );
-                    }),
+                            return response()->streamDownload(
+                                fn () => print (json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+                                'dados-'.str($record->name)->slug().'-'.now()->format('Y-m-d').'.json',
+                                ['Content-Type' => 'application/json; charset=utf-8'],
+                            );
+                        }),
+                ])
+                    ->icon(Heroicon::OutlinedEllipsisVertical)
+                    ->tooltip(__('app.more_actions'))
+                    ->iconButton(),
                 Action::make('reactivate')
                     ->label(__('app.people.reactivate'))
                     ->icon(Heroicon::OutlinedArrowUturnLeft)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Person $record): bool => ! $record->is_active)
                     ->authorize(fn (): bool => static::canAccess() && $this->tenantCanWrite())
                     ->requiresConfirmation()

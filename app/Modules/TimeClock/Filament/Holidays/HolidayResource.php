@@ -29,6 +29,8 @@ class HolidayResource extends ModuleResource
 
     protected static ?string $model = Holiday::class;
 
+    protected static ?string $langGroup = 'timeclock.holidays';
+
     protected static ?string $slug = 'ponto/feriados';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSun;

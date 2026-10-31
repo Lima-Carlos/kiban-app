@@ -141,6 +141,35 @@ class FieldCustomersTest extends TestCase
         $this->assertNull(app(AddressLocator::class)->postalCode('123'));
     }
 
+    public function test_typing_the_postal_code_fills_the_address_by_itself(): void
+    {
+        $form = Livewire::test(CreateCustomer::class);
+        $key = array_key_first($form->get('data.sites'));
+
+        // The only address already comes as the main one.
+        $form->assertSet("data.sites.{$key}.is_main", true)
+            ->set("data.sites.{$key}.postal_code", '30130-010')
+            ->assertSet("data.sites.{$key}.street", 'Avenida Afonso Pena')
+            ->assertSet("data.sites.{$key}.city", 'Belo Horizonte');
+    }
+
+    public function test_an_address_with_a_number_needs_the_street(): void
+    {
+        // Only "1000": not saved, with a clear message.
+        Livewire::test(CreateCustomer::class)
+            ->fillForm($this->form(['sites' => ['a' => ['number' => '1000']]]))
+            ->call('create')
+            ->assertHasFormErrors(['sites.a.street'])
+            ->assertSee(__('field.validation.street'));
+        $this->assertSame(0, Customer::count());
+
+        Livewire::test(CreateCustomer::class)
+            ->fillForm($this->form(['sites' => ['a' => ['street' => 'Rua Um', 'number' => '1000']]]))
+            ->call('create')
+            ->assertHasNoFormErrors();
+        $this->assertSame(1, Customer::count());
+    }
+
     public function test_phones_are_shown_as_people_read_them(): void
     {
         $this->assertSame('+55 (31) 98888-1234', Country::formatPhone('5531988881234'));

@@ -12,8 +12,10 @@ return [
     ],
     'vehicles' => [
         'singular' => 'vehículo',
+        'new' => 'Nuevo vehículo',
         'plural' => 'vehículos',
         'empty' => 'Ningún vehículo registrado',
+        'empty_help' => 'Registre los autos, motos y camiones de la empresa con el kilometraje actual. Desde ahí, el sistema avisa el cambio de aceite y la revisión.',
         'sections' => [
             'identity' => 'Identificación',
             'odometer' => 'Kilometraje actual',
@@ -25,12 +27,14 @@ return [
     ],
     'drivers' => [
         'singular' => 'conductor',
+        'new' => 'Nuevo conductor',
         'plural' => 'conductores',
         'empty' => 'Ningún conductor registrado',
         'singular_title' => 'Conductor',
     ],
     'stations' => [
         'singular' => 'estación',
+        'new' => 'Nueva estación',
         'plural' => 'estaciones',
         'empty' => 'Ninguna estación registrada',
         'singular_title' => 'Estación',
@@ -379,6 +383,7 @@ return [
     'no' => 'No',
     'fuel' => [
         'singular' => 'carga de combustible',
+        'new' => 'Nueva carga de combustible',
         'plural' => 'cargas de combustible',
         'empty' => 'Ninguna carga de combustible',
         'request_code' => 'Cargar combustible (generar código)',
@@ -449,6 +454,7 @@ return [
         'volume' => 'Litros cargados',
         'distance' => 'Recorrido',
         'distance_help' => 'Por el kilometraje registrado en el período',
+        'distance_help_first' => 'Cuenta a partir del segundo registro de kilometraje de cada vehículo (el primero es el punto de partida).',
         'consumption' => 'Rendimiento medio',
         'cost_per_distance' => 'Costo por km',
         'cost_per_distance_help' => 'Gasto total ÷ distancia recorrida en el período',
@@ -487,6 +493,7 @@ return [
     ],
     'requests' => [
         'singular' => 'solicitud',
+        'new' => 'Nueva solicitud',
         'plural' => 'solicitudes',
         'empty' => 'Ninguna solicitud',
         'create' => 'Solicitar mantenimiento o lavado',
@@ -494,6 +501,7 @@ return [
     ],
     'appointments' => [
         'singular' => 'cita',
+        'new' => 'Nueva cita',
         'plural' => 'citas',
         'plural_title' => 'Citas',
         'title' => 'Agenda',
@@ -506,14 +514,16 @@ return [
     ],
     'maintenances' => [
         'singular' => 'mantenimiento',
+        'new' => 'Nuevo mantenimiento',
         'plural' => 'mantenimientos',
         'plural_title' => 'Mantenimientos',
-        'empty' => 'Ningún mantenimiento',
+        'empty' => 'Ningún mantenimiento todavía',
         'record' => 'Registrar mantenimiento',
         'recorded' => 'Mantenimiento registrado. El kilometraje y el próximo servicio se actualizaron.',
     ],
     'washes' => [
         'singular' => 'lavado',
+        'new' => 'Nuevo lavado',
         'plural' => 'lavados',
         'plural_title' => 'Lavados',
         'empty' => 'Ningún lavado',
@@ -521,17 +531,20 @@ return [
     ],
     'expenses' => [
         'singular' => 'gasto',
+        'new' => 'Nuevo gasto',
         'plural' => 'gastos',
         'plural_title' => 'Gastos',
         'empty' => 'Ningún gasto',
     ],
     'workshops' => [
         'singular' => 'taller',
+        'new' => 'Nuevo taller',
         'plural' => 'talleres',
         'empty' => 'Ningún taller',
     ],
     'inspections' => [
         'singular' => 'inspección',
+        'new' => 'Nueva inspección',
         'plural' => 'inspecciones',
         'plural_title' => 'Inspecciones',
         'empty' => 'Ninguna inspección',
@@ -573,6 +586,7 @@ return [
         ],
         'missing' => 'Falta inspección',
         'none_missing' => 'Todos los vehículos activos ya fueron inspeccionados.',
+        'no_vehicles' => 'Ningún vehículo activo todavía.',
         'open_problems' => 'Problemas encontrados abiertos',
         'no_problems' => 'Ningún problema abierto.',
     ],
@@ -589,6 +603,7 @@ return [
     ],
     'checklist_items' => [
         'singular' => 'ítem de la inspección',
+        'new' => 'Nuevo ítem de la inspección',
         'plural' => 'ítems de la inspección',
         'empty' => 'Ningún ítem',
         'rename_help' => 'Deje vacío para usar el nombre estándar (traducido en cada idioma).',

@@ -19,6 +19,8 @@ class WashResource extends ModuleResource
 
     protected static ?string $model = Wash::class;
 
+    protected static ?string $langGroup = 'fleet.washes';
+
     protected static ?string $slug = 'frota/lavagens';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;

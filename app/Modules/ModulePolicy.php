@@ -72,6 +72,42 @@ abstract class ModulePolicy
         return Response::allow();
     }
 
+    /**
+     * The first step to do now before creating records here (a required step, or one it still waits for),
+     * as in Module::progress(); null when nothing is missing. Used to point the empty list at that step.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function pendingStep(): ?array
+    {
+        if ($this->requiresSteps === []) {
+            return null;
+        }
+
+        $module = app(ModuleRegistry::class)->get($this->module);
+        $progress = $module->progress(app(TenantContext::class)->get());
+        $keys = array_column($progress, 'key');
+
+        foreach ($this->requiresSteps as $required) {
+            $position = array_search($required, $keys, true);
+
+            if ($position === false || $progress[$position]['done']) {
+                continue;
+            }
+
+            // The required step, or the first earlier step it is waiting for.
+            foreach (array_slice($progress, 0, $position + 1) as $step) {
+                if (! $step['done'] && $step['available']) {
+                    return $step;
+                }
+            }
+
+            return $progress[$position];
+        }
+
+        return null;
+    }
+
     /** How many records count in the plan limit (override to leave some out, e.g. inactive vehicles). */
     protected function countForLimit(): int
     {

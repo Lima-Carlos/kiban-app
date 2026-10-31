@@ -81,8 +81,19 @@ return [
         'quote_not_sent' => 'Este orçamento ainda não foi enviado.',
         'quote_expired' => 'Este orçamento venceu. Peça um novo à empresa.',
     ],
+    'validation' => [
+        'customer' => 'Escolha o cliente.',
+        'service_type' => 'Escolha o tipo de serviço.',
+        'technician' => 'Escolha o técnico.',
+        'technician_with_time' => 'Com dia e hora informados, escolha o técnico.',
+        'time' => 'Informe o dia e a hora.',
+        'time_with_technician' => 'Com técnico escolhido, informe o dia e a hora.',
+        'street' => 'Informe a rua (ou digite o CEP para buscar).',
+        'street_abroad' => 'Informe a rua.',
+    ],
     'customers' => [
         'singular' => 'cliente',
+        'new' => 'Novo cliente',
         'plural' => 'clientes',
         'singular_title' => 'Cliente',
         'plural_title' => 'Clientes',
@@ -594,6 +605,7 @@ return [
     ],
     'service_types' => [
         'singular' => 'tipo de serviço',
+        'new' => 'Novo tipo de serviço',
         'plural' => 'tipos de serviço',
         'singular_title' => 'Tipo de serviço',
         'plural_title' => 'Tipos de serviço',
@@ -608,6 +620,7 @@ return [
     ],
     'materials' => [
         'singular' => 'material',
+        'new' => 'Novo material',
         'plural' => 'materiais',
         'singular_title' => 'Material',
         'plural_title' => 'Materiais',
@@ -662,9 +675,10 @@ return [
         'leave_alert_help' => 'Quantos minutos antes da hora de sair o técnico recebe o aviso no celular.',
         'return_days' => 'Dias para contar como retorno',
         'return_days_help' => 'Uma OS nova do mesmo cliente e endereço, até tantos dias depois de um serviço feito, é marcada como retorno. Zero desliga.',
-        'base_latitude' => 'Base da empresa: latitude',
-        'base_longitude' => 'Base da empresa: longitude',
-        'base_help' => 'De onde os técnicos saem de manhã (para sugerir a ordem da rota). No Google Maps, toque e segure no ponto e copie os dois números.',
+        'base' => 'Base da empresa',
+        'base_help' => 'De onde os técnicos saem de manhã (para sugerir a ordem da rota). Estando na empresa, toque em "Usar minha localização".',
+        'advanced' => 'Avançado',
+        'advanced_help' => 'Números da estimativa de deslocamento. Na maioria das empresas, não precisa mudar.',
     ],
     'templates' => [
         'isp' => [

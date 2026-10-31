@@ -33,6 +33,8 @@ class WorkplaceResource extends ModuleResource
 
     protected static ?string $model = Workplace::class;
 
+    protected static ?string $langGroup = 'timeclock.workplaces';
+
     protected static ?string $slug = 'ponto/locais';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;

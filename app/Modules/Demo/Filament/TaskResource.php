@@ -29,6 +29,8 @@ class TaskResource extends ModuleResource
 
     protected static ?string $model = Task::class;
 
+    protected static ?string $langGroup = 'demo.tasks';
+
     protected static ?string $slug = 'demo/tasks';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCheckCircle;

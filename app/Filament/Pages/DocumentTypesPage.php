@@ -198,7 +198,7 @@ class DocumentTypesPage extends Page implements HasActions, HasSchemas, HasTable
                 Action::make('edit')
                     ->label(__('documents.actions.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)
-                    ->iconButton()
+                    ->link()
                     ->authorize(fn (): bool => static::canAccess())
                     ->fillForm(fn (DocumentType $record): array => [
                         'name' => $record->label(),

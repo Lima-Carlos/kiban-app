@@ -20,6 +20,8 @@ class TaskListResource extends ModuleResource
 
     protected static ?string $model = TaskList::class;
 
+    protected static ?string $langGroup = 'demo.lists';
+
     protected static ?string $slug = 'demo/lists';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

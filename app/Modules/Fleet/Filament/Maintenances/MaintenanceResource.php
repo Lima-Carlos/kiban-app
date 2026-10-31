@@ -31,6 +31,8 @@ class MaintenanceResource extends ModuleResource
 
     protected static ?string $model = Maintenance::class;
 
+    protected static ?string $langGroup = 'fleet.maintenances';
+
     protected static ?string $slug = 'frota/manutencoes';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
@@ -88,13 +90,13 @@ class MaintenanceResource extends ModuleResource
                 Action::make('invoice')
                     ->label(__('fleet.fields.invoice'))
                     ->icon(Heroicon::OutlinedPaperClip)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Maintenance $record): bool => filled($record->invoice_path))
                     ->url(fn (Maintenance $record): string => Storage::disk('local')->temporaryUrl($record->invoice_path, now()->addMinutes(10)))
                     ->openUrlInNewTab(),
                 // Only the details can be fixed; odometer and services are history (they moved the odometer and the plan).
                 EditAction::make()
-                    ->iconButton()
+                    ->link()
                     ->fillForm(fn (Maintenance $record): array => [
                         'description' => $record->description,
                         'workshop_id' => $record->workshop_id,

@@ -11,6 +11,7 @@ use App\People\Documents\PersonDocumentService;
 use App\People\Person;
 use App\Tenancy\TenantContext;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -154,7 +155,7 @@ trait ManagesPersonDocuments
     }
 
     /**
-     * @return array<int, Action>
+     * @return array<int, Action|ActionGroup>
      */
     protected function documentRecordActions(): array
     {
@@ -162,14 +163,14 @@ trait ManagesPersonDocuments
             Action::make('openFile')
                 ->label(__('documents.actions.open_file'))
                 ->icon(Heroicon::OutlinedPaperClip)
-                ->iconButton()
+                ->link()
                 ->visible(fn (PersonDocument $record): bool => $this->documents()->canOpenFile(auth()->user(), $record))
                 ->url(fn (PersonDocument $record): string => route('people.documents.file', ['document' => $record->getKey()]))
                 ->openUrlInNewTab(),
             Action::make('renew')
                 ->label(__('documents.actions.renew'))
                 ->icon(Heroicon::OutlinedArrowPath)
-                ->iconButton()
+                ->link()
                 ->visible(fn (PersonDocument $record): bool => $record->isCurrent() && $record->person->is_active)
                 ->authorize(fn (): bool => $this->documents()->canManage(auth()->user()) && $this->tenantCanWrite())
                 ->modalHeading(fn (PersonDocument $record): string => __('documents.actions.renew_heading', ['document' => $record->type->label(), 'name' => $record->person->name]))
@@ -182,37 +183,41 @@ trait ManagesPersonDocuments
                     $this->documents()->add($record->person, $data, auth()->user());
                     Notification::make()->success()->title(__('documents.saved'))->send();
                 }),
-            Action::make('edit')
-                ->label(__('documents.actions.edit'))
-                ->icon(Heroicon::OutlinedPencilSquare)
-                ->iconButton()
-                ->authorize(fn (): bool => $this->documents()->canManage(auth()->user()) && $this->tenantCanWrite())
-                ->modalWidth('2xl')
-                ->fillForm(fn (PersonDocument $record): array => [
-                    'document_type_id' => $record->document_type_id,
-                    'number' => $record->number,
-                    'issued_on' => $record->issued_on?->toDateString(),
-                    'expires_on' => $record->expires_on?->toDateString(),
-                    'file_path' => $record->file_path,
-                    'notes' => $record->notes,
-                ])
-                ->schema(fn (PersonDocument $record): array => $this->documentFields(editing: $record))
-                ->action(function (PersonDocument $record, array $data): void {
-                    $this->documents()->update($record, $data, auth()->user());
-                    Notification::make()->success()->title(__('documents.saved'))->send();
-                }),
-            Action::make('delete')
-                ->label(__('documents.actions.delete'))
-                ->icon(Heroicon::OutlinedTrash)
-                ->iconButton()
-                ->color('danger')
-                ->authorize(fn (): bool => $this->documents()->canManage(auth()->user()) && $this->tenantCanWrite())
-                ->requiresConfirmation()
-                ->modalDescription(__('documents.actions.delete_help'))
-                ->action(function (PersonDocument $record): void {
-                    $this->documents()->delete($record);
-                    Notification::make()->success()->title(__('documents.deleted'))->send();
-                }),
+            // Editing and deleting by name in a menu (loose icons said nothing on the phone).
+            ActionGroup::make([
+                Action::make('edit')
+                    ->label(__('documents.actions.edit'))
+                    ->icon(Heroicon::OutlinedPencilSquare)
+                    ->authorize(fn (): bool => $this->documents()->canManage(auth()->user()) && $this->tenantCanWrite())
+                    ->modalWidth('2xl')
+                    ->fillForm(fn (PersonDocument $record): array => [
+                        'document_type_id' => $record->document_type_id,
+                        'number' => $record->number,
+                        'issued_on' => $record->issued_on?->toDateString(),
+                        'expires_on' => $record->expires_on?->toDateString(),
+                        'file_path' => $record->file_path,
+                        'notes' => $record->notes,
+                    ])
+                    ->schema(fn (PersonDocument $record): array => $this->documentFields(editing: $record))
+                    ->action(function (PersonDocument $record, array $data): void {
+                        $this->documents()->update($record, $data, auth()->user());
+                        Notification::make()->success()->title(__('documents.saved'))->send();
+                    }),
+                Action::make('delete')
+                    ->label(__('documents.actions.delete'))
+                    ->icon(Heroicon::OutlinedTrash)
+                    ->color('danger')
+                    ->authorize(fn (): bool => $this->documents()->canManage(auth()->user()) && $this->tenantCanWrite())
+                    ->requiresConfirmation()
+                    ->modalDescription(__('documents.actions.delete_help'))
+                    ->action(function (PersonDocument $record): void {
+                        $this->documents()->delete($record);
+                        Notification::make()->success()->title(__('documents.deleted'))->send();
+                    }),
+            ])
+                ->icon(Heroicon::OutlinedEllipsisVertical)
+                ->tooltip(__('app.more_actions'))
+                ->iconButton(),
         ];
     }
 

@@ -25,6 +25,8 @@ class ChecklistItemResource extends ModuleResource
 
     protected static ?string $model = ChecklistItem::class;
 
+    protected static ?string $langGroup = 'fleet.checklist_items';
+
     protected static ?string $slug = 'frota/itens-da-vistoria';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;

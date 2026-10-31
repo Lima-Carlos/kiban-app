@@ -15,7 +15,7 @@ return [
     'settings' => [
         'title' => 'Configurações do ponto',
         'rules' => 'País e regras trabalhistas',
-        'rules_help' => 'Os detalhes das regras (jornada, horas extras, adicional noturno) entram com os horários e o cálculo, nas próximas partes.',
+        'rules_help' => 'O país define as regras. Os detalhes (horas extras, adicional noturno, tolerância) ficam em "Regras de cálculo", logo abaixo.',
         'country' => 'País da empresa',
         'labor_profile' => 'Regras',
         'save' => 'Salvar',
@@ -110,6 +110,7 @@ return [
     ],
     'workplaces' => [
         'singular' => 'local de trabalho',
+        'new' => 'Novo local de trabalho',
         'plural' => 'locais de trabalho',
         'singular_title' => 'Local de trabalho',
         'plural_title' => 'Locais de trabalho',
@@ -119,6 +120,7 @@ return [
     ],
     'employees' => [
         'singular' => 'funcionário',
+        'new' => 'Novo funcionário',
         'plural' => 'funcionários',
         'plural_title' => 'Funcionários',
         'help' => 'Quem bate ponto. Para adicionar alguém, use "Adicionar funcionário" (abre a tela Pessoas).',
@@ -195,6 +197,7 @@ return [
     ],
     'schedules' => [
         'singular' => 'horário de trabalho',
+        'new' => 'Novo horário de trabalho',
         'plural' => 'horários de trabalho',
         'singular_title' => 'Horário de trabalho',
         'plural_title' => 'Horários de trabalho',
@@ -238,6 +241,7 @@ return [
     ],
     'holidays' => [
         'singular' => 'feriado',
+        'new' => 'Novo feriado',
         'plural' => 'feriados',
         'plural_title' => 'Feriados',
         'name_placeholder' => 'Ex.: Aniversário da cidade',
@@ -310,6 +314,7 @@ return [
     ],
     'punches' => [
         'singular' => 'batida',
+        'new' => 'Nova batida',
         'plural' => 'batidas',
         'plural_title' => 'Batidas',
         'help' => 'Todas as batidas, com foto, local e avisos. Uma batida nunca é alterada nem apagada; o que precisar mudar entra por uma correção (Ponto → Correções).',
@@ -349,6 +354,7 @@ return [
     ],
     'kiosks' => [
         'singular' => 'relógio (tablet)',
+        'new' => 'Novo relógio (tablet)',
         'plural' => 'relógios (tablets)',
         'plural_title' => 'Relógios (tablets)',
         'name_placeholder' => 'Ex.: Tablet da recepção',
@@ -384,6 +390,7 @@ return [
         'title' => 'Meu ponto hoje',
     ],
     'timesheet' => [
+        'employee' => 'Funcionário',
         'title' => 'Apuração',
         'mine' => 'Meu ponto',
         'previous' => 'Mês anterior',
@@ -424,6 +431,7 @@ return [
     ],
     'adjustments' => [
         'singular' => 'correção',
+        'new' => 'Nova correção',
         'plural' => 'correções',
         'plural_title' => 'Correções',
         'help' => 'Pedidos dos funcionários e correções feitas pelo gestor. A batida original nunca muda: a correção fica à parte, com o motivo.',
@@ -505,6 +513,7 @@ return [
         'pending' => 'Correções esperando',
         'pdf' => 'Espelho (PDF)',
         'close' => 'Fechar o mês',
+        'nobody' => 'Ninguém trabalhou neste mês: não há o que fechar.',
         'close_all' => 'Fechar o mês de todos',
         'close_all_title' => 'Fechar :month de todos os funcionários?',
         'close_help' => 'As horas ficam congeladas e o funcionário recebe o aviso para assinar o espelho. Quem tiver correção esperando resposta fica de fora até você responder.',
@@ -551,7 +560,8 @@ return [
         'bank_expired' => 'Banco vencido a pagar (horas decimais)',
     ],
     'afd' => [
-        'download' => 'Arquivo AFD (prévia)',
+        'download' => 'Arquivo da fiscalização (AFD)',
+        'what' => 'O arquivo oficial das batidas que o fiscal do trabalho pode pedir. Ainda é uma prévia.',
         'title' => 'Arquivo AFD (Portaria 671)',
         'preview' => 'PRÉVIA: este arquivo ainda precisa ser conferido com o leiaute oficial e o validador do Ministério do Trabalho antes de ser entregue a um fiscal. Ainda faltam a assinatura digital com certificado e o arquivo AEJ.',
         'missing_employer' => 'Falta o CNPJ e a razão social do empregador em Configurações do ponto.',

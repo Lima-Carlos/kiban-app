@@ -17,6 +17,9 @@ class MaintenancesRelationManager extends RelationManager
 {
     protected static string $relationship = 'maintenances';
 
+    /** Loaded with the page: no empty white box while the tab loads. */
+    protected static bool $isLazy = false;
+
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('fleet.maintenances.plural_title');

@@ -30,6 +30,8 @@ class AppointmentResource extends ModuleResource
 
     protected static ?string $model = Appointment::class;
 
+    protected static ?string $langGroup = 'fleet.appointments';
+
     protected static ?string $slug = 'frota/agenda';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
@@ -108,7 +110,7 @@ class AppointmentResource extends ModuleResource
                     ->label(__('fleet.actions.cancel_appointment'))
                     ->icon(Heroicon::OutlinedXMark)
                     ->color('gray')
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Appointment $record): bool => $record->isOpen())
                     ->authorize('update')
                     ->schema([Textarea::make('reason')->label(__('fleet.fields.reason'))->required()])

@@ -73,6 +73,18 @@ class FieldOrdersTest extends TestCase
         return $user;
     }
 
+    public function test_missing_data_gets_plain_messages(): void
+    {
+        Livewire::test(CreateOrder::class)
+            ->fillForm(['service_type_id' => $this->install->getKey(), 'technician_id' => $this->technician->getKey()])
+            ->call('create')
+            ->assertHasFormErrors(['customer_id', 'scheduled_at'])
+            ->assertSee(__('field.validation.customer'))
+            ->assertSee(__('field.validation.time_with_technician'))
+            ->assertDontSee('obrigatória a indicação');
+        $this->assertSame(0, WorkOrder::count());
+    }
+
     public function test_open_an_order_on_the_technicians_agenda(): void
     {
         // 14:00 in Brazil = 17:00 UTC (the form works in the company's time zone; the state is in UTC).

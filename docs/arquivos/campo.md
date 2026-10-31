@@ -35,7 +35,9 @@ Novos perfis sugeridos: **"Técnico de campo"** (técnico no Campo e funcionári
   - sempre um "principal";
   - ponto de referência ("portão azul") e com quem falar;
   - um endereço deixado em branco não é salvo.
-- **CEP (Brasil):** a lupa ao lado do CEP preenche rua, bairro, cidade e estado. Usa o serviço gratuito ViaCEP.
+- **CEP (Brasil):** ao terminar de digitar os 8 números, o sistema preenche sozinho rua, bairro, cidade e estado (a lupa ao lado faz o mesmo). Usa o serviço gratuito ViaCEP.
+- **Endereço incompleto não passa:** com número ou CEP, a rua é obrigatória ("Informe a rua (ou digite o CEP para buscar)"). Antes dava para salvar só "1000". A regra fica em `CustomerRules::siteMissingStreet`.
+- No cliente novo, o único endereço já vem marcado como **Principal**.
 - **Ponto no mapa de cada endereço:** de onde ele veio aparece na tela.
   - "Marcado": digitado, ou "Usar minha localização" no local;
   - "Da planilha": latitude e longitude vieram na importação;
@@ -336,7 +338,7 @@ Cada um sai só uma vez:
 - **Retorno:** uma OS nova do mesmo cliente e endereço, até 30 dias depois de um serviço feito, é marcada como **retorno** (com o link da OS anterior). Ajuda a ver serviço mal feito.
 
 ### Configurações do Campo → "Dia do técnico" (só o gestor)
-Velocidade média na cidade (25 km/h), fator das ruas (1,4), minutos do alerta para sair (15), dias para contar como retorno (30) e a base da empresa (latitude e longitude de onde os técnicos saem).
+Minutos do alerta para sair (15), dias para contar como retorno (30) e a **base da empresa** (de onde os técnicos saem), marcada com o botão **"Usar minha localização"** estando na empresa, sem copiar números. A velocidade média na cidade (25 km/h) e o fator das ruas (1,4) ficam na seção **"Avançado"**, fechada: quase nenhuma empresa precisa mudar. A moeda aparece por extenso ("Real brasileiro (R$)", `Country::currencyName`).
 
 ## Arquivos (dia do técnico)
 - `database/migrations/2026_10_31_120000_create_field_day_tables.php`: os campos novos das configurações e da OS (atraso, a caminho, devolvida, retorno, nota) e a tabela `push_subscriptions` (os celulares que recebem avisos).

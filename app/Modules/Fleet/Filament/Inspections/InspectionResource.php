@@ -35,6 +35,8 @@ class InspectionResource extends ModuleResource
 
     protected static ?string $model = Inspection::class;
 
+    protected static ?string $langGroup = 'fleet.inspections';
+
     protected static ?string $slug = 'frota/vistorias';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;

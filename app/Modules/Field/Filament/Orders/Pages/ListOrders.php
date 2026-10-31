@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field\Filament\Orders\Pages;
 
+use App\Filament\Support\EmptyListShowsPendingStep;
 use App\Modules\Field\Enums\OrderStatus;
 use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Models\WorkOrder;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListOrders extends ListRecords
 {
+    use EmptyListShowsPendingStep;
+
     protected static string $resource = OrderResource::class;
 
     /** Says why an order cannot be opened (read-only, a first step missing). */

@@ -25,7 +25,7 @@ Os documentos do **veículo** (licenciamento, seguro) continuam na Frota, na pá
 - Fica registrado quem cadastrou e quem alterou por último (`created_by`, `updated_by`). A casca não usa o "activity log"; o histórico é o próprio documento antigo, que não some.
 
 ## Onde aparece
-- **Pessoas:** a coluna **Documentos** ("1 vencido", "2 vencendo", "Em dia") e o botão **Documentos** (ícone de crachá) em cada pessoa. Ele abre a página da pessoa com os documentos atuais, o histórico e **Adicionar documento**.
+- **Pessoas:** a coluna **Documentos** ("1 vencido", "2 vencendo", "Em dia") e o botão **Documentos** (no menu ⋮ de cada pessoa). Ele abre a página da pessoa com os documentos atuais, o histórico e **Adicionar documento**.
 - **Empresa → Vencimentos:** todos os documentos atuais da empresa, o que vence primeiro no topo. Filtros: situação, tipo e equipe. Botões: **Adicionar documento**, **Baixar planilha** (Excel, do jeito que a lista está na tela) e **Tipos de documento**.
 - **Meus documentos** (menu do usuário, no canto de cima): a própria pessoa vê os documentos dela e abre o anexo, **só para ler**. O item só aparece para quem tem documento. Decisão: o menu do usuário serve para todos os sistemas (inclusive quem não bate ponto), por isso o item não ficou perto de "Meu ponto".
 - **No celular:** todas essas listas viram **cartões**.

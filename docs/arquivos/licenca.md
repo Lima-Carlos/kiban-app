@@ -22,7 +22,8 @@
 - **Somente consulta** (contrato encerrado ou pagamento atrasado): dá para ver, mas os botões de criar, editar e apagar somem, e um aviso explica o motivo.
 - **Limites do plano** (ex.: 50 veículos): ao chegar no limite (mais a tolerância configurada no Core), o botão de cadastrar some e a tela explica.
 - **Empresa suspensa** no Core: "Acesso indisponível".
-- **Teste grátis:** aviso quando faltam menos de 7 dias.
+- **Teste grátis:** enquanto **todos** os sistemas da empresa estão em teste, uma faixa discreta no topo de todas as telas diz "Teste grátis: faltam N dias · Ver planos" ("termina hoje" no último dia). Os dias contam no fuso da empresa. Nos últimos 3 dias a faixa fica laranja. "Ver planos" abre a Área do cliente no Core (`/conta/sistemas`). **Só o dono e os administradores veem**; funcionários, motoristas e técnicos não. No celular, a faixa ocupa uma linha só.
+- Quando a empresa já paga um sistema e testa outro, a faixa some e vale o aviso antigo "O período de teste de X termina em..." (nos últimos 7 dias, também só para quem gerencia).
 
 ## Arquivos
 - `app/Licensing/`:
@@ -31,8 +32,9 @@
   - `LicenseManager` (buscar e guardar);
   - `LicenseVerifier` (conferir a assinatura);
   - `License` e `LicenseState` (o que a licença diz);
-  - `LicenseNotices` (avisos no topo).
+  - `LicenseNotices` (avisos no topo);
+  - `TrialBanner` (a faixa do teste grátis: quando aparece, para quem e quantos dias faltam).
 - `app/Http/Middleware/EnsureLicense.php`: bloqueia sem licença válida.
 - `app/Console/Commands/RefreshLicenses.php`: comando `kiban:licenses`.
-- Tela: `resources/views/filament/license-notice.blade.php`.
-- Testes: `tests/Feature/LicenseTest.php`.
+- Telas: `resources/views/filament/license-notice.blade.php` e `resources/views/filament/trial-banner.blade.php` (a faixa do teste).
+- Testes: `tests/Feature/LicenseTest.php` e `tests/Feature/TrialBannerTest.php` (a faixa).

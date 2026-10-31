@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fleet\Filament\Vehicles\Pages;
 
+use App\Filament\Support\NewRecordTitle;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
 use App\Modules\Fleet\Services\FleetException;
 use App\Modules\Fleet\Services\VehicleService;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CreateVehicle extends CreateRecord
 {
+    use NewRecordTitle;
+
     protected static string $resource = VehicleResource::class;
 
     /**

@@ -36,6 +36,8 @@ class EmployeeResource extends ModuleResource
 
     protected static ?string $model = Employee::class;
 
+    protected static ?string $langGroup = 'timeclock.employees';
+
     protected static ?string $slug = 'ponto/funcionarios';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
@@ -123,7 +125,7 @@ class EmployeeResource extends ModuleResource
                 Action::make('month')
                     ->label(__('timeclock.employees.see_month'))
                     ->icon(Heroicon::OutlinedCalendarDays)
-                    ->iconButton()
+                    ->link()
                     ->modalHeading(fn (Employee $record): string => __('timeclock.employees.month_title', ['name' => $record->person->name, 'month' => ucfirst(now()->translatedFormat('F Y'))]))
                     ->modalContent(fn (Employee $record) => view('timeclock.employee-month', [
                         'days' => app(ScheduleCalendar::class)->period($record, now()->startOfMonth(), now()->endOfMonth()),
@@ -133,7 +135,7 @@ class EmployeeResource extends ModuleResource
                 Action::make('pin')
                     ->label(fn (Employee $record): string => $record->hasPin() ? __('timeclock.employees.new_pin') : __('timeclock.employees.create_pin'))
                     ->icon(Heroicon::OutlinedKey)
-                    ->iconButton()
+                    ->link()
                     ->authorize('update')
                     ->visible(fn (Employee $record): bool => $record->is_active)
                     ->requiresConfirmation()
@@ -150,7 +152,7 @@ class EmployeeResource extends ModuleResource
                 Action::make('edit')
                     ->label(__('app.people.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)
-                    ->iconButton()
+                    ->link()
                     ->authorize('update')
                     ->visible(fn (Employee $record): bool => $record->is_active)
                     ->modalWidth('2xl')

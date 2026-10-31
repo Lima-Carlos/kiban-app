@@ -30,6 +30,8 @@ class MaterialResource extends ModuleResource
 
     protected static ?string $model = Material::class;
 
+    protected static ?string $langGroup = 'field.materials';
+
     protected static ?string $slug = 'campo/materiais';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;

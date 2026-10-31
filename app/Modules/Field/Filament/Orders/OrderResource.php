@@ -53,6 +53,8 @@ class OrderResource extends ModuleResource
 
     protected static ?string $model = WorkOrder::class;
 
+    protected static ?string $langGroup = 'field.orders';
+
     protected static ?string $slug = 'campo/ordens';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
@@ -178,6 +180,7 @@ class OrderResource extends ModuleResource
                             ->live()
                             ->afterStateUpdated(fn (Set $set, $state) => $set('site_id', Customer::query()->find($state)?->mainSite?->getKey()))
                             ->required()
+                            ->validationMessages(['required' => __('field.validation.customer')])
                             ->disabledOn('edit')
                             ->columnSpanFull(),
                         Select::make('site_id')
@@ -192,6 +195,7 @@ class OrderResource extends ModuleResource
                             ->live()
                             ->afterStateUpdated(fn (Set $set, $state) => $set('duration_minutes', ServiceType::query()->find($state)?->duration_minutes))
                             ->required()
+                            ->validationMessages(['required' => __('field.validation.service_type')])
                             ->disabledOn('edit'),
                         ToggleButtons::make('priority')
                             ->label(__('field.fields.priority'))
@@ -261,13 +265,15 @@ class OrderResource extends ModuleResource
                     ? Text::make($warning)->color('danger')->icon(Heroicon::OutlinedExclamationTriangle)
                     : null)
                 ->requiredWith('scheduled_at')
-                ->required($required),
+                ->required($required)
+                ->validationMessages(['required' => __('field.validation.technician'), 'required_with' => __('field.validation.technician_with_time')]),
             DateTimePicker::make('scheduled_at')
                 ->label(__('field.fields.scheduled_at'))
                 ->seconds(false)
                 ->minutesStep(5)
                 ->requiredWith('technician_id')
-                ->required($required),
+                ->required($required)
+                ->validationMessages(['required' => __('field.validation.time'), 'required_with' => __('field.validation.time_with_technician')]),
             Select::make('duration_minutes')
                 ->label(__('field.fields.duration'))
                 ->options(collect([15, 30, 45, 60, 90, 120, 150, 180, 240, 300, 360, 480])->mapWithKeys(fn (int $minutes): array => [$minutes => FieldFormat::duration($minutes)])->all()),

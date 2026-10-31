@@ -22,6 +22,8 @@ class FuelStationResource extends ModuleResource
 
     protected static ?string $model = FuelStation::class;
 
+    protected static ?string $langGroup = 'fleet.stations';
+
     protected static ?string $slug = 'frota/postos';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;

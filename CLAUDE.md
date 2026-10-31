@@ -73,6 +73,9 @@ Laravel 13, Filament 5 (as telas), PostgreSQL 18, Redis 7, `firebase/php-jwt` (c
 - As telas estendem `App\Filament\Support\ModuleResource`, e as páginas de lista estendem `ModuleRecordsPage` (que explica por que não dá para cadastrar).
 - **Primeiros passos:** cada `Step` diz se está feito olhando os dados reais, e de quais passos depende. Os modelos usam `ReportsFirstSteps` para avisar o Core depois de cada mudança.
 - O módulo `demo` (Tarefas) é o modelo a copiar.
+- Telas novas: `$langGroup` no `ModuleResource` + chave `new` nos 3 idiomas ("Novo veículo", nunca "Criar Veículo"); páginas de cadastro usam `NewRecordTitle`. Ações de linha com nome (`->link()` ou menu ⋮ `ActionGroup`), nunca `iconButton()` solto. Lista cujo cadastro espera um passo mostra o passo (`EmptyListShowsPendingStep`). Parâmetros `{record}`/`{order}` só aceitam números (`AppServiceProvider::register`), e o endereço errado dá 404.
+- Mensagens de validação humanas nos 3 idiomas (`lang/*/validation.php`); mensagem própria com `->validationMessages()` quando a genérica não basta.
+- Faixa "Teste grátis: faltam N dias" só em `App\Licensing\TrialBanner` (todos os módulos em teste, só dono/admin, dias no fuso da empresa).
 
 ## Ponto (`app/Modules/TimeClock`, chave `ponto`)
 - Perfis de regras por país (`LaborProfile`): "Brasil (CLT)" completo (Portaria 671, AFD/AEJ, CPF obrigatório, PIS opcional) e "Personalizado" (outros países; a empresa informa as regras). O país e o perfil ficam em `TimeClockSetting`. Nada da lei brasileira pode valer para o perfil "Personalizado".

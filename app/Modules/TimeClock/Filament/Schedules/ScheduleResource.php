@@ -40,6 +40,8 @@ class ScheduleResource extends ModuleResource
 
     protected static ?string $model = Schedule::class;
 
+    protected static ?string $langGroup = 'timeclock.schedules';
+
     protected static ?string $slug = 'ponto/horarios';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
@@ -189,7 +191,7 @@ class ScheduleResource extends ModuleResource
                 Action::make('duplicate')
                     ->label(__('timeclock.schedules.duplicate'))
                     ->icon(Heroicon::OutlinedDocumentDuplicate)
-                    ->iconButton()
+                    ->link()
                     ->authorize('create')
                     ->tooltip(fn (Schedule $record): ?string => $record->isInUse() ? __('timeclock.schedules.in_use_help') : null)
                     ->action(function (Schedule $record): void {

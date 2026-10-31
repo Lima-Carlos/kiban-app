@@ -39,6 +39,8 @@ class FuelUpResource extends ModuleResource
 
     protected static ?string $model = FuelUp::class;
 
+    protected static ?string $langGroup = 'fleet.fuel';
+
     protected static ?string $slug = 'frota/abastecimentos';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBeaker;
@@ -228,7 +230,7 @@ class FuelUpResource extends ModuleResource
             ])
             ->recordUrl(fn (FuelUp $record): string => static::getUrl('view', ['record' => $record]))
             ->recordActions([
-                ViewAction::make()->iconButton(),
+                ViewAction::make()->link(),
             ])
             ->emptyStateHeading(__('fleet.fuel.empty'));
     }

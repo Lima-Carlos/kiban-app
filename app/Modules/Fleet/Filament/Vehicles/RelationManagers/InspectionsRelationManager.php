@@ -14,6 +14,9 @@ class InspectionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'inspections';
 
+    /** Loaded with the page: no empty white box while the tab loads. */
+    protected static bool $isLazy = false;
+
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('fleet.inspections.plural_title');
@@ -28,7 +31,7 @@ class InspectionsRelationManager extends RelationManager
                 Action::make('open')
                     ->label(__('fleet.inspections.open'))
                     ->icon(Heroicon::OutlinedEye)
-                    ->iconButton()
+                    ->link()
                     ->url(fn (Inspection $record): string => InspectionResource::getUrl('view', ['record' => $record])),
             ])
             ->emptyStateHeading(__('fleet.inspections.empty'));

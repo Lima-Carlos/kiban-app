@@ -29,7 +29,8 @@
                             <x-filament::badge color="warning">{{ __('fleet.inspections.missing') }}</x-filament::badge>
                         </a>
                     @empty
-                        <p style="opacity:.7">{{ __('fleet.inspections.none_missing') }}</p>
+                        {{-- With no vehicle yet, "all inspected" would be misleading. --}}
+                        <p style="opacity:.7">{{ $total === 0 ? __('fleet.inspections.no_vehicles') : __('fleet.inspections.none_missing') }}</p>
                     @endforelse
                 </div>
             @endif

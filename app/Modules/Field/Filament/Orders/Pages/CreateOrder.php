@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field\Filament\Orders\Pages;
 
+use App\Filament\Support\NewRecordTitle;
 use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Models\WorkOrder;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CreateOrder extends CreateRecord
 {
+    use NewRecordTitle;
+
     protected static string $resource = OrderResource::class;
 
     protected static bool $canCreateAnother = false;

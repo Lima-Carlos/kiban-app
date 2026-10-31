@@ -32,6 +32,8 @@ class ExpenseResource extends ModuleResource
 
     protected static ?string $model = Expense::class;
 
+    protected static ?string $langGroup = 'fleet.expenses';
+
     protected static ?string $slug = 'frota/despesas';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
@@ -94,15 +96,15 @@ class ExpenseResource extends ModuleResource
                 Action::make('receipt')
                     ->label(__('fleet.fields.receipt'))
                     ->icon(Heroicon::OutlinedPaperClip)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Expense $record): bool => filled($record->receipt_path))
                     ->url(fn (Expense $record): string => Storage::disk('local')->temporaryUrl($record->receipt_path, now()->addMinutes(10)))
                     ->openUrlInNewTab(),
                 EditAction::make()
-                    ->iconButton()
+                    ->link()
                     ->mutateRecordDataUsing(fn (array $data): array => $data + ['amount' => number_format(($data['amount_cents'] ?? 0) / 100, 2, '.', '')])
                     ->mutateDataUsing(fn (array $data): array => static::prepare($data)),
-                DeleteAction::make()->iconButton(),
+                DeleteAction::make()->link(),
             ])
             ->emptyStateHeading(__('fleet.expenses.empty'));
     }

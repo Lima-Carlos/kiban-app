@@ -81,8 +81,19 @@ return [
         'quote_not_sent' => 'Este presupuesto todavía no fue enviado.',
         'quote_expired' => 'Este presupuesto venció. Pide uno nuevo a la empresa.',
     ],
+    'validation' => [
+        'customer' => 'Elija el cliente.',
+        'service_type' => 'Elija el tipo de servicio.',
+        'technician' => 'Elija el técnico.',
+        'technician_with_time' => 'Con día y hora indicados, elija el técnico.',
+        'time' => 'Indique el día y la hora.',
+        'time_with_technician' => 'Con técnico elegido, indique el día y la hora.',
+        'street' => 'Indique la calle (o escriba el código postal para buscarla).',
+        'street_abroad' => 'Indique la calle.',
+    ],
     'customers' => [
         'singular' => 'cliente',
+        'new' => 'Nuevo cliente',
         'plural' => 'clientes',
         'singular_title' => 'Cliente',
         'plural_title' => 'Clientes',
@@ -594,6 +605,7 @@ return [
     ],
     'service_types' => [
         'singular' => 'tipo de servicio',
+        'new' => 'Nuevo tipo de servicio',
         'plural' => 'tipos de servicio',
         'singular_title' => 'Tipo de servicio',
         'plural_title' => 'Tipos de servicio',
@@ -608,6 +620,7 @@ return [
     ],
     'materials' => [
         'singular' => 'material',
+        'new' => 'Nuevo material',
         'plural' => 'materiales',
         'singular_title' => 'Material',
         'plural_title' => 'Materiales',
@@ -662,9 +675,10 @@ return [
         'leave_alert_help' => 'Cuántos minutos antes de la hora de salir el técnico recibe el aviso en el celular.',
         'return_days' => 'Días para contar como retorno',
         'return_days_help' => 'Una orden nueva del mismo cliente y dirección, hasta tantos días después de un servicio hecho, se marca como retorno. Cero lo apaga.',
-        'base_latitude' => 'Base de la empresa: latitud',
-        'base_longitude' => 'Base de la empresa: longitud',
-        'base_help' => 'Desde donde salen los técnicos por la mañana (para sugerir el orden de la ruta). En Google Maps, mantén presionado el punto y copia los dos números.',
+        'base' => 'Base de la empresa',
+        'base_help' => 'Desde donde salen los técnicos por la mañana (para sugerir el orden de la ruta). Estando en la empresa, toque "Usar mi ubicación".',
+        'advanced' => 'Avanzado',
+        'advanced_help' => 'Números de la estimación de desplazamiento. En la mayoría de las empresas, no hace falta cambiarlos.',
     ],
     'templates' => [
         'isp' => [

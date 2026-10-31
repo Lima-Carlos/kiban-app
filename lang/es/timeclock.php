@@ -15,7 +15,7 @@ return [
     'settings' => [
         'title' => 'Configuración del control horario',
         'rules' => 'País y reglas laborales',
-        'rules_help' => 'Los detalles de las reglas (jornada, horas extra, recargo nocturno) llegan con los horarios y el cálculo, en las próximas partes.',
+        'rules_help' => 'El país define las reglas. Los detalles (horas extra, recargo nocturno, tolerancia) están en "Reglas de cálculo", justo abajo.',
         'country' => 'País de la empresa',
         'labor_profile' => 'Reglas',
         'save' => 'Guardar',
@@ -110,6 +110,7 @@ return [
     ],
     'workplaces' => [
         'singular' => 'lugar de trabajo',
+        'new' => 'Nuevo lugar de trabajo',
         'plural' => 'lugares de trabajo',
         'singular_title' => 'Lugar de trabajo',
         'plural_title' => 'Lugares de trabajo',
@@ -119,6 +120,7 @@ return [
     ],
     'employees' => [
         'singular' => 'empleado',
+        'new' => 'Nuevo empleado',
         'plural' => 'empleados',
         'plural_title' => 'Empleados',
         'help' => 'Quien marca horario. Para agregar a alguien, use "Agregar empleado" (abre la pantalla Personas).',
@@ -195,6 +197,7 @@ return [
     ],
     'schedules' => [
         'singular' => 'horario de trabajo',
+        'new' => 'Nuevo horario de trabajo',
         'plural' => 'horarios de trabajo',
         'singular_title' => 'Horario de trabajo',
         'plural_title' => 'Horarios de trabajo',
@@ -238,6 +241,7 @@ return [
     ],
     'holidays' => [
         'singular' => 'feriado',
+        'new' => 'Nuevo feriado',
         'plural' => 'feriados',
         'plural_title' => 'Feriados',
         'name_placeholder' => 'Ej.: Aniversario de la ciudad',
@@ -310,6 +314,7 @@ return [
     ],
     'punches' => [
         'singular' => 'marcación',
+        'new' => 'Nueva marcación',
         'plural' => 'marcaciones',
         'plural_title' => 'Marcaciones',
         'help' => 'Todas las marcaciones, con foto, lugar y avisos. Una marcación nunca se cambia ni se elimina; lo que deba cambiar entra como corrección (Control horario → Correcciones).',
@@ -349,6 +354,7 @@ return [
     ],
     'kiosks' => [
         'singular' => 'reloj (tableta)',
+        'new' => 'Nuevo reloj (tableta)',
         'plural' => 'relojes (tabletas)',
         'plural_title' => 'Relojes (tabletas)',
         'name_placeholder' => 'Ej.: Tableta de recepción',
@@ -384,6 +390,7 @@ return [
         'title' => 'Mi control horario hoy',
     ],
     'timesheet' => [
+        'employee' => 'Empleado',
         'title' => 'Liquidación',
         'mine' => 'Mi registro',
         'previous' => 'Mes anterior',
@@ -424,6 +431,7 @@ return [
     ],
     'adjustments' => [
         'singular' => 'corrección',
+        'new' => 'Nueva corrección',
         'plural' => 'correcciones',
         'plural_title' => 'Correcciones',
         'help' => 'Pedidos de los empleados y correcciones hechas por el gestor. La marcación original nunca cambia: la corrección queda aparte, con el motivo.',
@@ -505,6 +513,7 @@ return [
         'pending' => 'Correcciones esperando',
         'pdf' => 'Planilla (PDF)',
         'close' => 'Cerrar el mes',
+        'nobody' => 'Nadie trabajó en este mes: no hay nada que cerrar.',
         'close_all' => 'Cerrar el mes de todos',
         'close_all_title' => '¿Cerrar :month de todos los empleados?',
         'close_help' => 'Las horas quedan congeladas y el empleado recibe el aviso para firmar la planilla. Quien tenga una corrección esperando respuesta queda fuera hasta que respondas.',
@@ -551,7 +560,8 @@ return [
         'bank_expired' => 'Banco vencido a pagar (horas decimales)',
     ],
     'afd' => [
-        'download' => 'Archivo AFD (vista previa)',
+        'download' => 'Archivo para la inspección (AFD)',
+        'what' => 'El archivo oficial de las marcaciones que el inspector de trabajo puede pedir. Todavía es una vista previa.',
         'title' => 'Archivo AFD (Portaria 671, Brasil)',
         'preview' => 'VISTA PREVIA: este archivo aún debe revisarse con el formato oficial y el validador del Ministerio de Trabajo de Brasil antes de entregarlo a un inspector. Faltan la firma digital con certificado y el archivo AEJ.',
         'missing_employer' => 'Faltan el CNPJ y la razón social del empleador en Configuración de asistencia.',

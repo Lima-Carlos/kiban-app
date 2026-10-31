@@ -166,8 +166,9 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                 ->icon(Heroicon::OutlinedDocumentText)
                 ->color('gray')
                 ->visible(fn (): bool => static::canManage() && TimeClockSetting::current()->isBrazil())
+                ->tooltip(__('timeclock.afd.what'))
                 ->modalHeading(__('timeclock.afd.title'))
-                ->modalDescription(fn (): string => collect([__('timeclock.afd.preview'), ...app(AfdFile::class)->warnings($this->start(), $this->start()->endOfMonth())])->implode("\n\n"))
+                ->modalDescription(fn (): string => collect([__('timeclock.afd.what'), __('timeclock.afd.preview'), ...app(AfdFile::class)->warnings($this->start(), $this->start()->endOfMonth())])->implode("\n\n"))
                 ->modalSubmitActionLabel(__('timeclock.afd.download'))
                 ->action(function (): StreamedResponse {
                     abort_unless(static::canManage(), 403);
@@ -180,6 +181,9 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                 ->label(__('timeclock.closing.close_all'))
                 ->icon(Heroicon::OutlinedLockClosed)
                 ->visible(fn (): bool => static::canManage() && app(MonthClosing::class)->canClose($this->start(), FilamentTimezone::get()))
+                // Nobody worked in this month (e.g. hired later): nothing to close.
+                ->disabled(fn (): bool => app(MonthClosing::class)->employeesOf($this->start())->isEmpty())
+                ->tooltip(fn (): ?string => app(MonthClosing::class)->employeesOf($this->start())->isEmpty() ? __('timeclock.closing.nobody') : null)
                 ->requiresConfirmation()
                 ->modalHeading(fn (): string => __('timeclock.closing.close_all_title', ['month' => app(MonthClosing::class)->monthLabel($this->start())]))
                 ->modalDescription(__('timeclock.closing.close_help'))
@@ -260,7 +264,7 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                 Action::make('pdf')
                     ->label(__('timeclock.closing.pdf'))
                     ->icon(Heroicon::OutlinedDocumentArrowDown)
-                    ->iconButton()
+                    ->link()
                     ->action(function (Employee $record): StreamedResponse {
                         $document = app(TimesheetDocument::class);
 

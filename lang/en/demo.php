@@ -14,12 +14,14 @@ return [
 
     'lists' => [
         'singular' => 'list',
+        'new' => 'New list',
         'plural' => 'lists',
         'empty' => 'No lists yet',
     ],
 
     'tasks' => [
         'singular' => 'task',
+        'new' => 'New task',
         'plural' => 'tasks',
         'empty' => 'No tasks yet',
     ],

@@ -20,7 +20,7 @@
    - o que a pessoa faz em cada sistema:
      - na **Frota**: o papel e, para motorista, os veículos e a CNH;
      - no **Ponto**: se bate ponto, a admissão, o cargo, o local, se trabalha na rua e o acesso ao Ponto.
-3. **Com login**, aparece o aviso **"Acesso pronto"**, com o botão **Enviar pelo WhatsApp**. Ele abre o seu WhatsApp com a mensagem e o link prontos. Se a pessoa tiver e-mail, o acesso também vai por e-mail.
+3. **Com login**, aparece o aviso **"Acesso pronto"**, com os botões **Enviar pelo WhatsApp** (abre o seu WhatsApp com a mensagem e o link prontos) e **Copiar link**. O link comprido não aparece escrito na tela. Se a pessoa tiver e-mail, o acesso também vai por e-mail.
 4. A pessoa toca no link, vê o nome da empresa, cria a senha e **cai direto no sistema da empresa**.
 
 **Antes de criar o login no Core, o sistema confere as regras de cada módulo:** limite do plano, CPF exigido no Ponto do Brasil, admissão e local de trabalho. Se algo estiver faltando, aparece a mensagem e nada é criado, nem no Core.
@@ -62,7 +62,7 @@ Uma pessoa que já tem login na Kiban (por exemplo, porque trabalha em duas empr
   - **Bloqueado**;
   - **Desligada**.
 - O filtro mostra as **ativas** (padrão) ou as **desligadas**.
-- Botões:
+- Botões (com o nome escrito, também no celular): **Editar** e **Dar acesso ao sistema** ficam à vista; os outros ficam no menu **⋮** ("Mais ações"), cada um com o seu nome:
   - **Editar**: a equipe, o documento, o papel e os dados de cada sistema. Nome, celular e e-mail de quem tem login vêm do Core: a pessoa muda na conta dela;
   - **Dar acesso ao sistema**: para quem não tem login;
   - **Enviar acesso de novo**: gera um novo link, e o anterior para de funcionar;
@@ -78,14 +78,14 @@ Na tela **Motoristas** também há o botão **Enviar acesso**, para quem cadastr
 - No celular, ela **fica conectada por 30 dias**. A cada 10 minutos o sistema confere com o Core se ela ainda é da empresa: se foi desligada ou bloqueada, perde o acesso. Se o Core estiver fora do ar, continua trabalhando.
 
 ## App na tela do celular
-- No celular aparece o aviso **"Instale o app no celular"**:
+- No celular aparece o aviso **"Instale o app no celular"**, numa linha só:
   - no Android, com um botão **Instalar**;
-  - no iPhone, com a explicação "Compartilhar → Adicionar à Tela de Início".
+  - nos outros casos (iPhone), o link **"Como?"** abre a explicação ("Compartilhar → Adicionar à Tela de Início").
 - O ícone da Kiban vai para a tela inicial. Ao tocar, o sistema abre direto, como um aplicativo.
 - O aviso pode ser fechado e não volta mais naquele celular.
 
 ## Listas no celular (30/10/2026)
-No celular, toda lista (pessoas, veículos, abastecimentos, batidas, solicitações...) mostra **um cartão por linha**, com o nome de cada informação, e nenhuma coluna fica cortada. No computador e no tablet, continua tabela. Isso vale para todas as listas de uma vez (`AppServiceProvider`, `stackedOnMobile`), inclusive as do Campo.
+No celular, toda lista (pessoas, veículos, abastecimentos, batidas, solicitações...) mostra **um cartão por linha**, com o nome de cada informação, e nenhuma coluna fica cortada. No computador e no tablet, continua tabela. Isso vale para todas as listas de uma vez (`AppServiceProvider`, `stackedOnMobile`), inclusive as do Campo. As ações de cada cartão têm o nome escrito ("Editar", "Renovar"...), nunca só um ícone solto; quando são muitas, ficam no menu ⋮. As abas acima das listas (ex.: "Em aberto, Hoje, Concluídas...") passam para uma segunda linha em vez de ficarem cortadas, e o "Ordenar por" mostra "Padrão".
 
 ## Menus por papel (Frota)
 | Papel | Menu |
@@ -138,7 +138,7 @@ No celular, toda lista (pessoas, veículos, abastecimentos, batidas, solicitaç�
 
 ## Dados da pessoa (LGPD)
 - A **empresa cliente é a controladora** dos dados dos seus funcionários, e a Kiban é a operadora. Quando um funcionário pede uma cópia dos dados dele, quem entrega é a empresa.
-- Na tela **Pessoas**, o botão **"Baixar os dados da pessoa (LGPD)"** (ícone de download) gera um arquivo com tudo o que os sistemas guardam sobre ela:
+- Na tela **Pessoas**, no menu ⋮, o botão **"Baixar dados (LGPD)"** gera um arquivo com tudo o que os sistemas guardam sobre ela:
   - cadastro e equipe;
   - no Ponto: dados do funcionário, batidas (com local e IP), correções e espelhos;
   - na Frota: dados do motorista e abastecimentos;

@@ -81,8 +81,19 @@ return [
         'quote_not_sent' => 'This quote was not sent yet.',
         'quote_expired' => 'This quote expired. Ask the company for a new one.',
     ],
+    'validation' => [
+        'customer' => 'Choose the customer.',
+        'service_type' => 'Choose the type of service.',
+        'technician' => 'Choose the technician.',
+        'technician_with_time' => 'With a day and time set, choose the technician.',
+        'time' => 'Set the day and time.',
+        'time_with_technician' => 'With a technician chosen, set the day and time.',
+        'street' => 'Fill in the street (or type the postal code to look it up).',
+        'street_abroad' => 'Fill in the street.',
+    ],
     'customers' => [
         'singular' => 'customer',
+        'new' => 'New customer',
         'plural' => 'customers',
         'singular_title' => 'Customer',
         'plural_title' => 'Customers',
@@ -594,6 +605,7 @@ return [
     ],
     'service_types' => [
         'singular' => 'type of service',
+        'new' => 'New type of service',
         'plural' => 'types of service',
         'singular_title' => 'Type of service',
         'plural_title' => 'Types of service',
@@ -608,6 +620,7 @@ return [
     ],
     'materials' => [
         'singular' => 'material',
+        'new' => 'New material',
         'plural' => 'materials',
         'singular_title' => 'Material',
         'plural_title' => 'Materials',
@@ -662,9 +675,10 @@ return [
         'leave_alert_help' => 'How many minutes before the time to leave the technician gets the alert on the phone.',
         'return_days' => 'Days to count as a return',
         'return_days_help' => 'A new order of the same customer and address, up to this many days after a done service, is marked as a return. Zero turns it off.',
-        'base_latitude' => 'Company base: latitude',
-        'base_longitude' => 'Company base: longitude',
-        'base_help' => 'Where the technicians leave from in the morning (to suggest the order of the route). On Google Maps, touch and hold the spot and copy the two numbers.',
+        'base' => 'Company base',
+        'base_help' => 'Where the technicians leave from in the morning (to suggest the order of the route). While at the company, tap "Use my location".',
+        'advanced' => 'Advanced',
+        'advanced_help' => 'Numbers of the travel estimate. Most companies never need to change them.',
     ],
     'templates' => [
         'isp' => [

@@ -32,6 +32,8 @@ class KioskResource extends ModuleResource
 
     protected static ?string $model = Kiosk::class;
 
+    protected static ?string $langGroup = 'timeclock.kiosks';
+
     protected static ?string $slug = 'ponto/relogios';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDeviceTablet;
@@ -115,7 +117,7 @@ class KioskResource extends ModuleResource
                     ->label(__('timeclock.kiosks.deactivate'))
                     ->icon(Heroicon::OutlinedNoSymbol)
                     ->color('danger')
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Kiosk $record): bool => $record->isActivated())
                     ->authorize('update')
                     ->requiresConfirmation()

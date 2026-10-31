@@ -119,4 +119,18 @@ class FirstStepsTest extends TestCase
         $this->signIn($tenant, 'admin');
         Livewire::test(ManageTaskLists::class)->assertTableActionVisible('delete', $list);
     }
+
+    public function test_unfinished_first_steps_come_before_the_numbers_on_the_start_page(): void
+    {
+        $tenant = $this->tenant('frotas', ['frota' => []]);
+        $this->signIn($tenant);
+
+        // New company: the steps first, the (empty) numbers after.
+        $html = $this->get($tenant->url('/'))->assertOk()->getContent();
+        $steps = strpos($html, e(__('fleet.steps.vehicle')));
+        $numbers = strpos($html, e(__('fleet.dashboard.summary')));
+        $this->assertNotFalse($steps);
+        $this->assertNotFalse($numbers);
+        $this->assertLessThan($numbers, $steps);
+    }
 }

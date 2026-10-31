@@ -92,7 +92,7 @@
 - Números:
   - gasto com combustível;
   - litros;
-  - **km rodados**: pelo km registrado no período (abastecimentos, manutenções, vistorias...);
+  - **km rodados**: pelo km registrado no período (abastecimentos, manutenções, vistorias...). Conta a partir do **segundo** registro de km de cada veículo (o primeiro é o ponto de partida); enquanto der 0 km, o quadro explica isso;
   - **média de consumo**: medida de tanque cheio a tanque cheio;
   - **custo por km** = gasto total do período ÷ km rodados no período (corrigido em 24/10/2026; antes usava só os trechos entre tanques cheios).
 - Gráficos: média de consumo por mês e gasto por mês.
@@ -206,7 +206,7 @@ O gestor e o mecânico também podem agendar ou registrar direto, sem pedido do 
 
 ### Painel e veículo
 - O painel e a página Início do gestor mostram o quadro **Vistorias**:
-  - "Hoje: X de Y veículos vistoriados" e quais faltam;
+  - "Hoje: X de Y veículos vistoriados" e quais faltam (sem nenhum veículo, diz "Nenhum veículo ativo ainda", e não "todos já foram vistoriados");
   - os **problemas encontrados ainda em aberto**.
 - A página do veículo ganhou a aba **Vistorias**.
 

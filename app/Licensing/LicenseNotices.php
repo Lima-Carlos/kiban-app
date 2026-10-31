@@ -3,6 +3,7 @@
 namespace App\Licensing;
 
 use App\Models\Tenant;
+use App\Models\User;
 use App\Modules\ModuleRegistry;
 use Filament\Support\Facades\FilamentTimezone;
 
@@ -12,7 +13,7 @@ use Filament\Support\Facades\FilamentTimezone;
  */
 class LicenseNotices
 {
-    public function __construct(protected ModuleRegistry $modules) {}
+    public function __construct(protected ModuleRegistry $modules, protected TrialBanner $trial) {}
 
     /**
      * @return array<int, array{level: string, text: string}>
@@ -23,6 +24,10 @@ class LicenseNotices
         $notices = [];
         $format = __('app.datetime_format');
         $timezone = FilamentTimezone::get();
+        $user = auth()->user();
+        // The trial is a commercial message: only for who manages the company, and not twice when the
+        // "free trial" strip is already at the top (every system in trial).
+        $trialNotices = $user instanceof User && $user->canManageTenant() && $this->trial->trialEndsAt($tenant) === null;
 
         foreach ($this->modules->enabledFor($tenant) as $key => $module) {
             if ($license->isReadOnly($key)) {
@@ -31,7 +36,7 @@ class LicenseNotices
 
             $trialEnds = $license->trialEndsAt($key);
 
-            if ($trialEnds !== null && $trialEnds->isFuture() && $trialEnds->lt(now()->addDays(7))) {
+            if ($trialNotices && $trialEnds !== null && $trialEnds->isFuture() && $trialEnds->lt(now()->addDays(7))) {
                 $notices[] = ['level' => 'warning', 'text' => __('app.license.trial', ['module' => $module->name(), 'date' => $trialEnds->setTimezone($timezone)->translatedFormat(__('app.date_format'))])];
             }
         }

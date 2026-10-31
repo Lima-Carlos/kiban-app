@@ -25,6 +25,8 @@ class WorkshopResource extends ModuleResource
 
     protected static ?string $model = Workshop::class;
 
+    protected static ?string $langGroup = 'fleet.workshops';
+
     protected static ?string $slug = 'frota/oficinas';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
@@ -66,7 +68,7 @@ class WorkshopResource extends ModuleResource
                 TextColumn::make('phone')->label(__('fleet.fields.phone'))->placeholder('—'),
                 IconColumn::make('is_active')->label(__('fleet.fields.is_active'))->boolean(),
             ])
-            ->recordActions([EditAction::make()->iconButton(), DeleteAction::make()->iconButton()])
+            ->recordActions([EditAction::make()->link(), DeleteAction::make()->link()])
             ->emptyStateHeading(__('fleet.workshops.empty'));
     }
 

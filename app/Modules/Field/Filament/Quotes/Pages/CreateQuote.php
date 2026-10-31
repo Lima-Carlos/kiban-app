@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field\Filament\Quotes\Pages;
 
+use App\Filament\Support\NewRecordTitle;
 use App\Modules\Field\Filament\Quotes\QuoteResource;
 use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Services\FieldException;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CreateQuote extends CreateRecord
 {
+    use NewRecordTitle;
+
     protected static string $resource = QuoteResource::class;
 
     protected static bool $canCreateAnother = false;

@@ -29,6 +29,8 @@ class AdjustmentResource extends ModuleResource
 
     protected static ?string $model = Adjustment::class;
 
+    protected static ?string $langGroup = 'timeclock.adjustments';
+
     protected static ?string $slug = 'ponto/correcoes';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPencilSquare;
@@ -122,7 +124,7 @@ class AdjustmentResource extends ModuleResource
                 Action::make('attachment')
                     ->label(__('timeclock.adjustments.attachment'))
                     ->icon(Heroicon::OutlinedPaperClip)
-                    ->iconButton()
+                    ->link()
                     ->visible(fn (Adjustment $record): bool => filled($record->attachment_path))
                     ->url(fn (Adjustment $record): string => Storage::disk('local')->temporaryUrl($record->attachment_path, now()->addMinutes(10)), shouldOpenInNewTab: true),
                 Action::make('approve')

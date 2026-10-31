@@ -36,6 +36,8 @@ class DriverResource extends ModuleResource
 
     protected static ?string $model = Driver::class;
 
+    protected static ?string $langGroup = 'fleet.drivers';
+
     protected static ?string $slug = 'frota/motoristas';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;

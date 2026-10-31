@@ -11,7 +11,8 @@ use Closure;
  * - in Brazil the document is a CPF or a CNPJ, checked; elsewhere any document, with its type;
  * - the document and the "code in your system" are unique in the company;
  * - phones keep the country code (like the people of the company);
- * - the kind (company/person) follows the Brazilian document when it is not given.
+ * - the kind (company/person) follows the Brazilian document when it is not given;
+ * - an address with a number or postal code needs the street.
  */
 class CustomerRules
 {
@@ -42,6 +43,17 @@ class CustomerRules
                 $fail(__('field.errors.code_taken'));
             }
         };
+    }
+
+    /**
+     * An address with a number or a postal code but no street ("1000" alone) is incomplete: the technician
+     * would not find it and the map search has nothing to look for.
+     *
+     * @param  array<string, mixed>  $site
+     */
+    public function siteMissingStreet(array $site): bool
+    {
+        return blank($site['street'] ?? null) && (filled($site['number'] ?? null) || filled($site['postal_code'] ?? null));
     }
 
     /** Another customer of the company with this document. */

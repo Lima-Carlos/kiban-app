@@ -14,11 +14,19 @@
 <x-filament-panels::page>
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
         @if ($this->seesEveryone())
-            <select wire:model.live="employeeId" style="min-width:240px;padding:8px 10px;border-radius:8px;border:1px solid rgba(127,127,127,.35);background:transparent">
-                @foreach ($this->employeeOptions() as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            </select>
+            {{-- Who to look at (only when there is someone: an empty box without a name said nothing). --}}
+            @if ($this->employeeOptions() !== [])
+                <label style="display:flex;align-items:center;gap:8px;font-size:14px">
+                    <span>{{ __('timeclock.timesheet.employee') }}</span>
+                    <select wire:model.live="employeeId" style="min-width:220px;padding:8px 10px;border-radius:8px;border:1px solid rgba(127,127,127,.35);background:transparent">
+                        @foreach ($this->employeeOptions() as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            @else
+                <span></span>
+            @endif
         @else
             <strong>{{ $employee?->person?->name }}</strong>
         @endif
@@ -32,7 +40,10 @@
 
     @if ($employee === null)
         <x-filament::section>
-            <p style="opacity:.75">{{ __('timeclock.employees.empty') }}</p>
+            <p style="font-weight:600">{{ __('timeclock.employees.empty') }}</p>
+            @if ($this->seesEveryone())
+                <p style="opacity:.75;margin-top:4px">{{ __('timeclock.employees.empty_help') }}</p>
+            @endif
         </x-filament::section>
     @else
         @if ($closing)

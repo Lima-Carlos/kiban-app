@@ -52,6 +52,8 @@ class CustomerResource extends ModuleResource
 
     protected static ?string $model = Customer::class;
 
+    protected static ?string $langGroup = 'field.customers';
+
     protected static ?string $slug = 'campo/clientes';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
@@ -186,37 +188,35 @@ class CustomerResource extends ModuleResource
                     ->columnSpan(['sm' => 4]),
                 Toggle::make('is_main')
                     ->label(__('field.fields.main_site'))
+                    // The first (often the only) address is the main one; the ones added later are not.
+                    ->default(fn (Get $get): bool => collect((array) $get('../../sites'))->doesntContain(fn ($site): bool => (bool) ($site['is_main'] ?? false)))
                     ->inline(false)
                     ->columnSpan(['sm' => 2]),
                 TextInput::make('postal_code')
                     ->label($brazil ? __('field.fields.cep') : __('field.fields.postal_code'))
                     ->maxLength(20)
                     ->columnSpan(['sm' => 2])
+                    // In Brazil the address comes by itself once the 8 digits are typed (the magnifier does the same).
+                    ->live(debounce: 600, condition: $brazil)
+                    ->afterStateUpdated(function (?string $state, Get $get, Set $set) use ($brazil): void {
+                        if ($brazil && strlen((string) preg_replace('/\D/', '', (string) $state)) === 8) {
+                            static::fillFromPostalCode($get, $set);
+                        }
+                    })
                     ->suffixAction(
                         Action::make('searchPostalCode')
                             ->icon(Heroicon::OutlinedMagnifyingGlass)
                             ->tooltip(__('field.sites.search_cep'))
                             ->visible($brazil)
-                            ->action(function (Get $get, Set $set): void {
-                                $address = app(AddressLocator::class)->postalCode($get('postal_code'));
-
-                                if ($address === null) {
-                                    Notification::make()->warning()->title(__('field.sites.cep_not_found'))->send();
-
-                                    return;
-                                }
-
-                                foreach ($address as $field => $value) {
-                                    if (filled($value)) {
-                                        $set($field, $value);
-                                    }
-                                }
-                            }),
+                            ->action(fn (Get $get, Set $set) => static::fillFromPostalCode($get, $set)),
                     ),
                 TextInput::make('street')
                     ->label(__('field.fields.street'))
                     ->maxLength(255)
-                    ->columnSpan(['sm' => 3]),
+                    ->columnSpan(['sm' => 3])
+                    // "1000" alone is not an address: with a number or a postal code, the street is needed.
+                    ->required(fn (Get $get): bool => app(CustomerRules::class)->siteMissingStreet(['number' => $get('number'), 'postal_code' => $get('postal_code')]))
+                    ->validationMessages(['required' => $brazil ? __('field.validation.street') : __('field.validation.street_abroad')]),
                 TextInput::make('number')
                     ->label(__('field.fields.number'))
                     ->maxLength(20)
@@ -260,6 +260,24 @@ class CustomerResource extends ModuleResource
                 ->components([MapPoint::make()]),
             Hidden::make('country')->default(fn (): string => Country::current()),
         ];
+    }
+
+    /** Fills street, district, city and state from the Brazilian postal code (ViaCEP). */
+    public static function fillFromPostalCode(Get $get, Set $set): void
+    {
+        $address = app(AddressLocator::class)->postalCode($get('postal_code'));
+
+        if ($address === null) {
+            Notification::make()->warning()->title(__('field.sites.cep_not_found'))->send();
+
+            return;
+        }
+
+        foreach ($address as $field => $value) {
+            if (filled($value)) {
+                $set($field, $value);
+            }
+        }
     }
 
     /**

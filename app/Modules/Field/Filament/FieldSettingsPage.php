@@ -21,6 +21,7 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use App\Filament\Support\MapPoint;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -87,7 +88,7 @@ class FieldSettingsPage extends Page
                         Select::make('currency')
                             ->label(__('field.settings.currency'))
                             ->helperText(__('field.settings.currency_help'))
-                            ->options(collect(Country::CURRENCIES)->unique()->sort()->mapWithKeys(fn (string $code): array => [$code => $code])->all())
+                            ->options(collect(Country::CURRENCIES)->unique()->mapWithKeys(fn (string $code): array => [$code => Country::currencyName($code)])->sort()->all())
                             ->searchable()
                             ->required(),
                         Toggle::make('signature_required')
@@ -99,14 +100,6 @@ class FieldSettingsPage extends Page
                     ->description(__('field.settings.day_help'))
                     ->columns(['default' => 1, 'sm' => 2])
                     ->components([
-                        TextInput::make('travel_speed_kmh')
-                            ->label(__('field.settings.travel_speed'))
-                            ->helperText(__('field.settings.travel_speed_help'))
-                            ->numeric()->integer()->minValue(5)->maxValue(120)->suffix('km/h')->required(),
-                        TextInput::make('route_factor')
-                            ->label(__('field.settings.route_factor'))
-                            ->helperText(__('field.settings.route_factor_help'))
-                            ->numeric()->minValue(1)->maxValue(3)->step(0.05)->required(),
                         TextInput::make('leave_alert_minutes')
                             ->label(__('field.settings.leave_alert'))
                             ->helperText(__('field.settings.leave_alert_help'))
@@ -115,13 +108,30 @@ class FieldSettingsPage extends Page
                             ->label(__('field.settings.return_days'))
                             ->helperText(__('field.settings.return_days_help'))
                             ->numeric()->integer()->minValue(0)->maxValue(365)->required(),
-                        TextInput::make('base_latitude')
-                            ->label(__('field.settings.base_latitude'))
-                            ->helperText(__('field.settings.base_help'))
-                            ->numeric()->minValue(-90)->maxValue(90)->requiredWith('base_longitude'),
-                        TextInput::make('base_longitude')
-                            ->label(__('field.settings.base_longitude'))
-                            ->numeric()->minValue(-180)->maxValue(180)->requiredWith('base_latitude'),
+                        // Where the technicians leave from: "use my location" at the company (no numbers to copy).
+                        Section::make(__('field.settings.base'))
+                            ->description(__('field.settings.base_help'))
+                            ->compact()
+                            ->columnSpanFull()
+                            ->components([MapPoint::make('base_latitude', 'base_longitude')]),
+                        // Technical numbers of the estimate: closed, most companies never change them.
+                        Section::make(__('field.settings.advanced'))
+                            ->description(__('field.settings.advanced_help'))
+                            ->compact()
+                            ->collapsible()
+                            ->collapsed()
+                            ->columnSpanFull()
+                            ->columns(['default' => 1, 'sm' => 2])
+                            ->components([
+                                TextInput::make('travel_speed_kmh')
+                                    ->label(__('field.settings.travel_speed'))
+                                    ->helperText(__('field.settings.travel_speed_help'))
+                                    ->numeric()->integer()->minValue(5)->maxValue(120)->suffix('km/h')->required(),
+                                TextInput::make('route_factor')
+                                    ->label(__('field.settings.route_factor'))
+                                    ->helperText(__('field.settings.route_factor_help'))
+                                    ->numeric()->minValue(1)->maxValue(3)->step(0.05)->required(),
+                            ]),
                     ]),
             ]);
     }

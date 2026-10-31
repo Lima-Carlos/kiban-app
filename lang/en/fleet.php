@@ -12,8 +12,10 @@ return [
     ],
     'vehicles' => [
         'singular' => 'vehicle',
+        'new' => 'New vehicle',
         'plural' => 'vehicles',
         'empty' => 'No vehicles registered',
+        'empty_help' => 'Add the company\'s cars, motorcycles and trucks with the current mileage. From then on, the system reminds you of oil changes and services.',
         'sections' => [
             'identity' => 'Identification',
             'odometer' => 'Current odometer',
@@ -25,12 +27,14 @@ return [
     ],
     'drivers' => [
         'singular' => 'driver',
+        'new' => 'New driver',
         'plural' => 'drivers',
         'empty' => 'No drivers registered',
         'singular_title' => 'Driver',
     ],
     'stations' => [
         'singular' => 'fuel station',
+        'new' => 'New fuel station',
         'plural' => 'fuel stations',
         'empty' => 'No fuel stations registered',
         'singular_title' => 'Fuel station',
@@ -379,6 +383,7 @@ return [
     'no' => 'No',
     'fuel' => [
         'singular' => 'fuel-up',
+        'new' => 'New fuel-up',
         'plural' => 'fuel-ups',
         'empty' => 'No fuel-ups',
         'request_code' => 'Fuel up (get a code)',
@@ -449,6 +454,7 @@ return [
         'volume' => 'Fuel volume',
         'distance' => 'Driven',
         'distance_help' => 'From the odometer readings of the period',
+        'distance_help_first' => 'Counts from the second odometer reading of each vehicle (the first one is the starting point).',
         'consumption' => 'Average consumption',
         'cost_per_distance' => 'Cost per distance',
         'cost_per_distance_help' => 'Total spent ÷ distance driven in the period',
@@ -487,6 +493,7 @@ return [
     ],
     'requests' => [
         'singular' => 'request',
+        'new' => 'New request',
         'plural' => 'requests',
         'empty' => 'No requests',
         'create' => 'Request maintenance or wash',
@@ -494,6 +501,7 @@ return [
     ],
     'appointments' => [
         'singular' => 'appointment',
+        'new' => 'New appointment',
         'plural' => 'appointments',
         'plural_title' => 'Appointments',
         'title' => 'Schedule',
@@ -506,14 +514,16 @@ return [
     ],
     'maintenances' => [
         'singular' => 'maintenance',
+        'new' => 'New maintenance',
         'plural' => 'maintenance records',
         'plural_title' => 'Maintenance',
-        'empty' => 'No maintenance',
+        'empty' => 'No maintenance yet',
         'record' => 'Record maintenance',
         'recorded' => 'Maintenance recorded. The odometer and the next service were updated.',
     ],
     'washes' => [
         'singular' => 'wash',
+        'new' => 'New wash',
         'plural' => 'washes',
         'plural_title' => 'Washes',
         'empty' => 'No washes',
@@ -521,17 +531,20 @@ return [
     ],
     'expenses' => [
         'singular' => 'expense',
+        'new' => 'New expense',
         'plural' => 'expenses',
         'plural_title' => 'Expenses',
         'empty' => 'No expenses',
     ],
     'workshops' => [
         'singular' => 'workshop',
+        'new' => 'New workshop',
         'plural' => 'workshops',
         'empty' => 'No workshops',
     ],
     'inspections' => [
         'singular' => 'inspection',
+        'new' => 'New inspection',
         'plural' => 'inspections',
         'plural_title' => 'Inspections',
         'empty' => 'No inspections',
@@ -573,6 +586,7 @@ return [
         ],
         'missing' => 'Inspection missing',
         'none_missing' => 'All active vehicles were inspected.',
+        'no_vehicles' => 'No active vehicles yet.',
         'open_problems' => 'Open problems found',
         'no_problems' => 'No open problems.',
     ],
@@ -589,6 +603,7 @@ return [
     ],
     'checklist_items' => [
         'singular' => 'inspection item',
+        'new' => 'New inspection item',
         'plural' => 'inspection items',
         'empty' => 'No items',
         'rename_help' => 'Leave empty to use the standard name (translated in each language).',

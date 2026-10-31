@@ -12,8 +12,10 @@ return [
     ],
     'vehicles' => [
         'singular' => 'veículo',
+        'new' => 'Novo veículo',
         'plural' => 'veículos',
         'empty' => 'Nenhum veículo cadastrado',
+        'empty_help' => 'Cadastre os carros, motos e caminhões da empresa com o km atual. A partir daí, o sistema avisa a troca de óleo e a revisão.',
         'sections' => [
             'identity' => 'Identificação',
             'odometer' => 'Km atual',
@@ -25,12 +27,14 @@ return [
     ],
     'drivers' => [
         'singular' => 'motorista',
+        'new' => 'Novo motorista',
         'plural' => 'motoristas',
         'empty' => 'Nenhum motorista cadastrado',
         'singular_title' => 'Motorista',
     ],
     'stations' => [
         'singular' => 'posto',
+        'new' => 'Novo posto',
         'plural' => 'postos',
         'empty' => 'Nenhum posto cadastrado',
         'singular_title' => 'Posto',
@@ -379,6 +383,7 @@ return [
     'no' => 'Não',
     'fuel' => [
         'singular' => 'abastecimento',
+        'new' => 'Novo abastecimento',
         'plural' => 'abastecimentos',
         'empty' => 'Nenhum abastecimento',
         'request_code' => 'Abastecer (gerar código)',
@@ -449,6 +454,7 @@ return [
         'volume' => 'Litros abastecidos',
         'distance' => 'Rodado',
         'distance_help' => 'Pelo km registrado no período',
+        'distance_help_first' => 'Conta a partir do segundo registro de km de cada veículo (o primeiro é o ponto de partida).',
         'consumption' => 'Média de consumo',
         'cost_per_distance' => 'Custo por km',
         'cost_per_distance_help' => 'Gasto total ÷ km rodados no período',
@@ -487,6 +493,7 @@ return [
     ],
     'requests' => [
         'singular' => 'solicitação',
+        'new' => 'Nova solicitação',
         'plural' => 'solicitações',
         'empty' => 'Nenhuma solicitação',
         'create' => 'Solicitar manutenção ou lavagem',
@@ -494,6 +501,7 @@ return [
     ],
     'appointments' => [
         'singular' => 'agendamento',
+        'new' => 'Novo agendamento',
         'plural' => 'agendamentos',
         'plural_title' => 'Agendamentos',
         'title' => 'Agenda',
@@ -506,14 +514,16 @@ return [
     ],
     'maintenances' => [
         'singular' => 'manutenção',
+        'new' => 'Nova manutenção',
         'plural' => 'manutenções',
         'plural_title' => 'Manutenções',
-        'empty' => 'Nenhuma manutenção',
+        'empty' => 'Nenhuma manutenção ainda',
         'record' => 'Registrar manutenção',
         'recorded' => 'Manutenção registrada. O km e a próxima troca foram atualizados.',
     ],
     'washes' => [
         'singular' => 'lavagem',
+        'new' => 'Nova lavagem',
         'plural' => 'lavagens',
         'plural_title' => 'Lavagens',
         'empty' => 'Nenhuma lavagem',
@@ -521,17 +531,20 @@ return [
     ],
     'expenses' => [
         'singular' => 'despesa',
+        'new' => 'Nova despesa',
         'plural' => 'despesas',
         'plural_title' => 'Despesas',
         'empty' => 'Nenhuma despesa',
     ],
     'workshops' => [
         'singular' => 'oficina',
+        'new' => 'Nova oficina',
         'plural' => 'oficinas',
         'empty' => 'Nenhuma oficina',
     ],
     'inspections' => [
         'singular' => 'vistoria',
+        'new' => 'Nova vistoria',
         'plural' => 'vistorias',
         'plural_title' => 'Vistorias',
         'empty' => 'Nenhuma vistoria',
@@ -573,6 +586,7 @@ return [
         ],
         'missing' => 'Falta vistoria',
         'none_missing' => 'Todos os veículos ativos já foram vistoriados.',
+        'no_vehicles' => 'Nenhum veículo ativo ainda.',
         'open_problems' => 'Problemas encontrados em aberto',
         'no_problems' => 'Nenhum problema em aberto.',
     ],
@@ -589,6 +603,7 @@ return [
     ],
     'checklist_items' => [
         'singular' => 'item da vistoria',
+        'new' => 'Novo item da vistoria',
         'plural' => 'itens da vistoria',
         'empty' => 'Nenhum item',
         'rename_help' => 'Deixe vazio para usar o nome padrão (traduzido em cada idioma).',

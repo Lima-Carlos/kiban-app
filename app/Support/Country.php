@@ -31,6 +31,16 @@ class Country
         return self::CURRENCIES[strtoupper($country ?? static::current())] ?? 'USD';
     }
 
+    /** A currency in words, in the person's language: "Real brasileiro (R$)" instead of "BRL". */
+    public static function currencyName(string $code, ?string $locale = null): string
+    {
+        $locale ??= app()->getLocale();
+        $name = \ResourceBundle::create($locale, 'ICUDATA-curr')?->get('Currencies')?->get($code)?->get(1);
+        $symbol = (new \NumberFormatter($locale.'@currency='.$code, \NumberFormatter::CURRENCY))->getSymbol(\NumberFormatter::CURRENCY_SYMBOL);
+
+        return $name ? mb_strtoupper(mb_substr($name, 0, 1)).mb_substr($name, 1).' ('.($symbol ?: $code).')' : $code;
+    }
+
     /** The current company's country (ISO code, e.g. "BR"). */
     public static function current(): string
     {

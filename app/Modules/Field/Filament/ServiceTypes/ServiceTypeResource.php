@@ -42,6 +42,8 @@ class ServiceTypeResource extends ModuleResource
 
     protected static ?string $model = ServiceType::class;
 
+    protected static ?string $langGroup = 'field.service_types';
+
     protected static ?string $slug = 'campo/tipos-de-servico';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;

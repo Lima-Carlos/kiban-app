@@ -242,7 +242,7 @@ class TimesheetPage extends Page
         return Action::make('adjust')
             ->label(fn (): string => $this->canCorrect() ? __('timeclock.adjustments.correct') : __('timeclock.adjustments.ask'))
             ->icon(Heroicon::OutlinedPencilSquare)
-            ->iconButton()
+            ->link()
             ->visible(fn (): bool => ($this->canCorrect() || $this->canAsk()) && $this->closing() === null)
             ->modalHeading(fn (array $arguments): string => __('timeclock.adjustments.modal_title', ['date' => CarbonImmutable::parse($arguments['date'])->translatedFormat(__('app.date_format'))]))
             ->schema(fn (array $arguments): array => [

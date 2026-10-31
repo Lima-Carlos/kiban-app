@@ -50,6 +50,8 @@ class QuoteResource extends ModuleResource
 
     protected static ?string $model = Quote::class;
 
+    protected static ?string $langGroup = 'field.quotes';
+
     protected static ?string $slug = 'campo/orcamentos';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCurrencyDollar;

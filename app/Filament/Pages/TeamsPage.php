@@ -117,7 +117,7 @@ class TeamsPage extends Page implements HasActions, HasSchemas, HasTable
                 Action::make('edit')
                     ->label(__('app.people.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)
-                    ->iconButton()
+                    ->link()
                     ->authorize(fn (): bool => static::canAccess())
                     ->fillForm(fn (Team $record): array => ['name' => $record->name])
                     ->schema(static::fields())

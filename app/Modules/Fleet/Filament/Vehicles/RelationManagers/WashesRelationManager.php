@@ -12,6 +12,9 @@ class WashesRelationManager extends RelationManager
 {
     protected static string $relationship = 'washes';
 
+    /** Loaded with the page: no empty white box while the tab loads. */
+    protected static bool $isLazy = false;
+
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('fleet.washes.plural_title');

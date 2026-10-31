@@ -161,7 +161,7 @@ class AccessProfilesPage extends Page implements HasActions, HasSchemas, HasTabl
                 Action::make('edit')
                     ->label(__('app.people.edit'))
                     ->icon(Heroicon::OutlinedPencilSquare)
-                    ->iconButton()
+                    ->link()
                     ->authorize(fn (): bool => static::canAccess())
                     ->fillForm(fn (AccessProfile $record): array => [
                         'name' => $record->name,
@@ -177,7 +177,7 @@ class AccessProfilesPage extends Page implements HasActions, HasSchemas, HasTabl
                 Action::make('delete')
                     ->label(__('app.profiles.delete'))
                     ->icon(Heroicon::OutlinedTrash)
-                    ->iconButton()
+                    ->link()
                     ->color('danger')
                     ->authorize(fn (): bool => static::canAccess())
                     ->requiresConfirmation()

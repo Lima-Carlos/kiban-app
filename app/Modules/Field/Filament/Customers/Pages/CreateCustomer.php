@@ -2,12 +2,15 @@
 
 namespace App\Modules\Field\Filament\Customers\Pages;
 
+use App\Filament\Support\NewRecordTitle;
 use App\Modules\Field\Filament\Customers\CustomerResource;
 use App\Modules\Field\Services\CustomerRules;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCustomer extends CreateRecord
 {
+    use NewRecordTitle;
+
     protected static string $resource = CustomerResource::class;
 
     /**
