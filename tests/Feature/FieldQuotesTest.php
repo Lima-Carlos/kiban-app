@@ -25,7 +25,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Campo, part 2b: quotes with services and materials of the catalog, a discount and the validity; sent by
+ * Kiban Core Campo, part 2b: quotes with services and materials of the catalog, a discount and the validity; sent by
  * a link (WhatsApp); the customer approves (with the name) or declines on the phone; the approved quote becomes
  * a work order by itself and the team is told in the bell. Answered quotes never change.
  */

@@ -34,9 +34,9 @@ use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
- * Kiban Campo, part 4: the technician's phone sends the work piece by piece (arrival with location and km,
+ * Kiban Core Campo, part 4: the technician's phone sends the work piece by piece (arrival with location and km,
  * answers, photos, materials, signature, pause, finish), also hours later; a piece sent twice counts once;
- * finishing checks what is required; only the order's technician sends; the km goes to Kiban Frota.
+ * finishing checks what is required; only the order's technician sends; the km goes to Kiban Core Frota.
  */
 class FieldExecutionTest extends TestCase
 {

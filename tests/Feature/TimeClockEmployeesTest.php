@@ -35,7 +35,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto, part 1: the person's record with an optional login, CPF (Brazil) or a generic document
+ * Kiban Core Ponto, part 1: the person's record with an optional login, CPF (Brazil) or a generic document
  * (other countries), teams, workplaces with a point on the map, employees, rule profiles per country,
  * the plan limit and who sees the documents.
  */

@@ -26,7 +26,7 @@ use LogicException;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto: the privacy notice of the punch photos (LGPD). Before the first photo the person reads the notice
+ * Kiban Core Ponto: the privacy notice of the punch photos (LGPD). Before the first photo the person reads the notice
  * and taps "I am aware" (recorded, never changed; a new version asks again); without it no photo is stored;
  * "Punch without photo" when the company allows it; the punch is never blocked.
  */

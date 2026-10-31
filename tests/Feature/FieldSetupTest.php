@@ -23,7 +23,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Campo, part 2: the business chosen in the first steps brings the ready types of service (with the
+ * Kiban Core Campo, part 2: the business chosen in the first steps brings the ready types of service (with the
  * technician's checklist) and materials; the manager adjusts types, checklists, prices and materials.
  */
 class FieldSetupTest extends TestCase

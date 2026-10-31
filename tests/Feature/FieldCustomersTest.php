@@ -26,7 +26,7 @@ use OpenSpout\Reader\XLSX\Reader;
 use Tests\TestCase;
 
 /**
- * Kiban Campo, part 1: customers with several service addresses and the point on the map; CPF/CNPJ checked and
+ * Kiban Core Campo, part 1: customers with several service addresses and the point on the map; CPF/CNPJ checked and
  * unique; the postal code fills the address; addresses without a point are searched on the map in the background;
  * import from a spreadsheet that updates instead of duplicating; who sees and who changes.
  */
@@ -196,7 +196,7 @@ class FieldCustomersTest extends TestCase
         $typed = $customer->sites()->create(['street' => 'Rua Dois', 'city' => 'Belo Horizonte', 'latitude' => -19.8, 'longitude' => -43.9]);
         $noAddress = $customer->sites()->create(['label' => 'Só o nome']);
 
-        // Another company without Kiban Campo: never searched.
+        // Another company without Kiban Core Campo: never searched.
         $other = $this->tenant('outra', ['frota' => []]);
         app(TenantContext::class)->run($other, fn () => Customer::create(['name' => 'X'])->sites()->create(['street' => 'Rua X', 'city' => 'Belo Horizonte']));
         app(TenantContext::class)->set($this->company);

@@ -700,7 +700,7 @@ return [
         'download' => 'Ficha (PDF)',
         'file' => 'ficha :plate',
         'title' => 'Ficha do veículo :plate',
-        'footer' => 'Kiban Frota · :company · gerada em :date',
+        'footer' => 'Kiban Core Frota · :company · gerada em :date',
         'identification' => 'Identificação',
         'drivers' => 'Motoristas',
         'services' => 'Troca de óleo e revisão',

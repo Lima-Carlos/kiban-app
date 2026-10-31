@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <div style="float:right" class="muted">{{ __('timeclock.closing.pdf_generated', ['date' => $generatedAt->translatedFormat(__('app.datetime_format'))]) }} · Kiban Ponto</div>
+    <div style="float:right" class="muted">{{ __('timeclock.closing.pdf_generated', ['date' => $generatedAt->translatedFormat(__('app.datetime_format'))]) }} · Kiban Core Ponto</div>
     <h1>{{ __('timeclock.closing.pdf_title') }} · {{ $monthLabel }}</h1>
     <table class="head">
         <tr>

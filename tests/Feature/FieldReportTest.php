@@ -26,7 +26,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Campo, part 5: the report of a done work order with the company's identity (logo, color, data, footer),
+ * Kiban Core Campo, part 5: the report of a done work order with the company's identity (logo, color, data, footer),
  * at a signed link and as a PDF, sent to the customer by WhatsApp, with a verification code.
  */
 class FieldReportTest extends TestCase

@@ -28,7 +28,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Frota, part 1: vehicles, odometer always up to date, protections against reusing plan slots,
+ * Kiban Core Frota, part 1: vehicles, odometer always up to date, protections against reusing plan slots,
  * drivers seeing only their vehicles.
  */
 class FleetVehiclesTest extends TestCase

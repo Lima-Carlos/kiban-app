@@ -30,7 +30,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Frota, part 5: warnings in the bell (never by e-mail), each one to the right people, in their
+ * Kiban Core Frota, part 5: warnings in the bell (never by e-mail), each one to the right people, in their
  * language, only once, only in their company; and the "Attention" box for what is urgent and still open.
  */
 class FleetNoticesTest extends TestCase

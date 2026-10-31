@@ -20,7 +20,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto without signal, like WhatsApp: the phone keeps each punch in a queue and sends it when the signal
+ * Kiban Core Ponto without signal, like WhatsApp: the phone keeps each punch in a queue and sends it when the signal
  * comes back. The punch keeps the time it was taken, is flagged "without internet" for the manager and shows when
  * it arrived; the same punch sent twice counts once; too old or in a closed month, it is refused with the reason.
  */

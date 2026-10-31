@@ -27,7 +27,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Campo dashboard: where each technician is now (late, at a service, on the way, free), the month's
+ * Kiban Core Campo dashboard: where each technician is now (late, at a service, on the way, free), the month's
  * numbers per technician, the "Attention" box of the office and the nearest free technician for an order.
  */
 class FieldDashboardTest extends TestCase

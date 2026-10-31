@@ -35,7 +35,7 @@ use OpenSpout\Reader\XLSX\Reader;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto, part 5: the closing of the month (frozen copy, no more corrections), the employee's signature or
+ * Kiban Core Ponto, part 5: the closing of the month (frozen copy, no more corrections), the employee's signature or
  * disagreement, reopening only before the signature, the time sheet PDF, the spreadsheet for the accountant,
  * the AFD file (preview), the warnings and the removal of old punch photos.
  */

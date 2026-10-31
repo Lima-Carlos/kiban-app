@@ -30,7 +30,7 @@ use Mockery;
 use Tests\TestCase;
 
 /**
- * Kiban Campo, the technician's day: travel time and "finish by", the alert to leave, "I will be late", "pass to
+ * Kiban Core Campo, the technician's day: travel time and "finish by", the alert to leave, "I will be late", "pass to
  * another technician", "on the way", the warnings to the office (each only once), the suggested order of the
  * route, the customer's rating, returns and the phone kept for alerts.
  */

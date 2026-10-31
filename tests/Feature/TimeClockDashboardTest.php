@@ -25,7 +25,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto, part 6: the dashboard (who is working now, late, on a break, done, excused; the month's numbers
+ * Kiban Core Ponto, part 6: the dashboard (who is working now, late, on a break, done, excused; the month's numbers
  * and the people at the top) and the start page of managers.
  */
 class TimeClockDashboardTest extends TestCase

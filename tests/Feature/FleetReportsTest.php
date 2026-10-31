@@ -32,7 +32,7 @@ use OpenSpout\Reader\XLSX\Reader;
 use Tests\TestCase;
 
 /**
- * Kiban Frota, part 6: Excel spreadsheets, the vehicle record in PDF and the removal of old photos
+ * Kiban Core Frota, part 6: Excel spreadsheets, the vehicle record in PDF and the removal of old photos
  * and receipts (the data is never deleted).
  */
 class FleetReportsTest extends TestCase

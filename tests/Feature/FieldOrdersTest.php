@@ -28,7 +28,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Campo, part 3: work orders with their own number, the customer's address, a copy of the type's
+ * Kiban Core Campo, part 3: work orders with their own number, the customer's address, a copy of the type's
  * checklist, the technician's agenda (clashes are warned, never blocked), reschedule, take off the agenda,
  * cancel with the reason, the history, the agenda of the day with the map, and the plan limit of technicians.
  */

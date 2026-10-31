@@ -22,6 +22,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Grid;
+use Filament\Support\Facades\FilamentTimezone;
 
 /**
  * Forms used in several Frota screens: maintenance, wash and appointment (scheduling).
@@ -129,7 +130,7 @@ class WorkForms
             DateTimePicker::make('scheduled_at')
                 ->label(__('fleet.fields.scheduled_at'))
                 ->seconds(false)
-                ->minDate(now()->startOfDay())
+                ->minDate(now(FilamentTimezone::get())->startOfDay())
                 ->required(),
             Grid::make(2)->components([
                 static::workshopSelect(),

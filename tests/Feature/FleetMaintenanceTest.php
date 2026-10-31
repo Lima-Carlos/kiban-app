@@ -34,7 +34,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Frota, part 3: driver requests, schedule, maintenance (next oil change / revision), washes, expenses,
+ * Kiban Core Frota, part 3: driver requests, schedule, maintenance (next oil change / revision), washes, expenses,
  * workshops, the mechanic's menu and the dashboard with every cost.
  */
 class FleetMaintenanceTest extends TestCase

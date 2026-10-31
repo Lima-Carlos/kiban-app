@@ -700,7 +700,7 @@ return [
         'download' => 'Record (PDF)',
         'file' => 'record :plate',
         'title' => 'Vehicle record :plate',
-        'footer' => 'Kiban Fleet · :company · generated on :date',
+        'footer' => 'Kiban Core Fleet · :company · generated on :date',
         'identification' => 'Identification',
         'drivers' => 'Drivers',
         'services' => 'Oil change and service',

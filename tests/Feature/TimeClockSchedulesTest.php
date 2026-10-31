@@ -26,7 +26,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto, part 2: work schedules (weekly, night shift, 12x36, 6x1), the schedule history of each
+ * Kiban Core Ponto, part 2: work schedules (weekly, night shift, 12x36, 6x1), the schedule history of each
  * employee, holidays (national calculated, optional, the company's own) and the calculation rules with the
  * Brazilian legal minimums.
  */

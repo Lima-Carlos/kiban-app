@@ -31,7 +31,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Frota, part 4: inspections with the company's checklist, photos, problems that become maintenance
+ * Kiban Core Frota, part 4: inspections with the company's checklist, photos, problems that become maintenance
  * requests, critical items that stop the vehicle, and the reminder (never a block) of how often to inspect.
  */
 class FleetInspectionTest extends TestCase

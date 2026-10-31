@@ -28,7 +28,7 @@ use LogicException;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto, part 3: punches on the phone (live selfie + location) and on the company tablet (PIN +
+ * Kiban Core Ponto, part 3: punches on the phone (live selfie + location) and on the company tablet (PIN +
  * photo), never blocked but flagged, numbered (NSR) in a chain of hashes, never changed; the receipt at a
  * signed address with a verification code; tablets activated by the manager (who is signed out of them).
  */

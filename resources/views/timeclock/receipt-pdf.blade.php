@@ -40,6 +40,6 @@
     <div class="center label">{{ __('timeclock.receipt.code') }}</div>
     <div class="center code">{{ $code }}</div>
     <div class="line"></div>
-    <div class="center label">Kiban Ponto</div>
+    <div class="center label">Kiban Core Ponto</div>
 </body>
 </html>

@@ -28,7 +28,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Ponto, part 4: the calculation of each day (tolerance of the CLT, overtime, minutes short, absences,
+ * Kiban Core Ponto, part 4: the calculation of each day (tolerance of the CLT, overtime, minutes short, absences,
  * days off and holidays, night shift crossing midnight, night minutes with the reduced hour, short break and
  * short rest warnings), corrections apart from the punches (asked, approved, rejected) and the hour bank.
  */

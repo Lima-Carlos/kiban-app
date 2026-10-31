@@ -29,7 +29,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Kiban Frota, part 2: fuel-ups with a code, the station page, consumption, warnings, team roles, dashboard.
+ * Kiban Core Frota, part 2: fuel-ups with a code, the station page, consumption, warnings, team roles, dashboard.
  */
 class FleetFuelTest extends TestCase
 {
