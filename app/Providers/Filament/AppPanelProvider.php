@@ -16,6 +16,8 @@ use App\Filament\Pages\PeoplePage;
 use App\Filament\Pages\PersonDocumentsPage;
 use App\Filament\Pages\PersonEpiPage;
 use App\Filament\Pages\TeamsPage;
+use App\Filament\Pages\TrainingRequirementsPage;
+use App\Filament\Pages\TrainingsPage;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\RecordAccess;
@@ -70,6 +72,8 @@ class AppPanelProvider extends PanelProvider
                 DocumentTypesPage::class,
                 PersonDocumentsPage::class,
                 MyDocumentsPage::class,
+                TrainingsPage::class,
+                TrainingRequirementsPage::class,
                 EpiPage::class,
                 EpiItemsPage::class,
                 PersonEpiPage::class,

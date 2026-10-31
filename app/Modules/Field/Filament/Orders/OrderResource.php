@@ -19,7 +19,7 @@ use App\Modules\Field\Services\FieldFormat;
 use App\Modules\Field\Services\FieldReports;
 use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Services\FleetFormat;
-use App\People\Documents\PersonDocumentService;
+use App\People\Documents\TrainingService;
 use App\Support\Country;
 use App\Support\Geo;
 use App\Tenancy\TenantContext;
@@ -146,13 +146,14 @@ class OrderResource extends ModuleResource
     }
 
     /**
-     * Technicians (by login) with an expired document of the Campo (e.g. NR-10, NR-35): "NR-10 vencida em 10/03/2026".
+     * Technicians (by login) with an expired document of the Campo (e.g. NR-10, NR-35) or a required course they
+     * are missing: "NR-10: venceu em 10/03/2026, NR-35: falta fazer".
      *
      * @return array<int, string>
      */
     public static function expiredDocuments(): array
     {
-        return app(PersonDocumentService::class)->expiredTexts(FieldModule::KEY);
+        return app(TrainingService::class)->warningTexts(FieldModule::KEY);
     }
 
     /** "Atenção: NR-10 vencida em 10/03/2026" for the chosen technician, or null. */
@@ -162,7 +163,7 @@ class OrderResource extends ModuleResource
             return null;
         }
 
-        $expired = app(PersonDocumentService::class)->expiredTexts(FieldModule::KEY, [(int) $technicianId]);
+        $expired = app(TrainingService::class)->warningTexts(FieldModule::KEY, [(int) $technicianId]);
 
         return isset($expired[(int) $technicianId]) ? __('documents.attention.technician_hint', ['documents' => $expired[(int) $technicianId]]) : null;
     }

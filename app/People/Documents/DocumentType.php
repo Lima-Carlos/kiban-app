@@ -18,9 +18,9 @@ class DocumentType extends Model
 
     protected $table = 'person_document_types';
 
-    protected $fillable = ['key', 'name', 'validity_months', 'alert_days', 'is_health', 'module', 'is_active', 'sort'];
+    protected $fillable = ['key', 'name', 'validity_months', 'alert_days', 'is_health', 'is_training', 'module', 'is_active', 'sort'];
 
-    protected $attributes = ['alert_days' => 30, 'is_health' => false, 'is_active' => true, 'sort' => 0];
+    protected $attributes = ['alert_days' => 30, 'is_health' => false, 'is_training' => false, 'is_active' => true, 'sort' => 0];
 
     protected function casts(): array
     {
@@ -28,6 +28,7 @@ class DocumentType extends Model
             'validity_months' => 'integer',
             'alert_days' => 'integer',
             'is_health' => 'boolean',
+            'is_training' => 'boolean',
             'is_active' => 'boolean',
             'sort' => 'integer',
         ];
@@ -39,6 +40,16 @@ class DocumentType extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(PersonDocument::class, 'document_type_id');
+    }
+
+    /**
+     * Who must have this course (everyone, a team or a role in a system).
+     *
+     * @return HasMany<DocumentRequirement, $this>
+     */
+    public function requirements(): HasMany
+    {
+        return $this->hasMany(DocumentRequirement::class, 'document_type_id');
     }
 
     /** Name in the language of who reads it (ready types) or as the company typed it. */
@@ -57,6 +68,14 @@ class DocumentType extends Model
     public function scopeActive(Builder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /**
+     * @param  Builder<DocumentType>  $query
+     */
+    public function scopeTrainings(Builder $query): void
+    {
+        $query->where('is_training', true);
     }
 
     /**

@@ -8,9 +8,11 @@ Os documentos do **veículo** (licenciamento, seguro) continuam na Frota, na pá
 - Cada empresa tem os seus tipos. Os prontos entram sozinhos na primeira vez, conforme o **país da empresa**:
   - **Brasil:** CNH, ASO (exame periódico, 12 meses, **dado de saúde**), NR-10 (24 meses), NR-35 (24 meses), NR-33 (12 meses), NR-11, NR-12, NR-06 (EPI), outro treinamento ou curso, outro documento;
   - **outros países:** carteira de motorista, exame médico (12 meses, dado de saúde), treinamento de segurança, outro documento. Nada da lei brasileira.
+- Os tipos que são **cursos** (NR e treinamentos) avisam **60 dias antes** e aparecem em **Cursos e treinamentos** (veja `cursos.md`).
 - Cada tipo tem:
   - **validade sugerida** em meses (vazia = a pessoa digita a data);
-  - **avisar antes** (padrão: 30 dias);
+  - **avisar antes** (padrão: 30 dias; cursos: 60 dias);
+  - se **é um curso/treinamento**;
   - se é **dado de saúde**;
   - para qual sistema ele importa: CNH → Frota (motoristas); NR-10, NR-35 e NR-33 → Campo (técnicos).
 - Tela: **Vencimentos → Tipos de documento**. Dá para criar, mudar o nome, a validade e o aviso, e **desligar**. Um tipo nunca é apagado (os documentos apontam para ele).

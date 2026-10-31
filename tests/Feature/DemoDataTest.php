@@ -20,6 +20,8 @@ use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\PunchService;
+use App\People\Documents\PersonDocument;
+use App\People\Documents\TrainingService;
 use App\People\Epi\EpiDelivery;
 use App\People\Epi\EpiService;
 use App\Tenancy\TenantContext;
@@ -146,8 +148,11 @@ class DemoDataTest extends TestCase
             $this->assertTrue(EpiDelivery::query()->whereNotNull('signed_at')->get()->every(fn (EpiDelivery $delivery): bool => app(EpiService::class)->verify($delivery)));
 
             // Documents with an expiry: all valid, two about to expire (the video shows the warning).
-            $this->assertSame(13, \App\People\Documents\PersonDocument::query()->count());
-            $this->assertSame(2, \App\People\Documents\PersonDocument::query()->where('expires_on', '<=', now()->addDays(30)->toDateString())->where('expires_on', '>=', now()->toDateString())->count());
+            $this->assertSame(14, PersonDocument::query()->count());
+            // Courses: the field team needs NR-10 and NR-35; Bruno Dias is missing the NR-35 (the video adds it).
+            $this->assertSame(['Bruno Dias · nr35'], app(TrainingService::class)->missing()
+                ->map(fn (array $item): string => $item['person']->name.' · '.$item['type']->key)->all());
+            $this->assertSame(2, PersonDocument::query()->where('expires_on', '<=', now()->addDays(30)->toDateString())->where('expires_on', '>=', now()->toDateString())->count());
 
             // The window "your systems now work together" never shows up in the recordings.
             foreach (Tenant::query()->whereKey(app(TenantContext::class)->get()->getKey())->sole()->users as $user) {

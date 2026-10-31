@@ -32,7 +32,7 @@ use App\Modules\Field\Services\FieldPeople;
 use App\Modules\Field\Services\FieldReports;
 use App\Modules\Module;
 use App\Modules\Step;
-use App\People\Documents\PersonDocumentService;
+use App\People\Documents\TrainingService;
 use App\People\Person;
 
 /**
@@ -109,7 +109,8 @@ class FieldModule extends Module
 
     /**
      * The office: a technician who has not arrived, orders handed back, urgent orders without a technician and
-     * technicians with an expired safety training (NR-10, NR-35...; only "expired", the document stays with HR).
+     * technicians with an expired or missing required safety training (NR-10, NR-35...; only "expired" or "missing",
+     * the document stays with HR).
      */
     public function attention(User $user): array
     {
@@ -118,7 +119,8 @@ class FieldModule extends Module
         }
 
         $technicians = app(FieldAccess::class)->technicians()->keyBy(fn (User $technician): int => $technician->getKey());
-        $expired = app(PersonDocumentService::class)->expiredTexts(self::KEY, $technicians->keys()->all());
+        // Expired documents and required courses the technician is missing ("NR-35: falta fazer").
+        $expired = app(TrainingService::class)->warningTexts(self::KEY, $technicians->keys()->all());
 
         return array_merge(app(FieldReports::class)->attention(), collect($expired)
             ->map(fn (string $documents, int $userId): array => [

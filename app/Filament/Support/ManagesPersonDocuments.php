@@ -8,6 +8,7 @@ use App\Modules\ModuleRegistry;
 use App\People\Documents\DocumentType;
 use App\People\Documents\PersonDocument;
 use App\People\Documents\PersonDocumentService;
+use App\People\Documents\TrainingKind;
 use App\People\Person;
 use App\Tenancy\TenantContext;
 use Filament\Actions\Action;
@@ -100,6 +101,10 @@ trait ManagesPersonDocuments
                             : __('documents.helpers.expiry_typed');
                     }),
             ]),
+            // Course details (only for the types marked as a course: NR-10, NR-35...).
+            Grid::make(['default' => 1, 'sm' => 3])
+                ->visible(fn (Get $get): bool => (bool) DocumentType::query()->find($get('document_type_id'))?->is_training)
+                ->components($this->trainingDetailFields()),
             FileUpload::make('file_path')
                 ->label(__('documents.fields.file'))
                 ->helperText(__('documents.helpers.file'))
@@ -114,6 +119,29 @@ trait ManagesPersonDocuments
             Textarea::make('notes')
                 ->label(__('documents.fields.notes'))
                 ->rows(2),
+        ];
+    }
+
+    /**
+     * Institution or instructor, hours and initial / refresher of a course.
+     *
+     * @return array<int, mixed>
+     */
+    protected function trainingDetailFields(): array
+    {
+        return [
+            TextInput::make('provider')
+                ->label(__('documents.trainings.fields.provider'))
+                ->maxLength(120),
+            TextInput::make('workload_hours')
+                ->label(__('documents.trainings.fields.workload'))
+                ->integer()
+                ->minValue(1)
+                ->maxValue(2000)
+                ->suffix('h'),
+            Select::make('training_kind')
+                ->label(__('documents.trainings.fields.kind'))
+                ->options(TrainingKind::class),
         ];
     }
 
@@ -134,6 +162,7 @@ trait ManagesPersonDocuments
                 ->weight($withPerson ? null : 'bold')
                 ->description(fn (PersonDocument $record): ?string => collect([
                     $record->number,
+                    $record->trainingDetails(),
                     $record->type->is_health ? __('documents.fields.health_badge') : null,
                 ])->filter()->implode(' · ') ?: null),
             TextColumn::make('issued_on')
@@ -176,7 +205,12 @@ trait ManagesPersonDocuments
                 ->modalHeading(fn (PersonDocument $record): string => __('documents.actions.renew_heading', ['document' => $record->type->label(), 'name' => $record->person->name]))
                 ->modalDescription(__('documents.actions.renew_help'))
                 ->modalWidth('2xl')
-                ->fillForm(fn (PersonDocument $record): array => ['document_type_id' => $record->document_type_id])
+                ->fillForm(fn (PersonDocument $record): array => [
+                    'document_type_id' => $record->document_type_id,
+                    'provider' => $record->provider,
+                    'workload_hours' => $record->workload_hours,
+                    'training_kind' => $record->type->is_training ? TrainingKind::Refresher->value : null,
+                ])
                 ->schema(fn (): array => $this->documentFields())
                 ->action(function (PersonDocument $record, array $data): void {
                     $data['document_type_id'] = $record->document_type_id;
@@ -197,6 +231,9 @@ trait ManagesPersonDocuments
                         'expires_on' => $record->expires_on?->toDateString(),
                         'file_path' => $record->file_path,
                         'notes' => $record->notes,
+                        'provider' => $record->provider,
+                        'workload_hours' => $record->workload_hours,
+                        'training_kind' => $record->training_kind?->value,
                     ])
                     ->schema(fn (PersonDocument $record): array => $this->documentFields(editing: $record))
                     ->action(function (PersonDocument $record, array $data): void {

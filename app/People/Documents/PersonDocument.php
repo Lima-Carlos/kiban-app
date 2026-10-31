@@ -24,7 +24,7 @@ class PersonDocument extends Model
 
     protected $table = 'person_documents';
 
-    protected $fillable = ['person_id', 'document_type_id', 'number', 'issued_on', 'expires_on', 'file_path', 'notes'];
+    protected $fillable = ['person_id', 'document_type_id', 'number', 'issued_on', 'expires_on', 'file_path', 'notes', 'provider', 'workload_hours', 'training_kind'];
 
     protected function casts(): array
     {
@@ -32,6 +32,8 @@ class PersonDocument extends Model
             'issued_on' => 'date',
             'expires_on' => 'date',
             'replaced_at' => 'datetime',
+            'workload_hours' => 'integer',
+            'training_kind' => TrainingKind::class,
         ];
     }
 
@@ -110,6 +112,16 @@ class PersonDocument extends Model
             $days <= ($this->type?->alert_days ?? 30) => DocumentStatus::Soon,
             default => DocumentStatus::Ok,
         };
+    }
+
+    /** "Curso inicial · Senai · 40 h" (course details), or null. */
+    public function trainingDetails(): ?string
+    {
+        return collect([
+            $this->training_kind?->getLabel(),
+            $this->provider,
+            $this->workload_hours ? __('documents.trainings.hours', ['hours' => $this->workload_hours]) : null,
+        ])->filter()->implode(' · ') ?: null;
     }
 
     /** "Em dia", "Vence em 12 dias", "Vence hoje", "Vencido" or "Sem vencimento". */

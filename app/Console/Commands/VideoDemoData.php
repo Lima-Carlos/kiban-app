@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Access\AccessManager;
 use App\Connections\ConnectionCatalog;
 use App\Models\CompanyProfile;
+use App\Models\Team;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Field\Enums\FieldRole;
@@ -36,8 +37,10 @@ use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\PunchPhotoStore;
 use App\Modules\TimeClock\Services\PunchService;
 use App\Modules\TimeClock\Services\ScheduleService;
+use App\People\Documents\DocumentRequirement;
 use App\People\Documents\DocumentType;
 use App\People\Documents\PersonDocumentService;
+use App\People\Documents\TrainingService;
 use App\People\Epi\EpiDelivery;
 use App\People\Epi\EpiService;
 use App\People\PeopleService;
@@ -210,7 +213,9 @@ class VideoDemoData extends ResetDemoData
     /**
      * Documents with an expiry date (People): the field team's driver license, medical exams and NR trainings,
      * all valid, with two close to the expiry so the "Attention" box and the status column have something to show.
-     * Bruno Dias has no NR-35 on purpose: the video adds it and shows the expiry filled in by itself.
+     * Bruno Dias has no NR-35 on purpose: the video adds it and shows the expiry filled in by itself. Courses: the
+     * field team ("Equipe de campo") must have NR-10 and NR-35, so Bruno is "Falta fazer" in "Courses and trainings"
+     * and Lucas's NR-35 shows in the renewals of the next 90 days; the NR courses have institution and hours.
      *
      * @param  array<string, User>  $users  by e-mail
      * @param  \Closure(string): Person  $person
@@ -224,13 +229,28 @@ class VideoDemoData extends ResetDemoData
         $named = fn (string $name): ?Person => Person::query()->where('name', $name)->first();
         $this->at($this->today->subDays(30)->setTime(10, 0));
 
-        $add = function (?Person $who, string $key, ?string $number, CarbonImmutable $issued, ?CarbonImmutable $expires = null) use ($service, $type, $hr): void {
+        // The field team: everyone in it must have NR-10 and NR-35.
+        $team = Team::query()->create(['name' => 'Equipe de campo']);
+        foreach ([$person('tecnico.video@exemplo.test'), $person('tecnica.video@exemplo.test'), $named('Pedro Rocha'), $named('Bruno Dias')] as $member) {
+            $member?->update(['team_id' => $team->getKey()]);
+        }
+        $trainings = app(TrainingService::class);
+        foreach (['nr10', 'nr35'] as $key) {
+            $trainings->addRequirement(['document_type_id' => $type($key), 'scope' => DocumentRequirement::TEAM, 'team_id' => $team->getKey()], $hr);
+        }
+        $courses = [
+            'nr10' => ['provider' => 'Senai Belo Horizonte', 'workload_hours' => 40],
+            'nr35' => ['provider' => 'Escola de Altura BH', 'workload_hours' => 8],
+        ];
+
+        $add = function (?Person $who, string $key, ?string $number, CarbonImmutable $issued, ?CarbonImmutable $expires = null) use ($service, $type, $hr, $courses): void {
             if ($who === null) {
                 return;
             }
 
             $service->add($who, array_filter([
                 'document_type_id' => $type($key), 'number' => $number, 'issued_on' => $issued->toDateString(), 'expires_on' => $expires?->toDateString(),
+                ...(isset($courses[$key]) ? $courses[$key] + ['training_kind' => 'initial'] : []),
             ], fn ($value): bool => $value !== null), $hr);
         };
 
@@ -243,6 +263,7 @@ class VideoDemoData extends ResetDemoData
         $add($person('tecnica.video@exemplo.test'), 'nr35', null, $this->today->subMonths(6));
         $add($named('Pedro Rocha'), 'aso', null, $this->today->subMonths(11)->subDays(18));
         $add($named('Pedro Rocha'), 'nr10', null, $this->today->subMonths(10));
+        $add($named('Pedro Rocha'), 'nr35', null, $this->today->subMonths(14));
         $add($named('Bruno Dias'), 'aso', null, $this->today->subMonths(4));
         $add($named('Bruno Dias'), 'nr10', null, $this->today->subMonths(9));
         $add($named('Carla Mendes'), 'aso', null, $this->today->subMonths(2));

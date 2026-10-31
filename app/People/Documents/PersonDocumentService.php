@@ -109,7 +109,7 @@ class PersonDocumentService
      * A new document. Without "expires_on" in the data, it comes from the type's validity. The previous document
      * of the same type becomes history (renewal).
      *
-     * @param  array{document_type_id: int|string, number?: ?string, issued_on?: mixed, expires_on?: mixed, file_path?: ?string, notes?: ?string}  $data
+     * @param  array{document_type_id: int|string, number?: ?string, issued_on?: mixed, expires_on?: mixed, file_path?: ?string, notes?: ?string, provider?: ?string, workload_hours?: mixed, training_kind?: mixed}  $data
      */
     public function add(Person $person, array $data, ?User $by = null): PersonDocument
     {
@@ -139,7 +139,7 @@ class PersonDocumentService
     }
 
     /**
-     * Corrects a document (number, dates, file, notes). The type does not change.
+     * Corrects a document (number, dates, file, notes, course details). The type does not change.
      *
      * @param  array<string, mixed>  $data
      */
@@ -220,10 +220,14 @@ class PersonDocumentService
      */
     protected function clean(array $data): array
     {
-        $values = array_intersect_key($data, array_flip(['number', 'issued_on', 'expires_on', 'file_path', 'notes']));
+        $values = array_intersect_key($data, array_flip(['number', 'issued_on', 'expires_on', 'file_path', 'notes', 'provider', 'workload_hours', 'training_kind']));
 
         foreach ($values as $key => $value) {
             $values[$key] = is_string($value) && trim($value) === '' ? null : (is_string($value) ? trim($value) : $value);
+        }
+
+        if (array_key_exists('workload_hours', $values) && $values['workload_hours'] !== null) {
+            $values['workload_hours'] = max(0, (int) $values['workload_hours']) ?: null;
         }
 
         return $values;
@@ -491,6 +495,9 @@ class PersonDocumentService
                 'issued_on' => $document->issued_on?->toDateString(),
                 'expires_on' => $document->expires_on?->toDateString(),
                 'notes' => $document->notes,
+                'provider' => $document->provider,
+                'workload_hours' => $document->workload_hours,
+                'training_kind' => $document->training_kind?->value,
                 'with_file' => filled($document->file_path),
                 'current' => $document->isCurrent(),
                 'created_at_utc' => $document->created_at?->toIso8601ZuluString(),

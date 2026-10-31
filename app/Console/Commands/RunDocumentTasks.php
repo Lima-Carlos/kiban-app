@@ -4,13 +4,15 @@ namespace App\Console\Commands;
 
 use App\Models\Tenant;
 use App\People\Documents\PersonDocumentService;
+use App\People\Documents\TrainingService;
 use App\Tenancy\TenantContext;
 use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Console\Command;
 
 /**
  * Daily routine of the people's documents (every company, every system): the bell warns who takes care of the
- * documents at each milestone (warning days, 7 days before, the expiry day), once per milestone.
+ * documents at each milestone (warning days, 7 days before, the expiry day), once per milestone, and about the
+ * people missing a required course (once per person and course).
  */
 class RunDocumentTasks extends Command
 {
@@ -30,7 +32,9 @@ class RunDocumentTasks extends Command
             // "Today" follows the company's time zone (as on its screens).
             FilamentTimezone::set($tenant->license()->tenant('timezone') ?: config('kiban.timezone'));
 
-            $notices += $context->run($tenant, fn (): int => app(PersonDocumentService::class)->scan());
+            $notices += $context->run($tenant, fn (): int => app(PersonDocumentService::class)->scan()
+                // People missing a required course (once per person and course).
+                + app(TrainingService::class)->scanMissing());
         });
 
         $this->components->info(__('documents.console.ran', ['notices' => $notices]));

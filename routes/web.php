@@ -14,6 +14,7 @@ use App\Http\Controllers\PhoneAlertController;
 use App\Http\Controllers\TimeClock\KioskController;
 use App\Http\Controllers\TimeClock\PhoneQueueController;
 use App\Http\Controllers\TimeClock\ReceiptController;
+use App\Http\Controllers\TrainingRecordController;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\RevalidateMembership;
 use Illuminate\Support\Facades\Route;
@@ -71,6 +72,9 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
 
         // The file of a person's document (driver's license, medical exam...): only for who may see it.
         Route::get('/documentos/{document}/arquivo', PersonDocumentFileController::class)->whereNumber('document')->name('people.documents.file');
+
+        // "Comprovante de cursos" (PDF) of a person: who takes care of the documents, or the person themselves.
+        Route::get('/cursos/{person}/comprovante', TrainingRecordController::class)->whereNumber('person')->name('people.trainings.proof');
     });
 
     // Ponto: receipt of a punch at a signed address (works without a login, e.g. from the QR code on the tablet).

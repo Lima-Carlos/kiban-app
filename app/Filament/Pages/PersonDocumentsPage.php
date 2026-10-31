@@ -78,6 +78,12 @@ class PersonDocumentsPage extends Page implements HasActions, HasSchemas, HasTab
                 ->icon(Heroicon::OutlinedArrowLeft)
                 ->color('gray')
                 ->url(fn (): string => PeoplePage::getUrl()),
+            // PDF with the person's valid courses, for a client who asks for proof (sent by the manager).
+            Action::make('trainingProof')
+                ->label(__('documents.trainings.actions.proof'))
+                ->icon(Heroicon::OutlinedAcademicCap)
+                ->color('gray')
+                ->url(fn (): string => route('people.trainings.proof', ['person' => $this->personId])),
             $this->addDocumentAction($person)->visible($person?->is_active ?? false),
         ];
     }

@@ -121,6 +121,9 @@ class DocumentTypesPage extends Page implements HasActions, HasSchemas, HasTable
             Toggle::make('is_health')
                 ->label(__('documents.types.is_health'))
                 ->helperText(__('documents.types.is_health_help')),
+            Toggle::make('is_training')
+                ->label(__('documents.types.is_training'))
+                ->helperText(__('documents.types.is_training_help')),
         ];
     }
 
@@ -139,6 +142,7 @@ class DocumentTypesPage extends Page implements HasActions, HasSchemas, HasTable
             'alert_days' => (int) ($data['alert_days'] ?? 30),
             'module' => filled($data['module'] ?? null) ? $data['module'] : null,
             'is_health' => (bool) ($data['is_health'] ?? false),
+            'is_training' => (bool) ($data['is_training'] ?? false),
         ];
     }
 
@@ -187,6 +191,13 @@ class DocumentTypesPage extends Page implements HasActions, HasSchemas, HasTable
                     ->trueColor('danger')
                     ->falseIcon(Heroicon::OutlinedMinus)
                     ->falseColor('gray'),
+                IconColumn::make('is_training')
+                    ->label(__('documents.types.is_training_short'))
+                    ->boolean()
+                    ->trueIcon(Heroicon::OutlinedAcademicCap)
+                    ->trueColor('primary')
+                    ->falseIcon(Heroicon::OutlinedMinus)
+                    ->falseColor('gray'),
                 TextColumn::make('documents_count')
                     ->label(__('documents.types.in_use'))
                     ->alignEnd()
@@ -206,6 +217,7 @@ class DocumentTypesPage extends Page implements HasActions, HasSchemas, HasTable
                         'alert_days' => $record->alert_days,
                         'module' => $record->module,
                         'is_health' => $record->is_health,
+                        'is_training' => $record->is_training,
                     ])
                     ->schema(static::fields())
                     ->action(function (DocumentType $record, array $data): void {
