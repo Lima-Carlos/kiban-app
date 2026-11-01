@@ -5,7 +5,7 @@
     use App\Modules\Agenda\Services\AgendaMessages;
     $messages = app(AgendaMessages::class);
     $canCreate = AppointmentResource::canCreate();
-    $card = 'display:block;padding:8px 10px;border-radius:10px;border:1px solid rgba(127,127,127,.25);color:inherit;margin-bottom:8px;background:var(--color-white, #fff)';
+    $card = 'display:block;padding:8px 10px;border-radius:10px;border:1px solid rgba(127,127,127,.25);color:inherit;margin-bottom:8px;background:rgba(127,127,127,.12)';
     $clockColors = ['in' => 'success', 'out' => 'gray', 'none' => 'warning'];
 @endphp
 <x-filament-panels::page>
