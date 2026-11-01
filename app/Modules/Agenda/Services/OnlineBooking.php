@@ -138,7 +138,7 @@ class OnlineBooking
                 'size' => $size?->value,
                 'professional_id' => $professional->getKey(),
                 'starts_at' => $date->toDateString().' '.$data['time'],
-                'service_ids' => $services->merge($pickup ? [$pickup] : [])->modelKeys(),
+                'service_ids' => $services->merge($pickup ? [$pickup] : [])->pluck('id')->all(),
                 'notes' => $data['notes'] ?? null,
                 'pickup' => $pickup !== null,
                 'dropoff' => $pickup !== null,

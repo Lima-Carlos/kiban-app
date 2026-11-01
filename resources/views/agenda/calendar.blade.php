@@ -1,14 +1,14 @@
+@php
+    use App\Modules\Agenda\Enums\AppointmentStatus;
+    use App\Modules\Agenda\Filament\Appointments\AppointmentResource;
+    use App\Modules\Agenda\Services\AgendaFormat;
+    use App\Modules\Agenda\Services\AgendaMessages;
+    $messages = app(AgendaMessages::class);
+    $canCreate = AppointmentResource::canCreate();
+    $card = 'display:block;padding:8px 10px;border-radius:10px;border:1px solid rgba(127,127,127,.25);color:inherit;margin-bottom:8px;background:var(--color-white, #fff)';
+    $clockColors = ['in' => 'success', 'out' => 'gray', 'none' => 'warning'];
+@endphp
 <x-filament-panels::page>
-    @php
-        use App\Modules\Agenda\Enums\AppointmentStatus;
-        use App\Modules\Agenda\Filament\Appointments\AppointmentResource;
-        use App\Modules\Agenda\Services\AgendaFormat;
-        use App\Modules\Agenda\Services\AgendaMessages;
-        $messages = app(AgendaMessages::class);
-        $canCreate = AppointmentResource::canCreate();
-        $card = 'display:block;padding:8px 10px;border-radius:10px;border:1px solid rgba(127,127,127,.25);color:inherit;margin-bottom:8px;background:var(--color-white, #fff)';
-        $clockColors = ['in' => 'success', 'out' => 'gray', 'none' => 'warning'];
-    @endphp
 
     {{-- Previous, today, next; day or week. --}}
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">

@@ -1,9 +1,9 @@
+@php
+    use App\Modules\Agenda\Services\AgendaFormat;
+    $rows = $this->rows();
+    $cell = 'padding:8px 10px;border-bottom:1px solid rgba(127,127,127,.2);text-align:left';
+@endphp
 <x-filament-panels::page>
-    @php
-        use App\Modules\Agenda\Services\AgendaFormat;
-        $rows = $this->rows();
-        $cell = 'padding:8px 10px;border-bottom:1px solid rgba(127,127,127,.2);text-align:left';
-    @endphp
 
     <div style="display:flex;align-items:center;gap:8px">
         <x-filament::icon-button icon="heroicon-o-chevron-left" wire:click="previous" :label="__('agenda.calendar.previous')" />

@@ -37,7 +37,7 @@ class Spreadsheet
 
         foreach ($sheets as $name => $rows) {
             $sheet = $first ? $writer->getCurrentSheet() : $writer->addNewSheetAndMakeItCurrent();
-            $sheet->setName(mb_substr(str_replace(['/', '\', '?', '*', '[', ']', ':'], '-', (string) $name), 0, 31));
+            $sheet->setName(mb_substr(str_replace(['/', '\\', '?', '*', '[', ']', ':'], '-', (string) $name), 0, 31));
             $first = false;
 
             foreach ($rows as $index => $values) {

@@ -1,13 +1,13 @@
+@php
+    use App\Modules\Agenda\Enums\AppointmentStatus;
+    use App\Modules\Agenda\Services\AgendaFormat;
+    use App\Modules\Agenda\Services\AgendaMessages;
+    use App\Support\Country;
+    $messages = app(AgendaMessages::class);
+    $appointments = $this->appointments();
+    $row = 'display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(127,127,127,.2);flex-wrap:wrap';
+@endphp
 <x-filament-panels::page>
-    @php
-        use App\Modules\Agenda\Enums\AppointmentStatus;
-        use App\Modules\Agenda\Services\AgendaFormat;
-        use App\Modules\Agenda\Services\AgendaMessages;
-        use App\Support\Country;
-        $messages = app(AgendaMessages::class);
-        $appointments = $this->appointments();
-        $row = 'display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(127,127,127,.2);flex-wrap:wrap';
-    @endphp
 
     <div style="display:flex;align-items:center;gap:8px">
         <x-filament::icon-button icon="heroicon-o-chevron-left" wire:click="previous" :label="__('agenda.calendar.previous')" />
