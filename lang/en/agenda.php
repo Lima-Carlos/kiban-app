@@ -230,7 +230,7 @@ return [
     ],
 
     'client_packages' => [
-        'singular' => 'package sold', 'plural' => 'packages sold', 'plural_title' => 'Packages sold',
+        'singular' => 'package sold', 'plural' => 'packages sold', 'plural_title' => 'Packages Sold',
         'new' => 'Sell package',
         'empty' => 'No packages sold', 'empty_help' => 'Sell a package and appointments for that service use the sessions automatically.',
         'sessions' => 'Sessions',
@@ -240,6 +240,7 @@ return [
 
     'reminders' => [
         'title' => 'Remind for tomorrow',
+        'page_title' => 'Remind for Tomorrow',
         'help' => ':count appointments · :sent reminders sent. Tap the button: WhatsApp opens with the message ready (no cost).',
         'send' => 'Remind on WhatsApp',
         'sent' => 'Sent · again',
@@ -261,7 +262,7 @@ return [
     ],
 
     'settings' => [
-        'title' => 'Appointments settings',
+        'title' => 'Appointments Settings',
         'business' => 'Type of business',
         'business_help' => 'Brings in ready-made services (you can change everything later). Choosing again only adds what is missing.',
         'online' => 'Booking link',

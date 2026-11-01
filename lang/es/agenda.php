@@ -240,6 +240,7 @@ return [
 
     'reminders' => [
         'title' => 'Recordar mañana',
+        'page_title' => 'Recordar mañana',
         'help' => ':count citas · :sent recordatorios enviados. Toca el botón: WhatsApp se abre con el mensaje listo (sin costo).',
         'send' => 'Recordar por WhatsApp',
         'sent' => 'Enviado · de nuevo',

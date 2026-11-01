@@ -169,7 +169,7 @@ return [
         'close' => 'Fechar',
     ],
     'profiles' => [
-        'title' => 'Perfis de acesso',
+        'title' => 'Perfis de Acesso',
         'help' => 'Cada perfil diz o que a pessoa acessa em cada sistema (ex.: Logística: gestor da Frota). Escolha o perfil ao adicionar alguém em Pessoas.',
         'create' => 'Novo perfil',
         'name' => 'Nome do perfil',
@@ -207,7 +207,7 @@ return [
         'cleaned' => 'Avisos antigos removidos: :count.',
     ],
     'company_profile' => [
-        'title' => 'Identidade da empresa',
+        'title' => 'Identidade da Empresa',
         'help' => 'O logo, a cor e os dados que aparecem no que os seus clientes recebem: relatórios de serviço e orçamentos.',
         'look' => 'Aparência',
         'logo' => 'Logo',

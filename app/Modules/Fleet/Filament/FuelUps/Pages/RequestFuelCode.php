@@ -49,7 +49,7 @@ class RequestFuelCode extends Page
 
     public function getTitle(): string|Htmlable
     {
-        return __('fleet.fuel.request_code');
+        return __('fleet.fuel.request_code_title');
     }
 
     public function mount(): void

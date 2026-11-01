@@ -322,7 +322,7 @@ class QuoteResource extends ModuleResource
                             ->helperText(fn (Quote $record): ?string => $record->decline_reason)
                             ->visible(fn (Quote $record): bool => $record->answered_at !== null),
                         TextEntry::make('order')
-                            ->label(__('field.orders.singular_title'))
+                            ->label(ucfirst(__('field.orders.singular')))
                             ->state(fn (Quote $record): ?string => $record->order?->label())
                             ->url(fn (Quote $record): ?string => $record->order_id ? OrderResource::getUrl('view', ['record' => $record->order_id]) : null)
                             ->color('primary')

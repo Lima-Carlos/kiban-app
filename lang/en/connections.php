@@ -1,9 +1,15 @@
 <?php
 
 // Connections between the systems (App\Connections): the window "your systems now work together", the page
-// "Systems together" and the texts of the features that link two systems.
+// "Integrations" and the texts of the features that link two systems.
 return [
     'and' => 'and',
+    'badge' => 'News you have not seen yet',
+    'home' => [
+        'notice' => 'There is news in the integrations of your systems.',
+        'see' => 'See',
+        'close' => 'Close',
+    ],
     'window' => [
         'title' => 'News: your systems now work together',
         'intro' => 'Your company uses :systems. See what one system does for the other:',
@@ -13,7 +19,7 @@ return [
         'ok' => 'Got it',
     ],
     'page' => [
-        'title' => 'Systems together',
+        'title' => 'Integrations',
         'help' => 'What your company\'s systems do together: what one records, the other uses.',
         'active' => 'Working now',
         'none' => 'With a single system there are no connections yet. They show up when the company uses two or more Kiban Core systems.',

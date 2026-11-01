@@ -59,12 +59,12 @@ class PunchPage extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('timeclock.punches.punch_now');
+        return __('timeclock.punches.punch_now_title');
     }
 
     public function getTitle(): string
     {
-        return __('timeclock.punches.punch_now');
+        return __('timeclock.punches.punch_now_title');
     }
 
     public function employee(): Employee

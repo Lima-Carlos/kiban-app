@@ -68,12 +68,12 @@ return [
         'column' => 'Documentos',
     ],
     'mine' => [
-        'title' => 'Meus documentos',
+        'title' => 'Meus Documentos',
         'help' => 'Os seus documentos guardados pela empresa e quando vencem. Para atualizar, fale com o RH.',
         'empty' => 'Nenhum documento seu cadastrado',
     ],
     'types' => [
-        'title' => 'Tipos de documento',
+        'title' => 'Tipos de Documento',
         'help' => 'Os documentos que a empresa acompanha. A validade preenche o vencimento sozinha. Um tipo em uso é desligado, nunca apagado.',
         'create' => 'Novo tipo',
         'name' => 'Nome',
@@ -123,7 +123,7 @@ return [
         'no' => 'Não',
     ],
     'trainings' => [
-        'title' => 'Cursos e treinamentos',
+        'title' => 'Cursos e Treinamentos',
         'help' => 'Quem fez cada curso (NR-10, NR-35...) e até quando vale. Verde: em dia. Amarelo: vencendo. Vermelho: vencido. Cinza: falta fazer.',
         'hours' => ':hours h',
         'people_count' => '{1} 1 pessoa|[2,*] :count pessoas',
@@ -189,7 +189,7 @@ return [
             'back' => 'Cursos e treinamentos',
         ],
         'requirements' => [
-            'title' => 'Quem precisa de cada curso',
+            'title' => 'Quem Precisa de Cada Curso',
             'help' => 'Diga quais cursos são obrigatórios e para quem. Quem estiver sem o curso aparece como "Falta fazer" e o sistema avisa no sino.',
             'create' => 'Novo curso obrigatório',
             'course' => 'Curso',

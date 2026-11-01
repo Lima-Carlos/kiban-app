@@ -230,7 +230,7 @@ return [
     ],
 
     'client_packages' => [
-        'singular' => 'pacote vendido', 'plural' => 'pacotes vendidos', 'plural_title' => 'Pacotes vendidos',
+        'singular' => 'pacote vendido', 'plural' => 'pacotes vendidos', 'plural_title' => 'Pacotes Vendidos',
         'new' => 'Vender pacote',
         'empty' => 'Nenhum pacote vendido', 'empty_help' => 'Venda um pacote e os agendamentos do serviço usam as sessões sozinhos.',
         'sessions' => 'Sessões',
@@ -240,6 +240,7 @@ return [
 
     'reminders' => [
         'title' => 'Lembrar amanhã',
+        'page_title' => 'Lembrar Amanhã',
         'help' => ':count agendamentos · :sent lembretes enviados. Toque no botão: o WhatsApp abre com a mensagem pronta (sem custo).',
         'send' => 'Lembrar no WhatsApp',
         'sent' => 'Enviado · de novo',
@@ -261,7 +262,7 @@ return [
     ],
 
     'settings' => [
-        'title' => 'Configurações da agenda',
+        'title' => 'Configurações da Agenda',
         'business' => 'Ramo',
         'business_help' => 'Traz os serviços prontos (você muda tudo depois). Escolher de novo só acrescenta o que falta.',
         'online' => 'Link de agendamento',

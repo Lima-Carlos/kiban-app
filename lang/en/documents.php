@@ -55,7 +55,7 @@ return [
     'saved' => 'Document saved.',
     'deleted' => 'Document deleted.',
     'expiry' => [
-        'title' => 'Expiry dates',
+        'title' => 'Expiry Dates',
         'help' => 'Your team\'s documents with a validity (driver\'s license, medical exam, trainings), the soonest to expire at the top. The system warns in the bell before they expire.',
         'empty' => 'No documents yet',
         'empty_help' => 'Add your drivers\' licenses, the team\'s medical exams and safety trainings. The system warns before they expire.',
@@ -68,12 +68,12 @@ return [
         'column' => 'Documents',
     ],
     'mine' => [
-        'title' => 'My documents',
+        'title' => 'My Documents',
         'help' => 'Your documents kept by the company and when they expire. To update them, talk to HR.',
         'empty' => 'No documents of yours yet',
     ],
     'types' => [
-        'title' => 'Document types',
+        'title' => 'Document Types',
         'help' => 'The documents the company follows. The validity fills in the expiry date. A type in use is turned off, never deleted.',
         'create' => 'New type',
         'name' => 'Name',
@@ -123,7 +123,7 @@ return [
         'no' => 'No',
     ],
     'trainings' => [
-        'title' => 'Courses and trainings',
+        'title' => 'Courses and Trainings',
         'help' => 'Who took each course and until when it is valid. Green: valid. Yellow: expiring. Red: expired. Gray: missing.',
         'hours' => ':hours h',
         'people_count' => '{1} 1 person|[2,*] :count people',
@@ -189,7 +189,7 @@ return [
             'back' => 'Courses and trainings',
         ],
         'requirements' => [
-            'title' => 'Who needs each course',
+            'title' => 'Who Needs Each Course',
             'help' => 'Say which courses are required and for whom. Whoever does not have the course shows as "Missing" and the bell warns.',
             'create' => 'New required course',
             'course' => 'Course',

@@ -48,7 +48,7 @@ return [
         'empty' => 'Nenhum documento',
     ],
     'events' => [
-        'title' => 'Alterações importantes',
+        'title' => 'Alterações Importantes',
         'empty' => 'Nenhuma alteração',
         'identity' => 'Placa: :from → :to',
         'odometer' => 'Km: :from → :to',
@@ -221,7 +221,7 @@ return [
         'ready_item' => 'Item padrão não é apagado. Desligue "Usar na vistoria".',
     ],
     'settings' => [
-        'title' => 'Configurações da frota',
+        'title' => 'Configurações da Frota',
         'units' => 'Unidades e moeda',
         'units_help' => 'Escolha antes de cadastrar os veículos.',
         'units_locked' => 'Já existem veículos cadastrados, por isso as unidades e a moeda não podem mais mudar.',
@@ -387,6 +387,7 @@ return [
         'plural' => 'abastecimentos',
         'empty' => 'Nenhum abastecimento',
         'request_code' => 'Abastecer (gerar código)',
+        'request_code_title' => 'Abastecer (Gerar Código)',
         'register' => 'Lançar abastecimento',
         'generate' => 'Gerar código',
         'sections' => [
@@ -445,7 +446,7 @@ return [
         'empty' => 'Ninguém da empresa entrou no sistema ainda',
     ],
     'dashboard' => [
-        'title' => 'Painel da frota',
+        'title' => 'Painel da Frota',
         'period' => 'Período',
         'months' => '{1} :count mês|[2,*] :count meses',
         'all_vehicles' => 'Todos os veículos',
@@ -549,6 +550,7 @@ return [
         'plural_title' => 'Vistorias',
         'empty' => 'Nenhuma vistoria',
         'do' => 'Fazer vistoria',
+        'do_title' => 'Fazer Vistoria',
         'do_pending' => 'Fazer a vistoria (pendente)',
         'finish' => 'Concluir vistoria',
         'open' => 'Abrir',
@@ -610,8 +612,8 @@ return [
         'critical' => 'Item grave',
         'critical_help' => 'Com problema, o veículo vai sozinho para "Em manutenção".',
         'active' => 'Usar na vistoria',
-        'plural_title' => 'Itens da vistoria',
-        'singular_title' => 'Item da vistoria',
+        'plural_title' => 'Itens da Vistoria',
+        'singular_title' => 'Item da Vistoria',
     ],
     'notices' => [
         'inspection_critical' => 'Veículo parado: :plate',

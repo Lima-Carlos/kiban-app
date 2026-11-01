@@ -247,7 +247,7 @@ class TrainingsTest extends TestCase
             ->assertDontSee('Carla Mendes')
             ->callAction('export')
             ->assertFileDownloaded('cursos-2026-11-01.xlsx');
-        $this->get($this->company->url('/empresa/cursos'))->assertOk()->assertSee('Cursos e treinamentos');
+        $this->get($this->company->url('/empresa/cursos'))->assertOk()->assertSee('Cursos e Treinamentos');
     }
 
     public function test_one_class_for_many_people_creates_documents_and_renews(): void

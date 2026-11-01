@@ -48,12 +48,12 @@ class RemindersPage extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('agenda.reminders.title');
+        return __('agenda.reminders.page_title');
     }
 
     public function getTitle(): string
     {
-        return __('agenda.reminders.title');
+        return __('agenda.reminders.page_title');
     }
 
     public function mount(): void

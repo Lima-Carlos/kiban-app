@@ -1,6 +1,6 @@
-# Conexões entre os sistemas ("Sistemas juntos")
+# Conexões entre os sistemas ("Integrações")
 
-**O que é:** quando uma empresa usa dois ou mais sistemas da Kiban Core (Frota, Ponto, Campo), um aproveita o que o outro registra. Este arquivo lista essas ligações, explica a janela de novidade e a página **Empresa → Sistemas juntos**.
+**O que é:** quando uma empresa usa dois ou mais sistemas da Kiban Core (Frota, Ponto, Campo), um aproveita o que o outro registra. Este arquivo lista essas ligações, explica a janela de novidade e a página **Empresa → Integrações** (antes chamada "Sistemas juntos"; o nome mudou a pedido do dono em 01/11/2026).
 
 ## As conexões que existem hoje (31/10/2026)
 | Sistemas | Conexão | O que acontece | Quem vê na janela |
@@ -34,10 +34,14 @@
 - O celular também lembra a escolha, para a janela não voltar numa tela guardada para usar sem sinal.
 - Empresa com um sistema só: nenhuma janela.
 
-## A página Empresa → Sistemas juntos
+## A página Empresa → Integrações
 - **Funcionando agora:** as conexões ativas (todas para dono/administrador; as que importam para a pessoa para os outros).
 - **Com o Ponto (ou a Frota, o Campo), você também teria:** as conexões que um sistema não contratado ligaria sozinho, com o botão para conhecer os planos na Área do cliente do Core (`/conta/sistemas`). **Só para dono e administradores** (quem compra). Ajuda a vender o segundo sistema sem ser chato.
 - Fica no menu "Empresa" para quem cuida das pessoas. Técnicos e motoristas chegam por "Ver todas", na janela.
+- **Contador de novidades no menu:** ao lado de "Integrações" aparece um número verde com quantas conexões a pessoa ainda não viu. Some quando ela abre a página. Conta como vista a conexão que a pessoa já abriu nesta página ou dispensou na janela com "Não mostrar novamente" (tabela `connection_views`, por pessoa, empresa e conexão). Uma conexão nova numa versão futura volta a contar.
+- **Aviso no Início:** "Há novidades nas integrações dos seus sistemas. Ver", discreto, só para quem tem "Integrações" no menu (dono, administradores, gestores), enquanto houver novidade não vista. O "x" fecha até aparecer uma conexão nova (lembrado na sessão); o número no menu continua até abrir a página.
+- A janela continua com a regra dela (não mudou). Ela não aparece na própria página de Integrações.
+- O endereço antigo `/<empresa>/empresa/sistemas-juntos` leva para o novo.
 
 ## Vídeos
 O comando `kiban:video-demo` marca todas as conexões como vistas para as contas da empresa dos vídeos, para a janela não aparecer nas gravações.
@@ -46,11 +50,11 @@ O comando `kiban:video-demo` marca todas as conexões como vistas para as contas
 **Toda função nova que liga dois sistemas entra no catálogo** (`App\Connections\ConnectionCatalog::all()`): chave, sistemas, quem vê (papéis), "Ver onde" e os textos em `lang/*/connections.php` (3 idiomas). A conta da função fica numa "ponte" em `app/Connections/Bridges/`.
 
 ## Arquivos
-- `app/Connections/Connection.php` (uma conexão), `ConnectionCatalog.php` (a lista e as regras de quem vê), `ConnectionDismissal.php` ("não mostrar novamente").
+- `app/Connections/Connection.php` (uma conexão), `ConnectionCatalog.php` (a lista e as regras de quem vê), `ConnectionDismissal.php` ("não mostrar novamente"), `ConnectionView.php` (o que a pessoa já viu na página Integrações).
 - Pontes: `app/Connections/Bridges/FieldTimeClock.php` (lembrete do ponto e aproveitamento), `FieldFleet.php` (custo do deslocamento), `FleetTimeClock.php` (vistoria depois do ponto), `FieldEpi.php` (EPI necessário no Campo).
 - Janela: `resources/views/filament/connections-modal.blade.php` (no fim de toda tela, `AppPanelProvider`) e `app/Http/Controllers/ConnectionsController.php` (rota `connections.dismiss`, `/<empresa>/sistemas-juntos/ok`).
-- Página: `app/Filament/Pages/ConnectionsPage.php` + `resources/views/filament/pages/connections.blade.php` (`/<empresa>/empresa/sistemas-juntos`).
+- Página: `app/Filament/Pages/ConnectionsPage.php` + `resources/views/filament/pages/connections.blade.php` (`/<empresa>/empresa/integracoes`; o endereço antigo `/empresa/sistemas-juntos` redireciona, em `routes/web.php`). Aviso no Início: `Home::showsIntegrationsNote()` + `resources/views/filament/pages/home.blade.php`.
 - Onde aparecem as funções: `resources/views/field/execute.blade.php` + `ExecuteOrderPage` (lembrete), `resources/views/timeclock/punch-page.blade.php` + `PunchPage` (vistoria), `FieldTechniciansWidget` + `resources/views/field/dashboard/technicians.blade.php` (aproveitamento e deslocamento; no celular a tabela vira cartões), `OrderResource` (custo na OS).
-- Migração: `database/migrations/2026_11_02_100000_create_connection_dismissals_table.php`.
+- Migrações: `database/migrations/2026_11_02_100000_create_connection_dismissals_table.php` e `2026_11_06_100000_create_connection_views_table.php`.
 - Textos: `lang/*/connections.php`.
 - Testes: `tests/Feature/ConnectionsTest.php`.

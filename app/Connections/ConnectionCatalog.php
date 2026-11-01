@@ -34,7 +34,7 @@ use Carbon\CarbonImmutable;
  * company (it has the systems), which ones matter to a person (role) and which ones the person still has to see.
  *
  * Rule of the project: every new feature that links two systems gets an entry here (key, systems, who it matters
- * to, "See where" and the texts in lang/<locale>/connections.php). The window and the "Systems together" page read
+ * to, "See where" and the texts in lang/<locale>/connections.php). The window and the "Integrations" page read
  * only from here.
  */
 class ConnectionCatalog
@@ -216,7 +216,50 @@ class ConnectionCatalog
     }
 
     /**
-     * Every connection marked as seen for these people (e.g. the accounts used to record the videos).
+     * What the "Integrations" page shows the person: every active connection for who manages the company, the
+     * relevant ones for the others.
+     *
+     * @return array<string, Connection>
+     */
+    public function forPage(User $user): array
+    {
+        return $user->canManageTenant() ? $this->active() : $this->relevant($user);
+    }
+
+    /**
+     * Connections of the page the person has not seen yet: never opened the "Integrations" page since they
+     * appeared, nor dismissed them in the window ("Do not show again"). Feeds the menu counter and the note on
+     * the start page; the window keeps its own rule (pending()).
+     *
+     * @return array<string, Connection>
+     */
+    public function unseen(User $user): array
+    {
+        $shown = $this->forPage($user);
+
+        if ($shown === []) {
+            return [];
+        }
+
+        $seen = array_merge(
+            ConnectionView::query()->where('user_id', $user->getKey())->pluck('connection')->all(),
+            ConnectionDismissal::query()->where('user_id', $user->getKey())->pluck('connection')->all(),
+        );
+
+        return array_diff_key($shown, array_flip($seen));
+    }
+
+    /** The person opened the "Integrations" page: what it shows now counts as seen. */
+    public function markSeen(User $user): void
+    {
+        foreach (array_keys($this->unseen($user)) as $key) {
+            ConnectionView::query()->firstOrCreate(['user_id' => $user->getKey(), 'connection' => $key]);
+        }
+    }
+
+    /**
+     * Every connection marked as seen for these people (e.g. the accounts used to record the videos): no window,
+     * no counter in the menu.
      *
      * @param  iterable<User>  $users
      */
@@ -225,6 +268,7 @@ class ConnectionCatalog
         foreach ($users as $user) {
             foreach (array_keys($this->all()) as $key) {
                 ConnectionDismissal::query()->firstOrCreate(['user_id' => $user->getKey(), 'connection' => $key]);
+                ConnectionView::query()->firstOrCreate(['user_id' => $user->getKey(), 'connection' => $key]);
             }
         }
     }

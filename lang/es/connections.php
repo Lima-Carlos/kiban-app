@@ -1,9 +1,15 @@
 <?php
 
 // Conexiones entre los sistemas (App\Connections): la ventana "sus sistemas ahora trabajan juntos", la página
-// "Sistemas juntos" y los textos de las funciones que unen dos sistemas.
+// "Integraciones" y los textos de las funciones que unen dos sistemas.
 return [
     'and' => 'y',
+    'badge' => 'Novedades que aún no ha visto',
+    'home' => [
+        'notice' => 'Hay novedades en las integraciones de sus sistemas.',
+        'see' => 'Ver',
+        'close' => 'Cerrar',
+    ],
     'window' => [
         'title' => 'Novedad: sus sistemas ahora trabajan juntos',
         'intro' => 'Su empresa usa :systems. Vea lo que un sistema hace por el otro:',
@@ -13,7 +19,7 @@ return [
         'ok' => 'Entendido',
     ],
     'page' => [
-        'title' => 'Sistemas juntos',
+        'title' => 'Integraciones',
         'help' => 'Lo que los sistemas de su empresa hacen juntos: lo que uno registra, el otro lo aprovecha.',
         'active' => 'Funcionando ahora',
         'none' => 'Con un solo sistema todavía no hay conexiones. Aparecen cuando la empresa usa dos o más sistemas de Kiban Core.',
