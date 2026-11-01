@@ -17,8 +17,10 @@ use App\Modules\Field\Services\CustomerImporter;
 use App\Modules\Field\Services\FieldAccess;
 use App\Support\Country;
 use App\Tenancy\TenantContext;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use OpenSpout\Common\Entity\Row;
@@ -335,8 +337,8 @@ class FieldCustomersTest extends TestCase
         $this->get(CustomerResource::getUrl('view', ['record' => $theirs->getKey()]))->assertNotFound();
 
         // A site can never point to another company's customer (the database refuses).
-        $this->expectException(\Illuminate\Database\QueryException::class);
-        \Illuminate\Support\Facades\DB::table('fd_sites')->insert(['tenant_id' => $this->company->getKey(), 'customer_id' => $theirs->getKey(), 'is_main' => false]);
+        $this->expectException(QueryException::class);
+        DB::table('fd_sites')->insert(['tenant_id' => $this->company->getKey(), 'customer_id' => $theirs->getKey(), 'is_main' => false]);
         unset($mine);
     }
 }
