@@ -3,6 +3,8 @@
 return [
     'date_format' => 'm/d/Y',
     'datetime_format' => 'm/d/Y \\a\\t g:i A',
+    'time_format' => 'g:i A',
+    'time_with_seconds_format' => 'g:i:s A',
     'menu' => [
         'account' => 'My Kiban account',
         'privacy' => 'Privacy',

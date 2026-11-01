@@ -154,7 +154,9 @@ class ViewAppointment extends ViewRecord
                         TimePicker::make('time')->label(__('agenda.fields.time'))->seconds(false)->format('H:i')->timezone(config('app.timezone'))->required(),
                     ])
                     ->action(function (array $data): void {
-                        $this->run(fn () => app(AppointmentBook::class)->move($this->getRecord(), (int) $data['professional_id'], $data['date'].' '.substr((string) $data['time'], 0, 5), auth()->user()), __('agenda.appointments.moved'));
+                        if ($this->run(fn () => app(AppointmentBook::class)->move($this->getRecord(), (int) $data['professional_id'], $data['date'].' '.substr((string) $data['time'], 0, 5), auth()->user()), __('agenda.appointments.moved'))) {
+                            CreateAppointment::warn($this->getRecord());
+                        }
                     }),
                 Action::make('fieldOrder')
                     ->label(__('agenda.actions.field_order'))
@@ -222,17 +224,19 @@ class ViewAppointment extends ViewRecord
         app(AppointmentBook::class)->markSent($this->getRecord(), $what === 'ready' ? 'ready' : 'reminder', auth()->user());
     }
 
-    protected function run(callable $change, string $done): void
+    protected function run(callable $change, string $done): bool
     {
         try {
             $change();
         } catch (AgendaException $exception) {
             Notification::make()->danger()->title($exception->getMessage())->send();
 
-            return;
+            return false;
         }
 
         $this->getRecord()->refresh();
         Notification::make()->success()->title($done)->send();
+
+        return true;
     }
 }
