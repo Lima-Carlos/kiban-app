@@ -7,9 +7,11 @@ use App\Connections\ConnectionCatalog;
 use App\Models\Tenant;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
+use App\Onboarding\CompanyFirstSteps;
 use App\People\Documents\PersonDocumentService;
 use App\People\Documents\TrainingService;
 use App\People\Epi\EpiService;
+use App\Support\LocalVideo;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -52,11 +54,14 @@ class Home extends Page
         $tenant = $this->tenant();
         $user = auth()->user();
 
+        // With two or more systems, owners and administrators get one combined list (getCompanySteps()) instead.
+        $combined = app(CompanyFirstSteps::class)->applies($tenant, $user);
+
         // Only the system chosen at the top of the menu (one system, many modules).
         return collect(array_filter([app(CurrentModule::class)->get()]))
-            ->map(function (Module $module) use ($tenant, $user): array {
+            ->map(function (Module $module) use ($tenant, $user, $combined): array {
                 // First steps only for who sets the module up; the others get their own block (e.g. driver buttons).
-                $steps = $module->showsSetupTo($user) ? $module->progress($tenant) : [];
+                $steps = ! $combined && $module->showsSetupTo($user) ? $module->progress($tenant) : [];
                 $done = count(array_filter($steps, fn (array $step): bool => $step['done']));
                 $total = count($steps);
 
@@ -73,6 +78,26 @@ class Home extends Page
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * "Company first steps": one list with the steps of every system, in the recommended order (Company and
+     * People → Ponto → Frota → Campo and Agenda → Integrations), when the company has two or more systems and the
+     * person sets the company up; null otherwise (each system keeps its own list).
+     *
+     * @return array{groups: array<int, array<string, mixed>>, done: int, total: int, percent: int, video: ?array{src: string, poster: ?string}}|null
+     */
+    public function getCompanySteps(): ?array
+    {
+        $tenant = $this->tenant();
+        $user = auth()->user();
+        $service = app(CompanyFirstSteps::class);
+
+        if (! $service->applies($tenant, $user)) {
+            return null;
+        }
+
+        return $service->summary($tenant, $user) + ['video' => LocalVideo::find(CompanyFirstSteps::VIDEO)];
     }
 
     /**

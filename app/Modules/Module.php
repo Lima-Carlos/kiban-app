@@ -220,28 +220,7 @@ abstract class Module
      */
     public function progress(Tenant $tenant): array
     {
-        $steps = $this->steps();
-        $done = [];
-
-        foreach ($steps as $step) {
-            $done[$step->key] = $step->isDone($tenant);
-        }
-
-        $labels = collect($steps)->keyBy('key');
-
-        return array_map(function (Step $step) use ($done, $labels): array {
-            $missing = array_values(array_filter($step->requires, fn (string $key): bool => ! ($done[$key] ?? false)));
-
-            return [
-                'key' => $step->key,
-                'label' => $step->label(),
-                'description' => $step->description(),
-                'done' => $done[$step->key],
-                'available' => $missing === [],
-                'missing' => array_map(fn (string $key): string => $labels->get($key)?->label() ?? $key, $missing),
-                'url' => $step->url(),
-            ];
-        }, $steps);
+        return Step::progress($this->steps(), $tenant);
     }
 
     public function isStepDone(Tenant $tenant, string $key): bool

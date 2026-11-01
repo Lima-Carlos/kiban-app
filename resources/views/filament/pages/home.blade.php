@@ -1,6 +1,7 @@
 <x-filament-panels::page>
     @php($modules = $this->getModules())
     @php($attention = $this->getAttention())
+    @php($company = $this->getCompanySteps())
 
     {{-- "There is news in the integrations of your systems. See" (owner, administrators, managers; until seen or closed). --}}
     @if ($this->showsIntegrationsNote())
@@ -29,6 +30,11 @@
                 </a>
             @endforeach
         </x-filament::section>
+    @endif
+
+    {{-- Two or more systems: one combined first-steps list (owner and administrators), first while not done. --}}
+    @if ($company && $company['done'] < $company['total'])
+        @include('filament.pages.home-company-steps', ['company' => $company])
     @endif
 
     @forelse ($modules as $item)
@@ -67,4 +73,9 @@
             </x-filament::section>
         @endif
     @endforelse
+
+    {{-- All done: the combined list stays at the end, closed. --}}
+    @if ($company && $company['done'] === $company['total'])
+        @include('filament.pages.home-company-steps', ['company' => $company])
+    @endif
 </x-filament-panels::page>
