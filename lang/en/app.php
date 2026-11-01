@@ -195,6 +195,8 @@ return [
             'technician_help' => 'Does the work orders on the phone and clocks in.',
             'service_desk' => 'Service desk',
             'service_desk_help' => 'Registers customers and opens and schedules the work orders.',
+            'reception' => 'Front desk (Appointments)',
+            'reception_help' => 'Books, reschedules, reminds clients and sells packages; clocks in.',
             'viewer' => 'Viewer',
             'viewer_help' => 'Sees everything, without changing.',
         ],

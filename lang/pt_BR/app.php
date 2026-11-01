@@ -195,6 +195,8 @@ return [
             'technician_help' => 'Faz as ordens de serviço pelo celular e bate o ponto.',
             'service_desk' => 'Atendimento',
             'service_desk_help' => 'Cadastra clientes e abre e agenda as ordens de serviço.',
+            'reception' => 'Recepção (Agenda)',
+            'reception_help' => 'Marca, remarca, lembra os clientes e vende pacotes; bate o ponto.',
             'viewer' => 'Consulta',
             'viewer_help' => 'Vê tudo, sem alterar.',
         ],

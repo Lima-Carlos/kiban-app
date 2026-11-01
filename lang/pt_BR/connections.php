@@ -54,6 +54,14 @@ return [
             'title' => 'O EPI entregue avisa o Campo',
             'body' => 'O tipo de serviço pode dizer qual EPI é necessário (ex.: trabalho em altura → cinto paraquedista). O técnico que não recebeu esse EPI aparece com um aviso na hora de agendar e ao abrir a OS no celular. É só um aviso: nada é bloqueado.',
         ],
+        'agenda_pickup' => [
+            'title' => 'Leva e traz vira ordem de serviço',
+            'body' => 'No agendamento com leva e traz, um toque cria a ordem de serviço no Campo para buscar e levar o pet, no endereço do cliente. O cliente é o mesmo cadastro nos dois sistemas.',
+        ],
+        'agenda_clock' => [
+            'title' => 'Agenda segue o Ponto',
+            'body' => 'Quem bate ponto atende no horário de trabalho do Ponto (feriados incluídos), e a agenda do dia mostra quem já bateu o ponto. A batida continua sendo só do funcionário.',
+        ],
         'one_person' => [
             'title' => 'Uma pessoa, um cadastro só',
             'body' => 'Cada pessoa é cadastrada uma vez em Pessoas e entra com o mesmo login em todos os sistemas. Os perfis prontos, como "Técnico de campo" e "Motorista", já dão o acesso aos dois sistemas de uma vez.',

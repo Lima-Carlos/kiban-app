@@ -195,6 +195,8 @@ return [
             'technician_help' => 'Hace las órdenes de servicio en el celular y marca su asistencia.',
             'service_desk' => 'Atención',
             'service_desk_help' => 'Registra clientes y abre y agenda las órdenes de servicio.',
+            'reception' => 'Recepción (Agenda)',
+            'reception_help' => 'Agenda, reprograma, recuerda a los clientes y vende paquetes; marca la hora.',
             'viewer' => 'Consulta',
             'viewer_help' => 'Ve todo, sin modificar.',
         ],

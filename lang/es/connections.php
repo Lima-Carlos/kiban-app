@@ -54,6 +54,14 @@ return [
             'title' => 'El EPP entregado avisa a Campo',
             'body' => 'El tipo de servicio puede indicar qué EPP necesita (ej.: trabajo en altura → arnés de seguridad). El técnico que no recibió ese EPP aparece con un aviso al agendarlo y al abrir la orden en el celular. Es solo un aviso: nada se bloquea.',
         ],
+        'agenda_pickup' => [
+            'title' => 'Buscar y llevar se vuelve orden de servicio',
+            'body' => 'En la cita con buscar y llevar, un toque crea la orden de servicio en Campo para buscar y llevar la mascota, en la dirección del cliente. El cliente es el mismo registro en los dos sistemas.',
+        ],
+        'agenda_clock' => [
+            'title' => 'La Agenda sigue al Control Horario',
+            'body' => 'Quien marca la hora atiende en su horario de trabajo del Control Horario (feriados incluidos), y la agenda del día muestra quién ya marcó. Marcar sigue siendo solo del empleado.',
+        ],
         'one_person' => [
             'title' => 'Una persona, un solo registro',
             'body' => 'Cada persona se registra una vez en Personas y entra con el mismo usuario en todos los sistemas. Los perfiles listos, como "Técnico de campo" y "Conductor", ya dan acceso a los dos sistemas a la vez.',

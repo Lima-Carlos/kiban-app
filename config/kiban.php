@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Agenda\AgendaModule;
 use App\Modules\Demo\DemoModule;
 use App\Modules\Field\FieldModule;
 use App\Modules\Fleet\FleetModule;
@@ -45,6 +46,7 @@ return [
         FleetModule::class,
         TimeClockModule::class,
         FieldModule::class,
+        AgendaModule::class,
     ],
 
     /*
@@ -79,7 +81,8 @@ return [
         'hr' => ['name' => 'app.profiles.suggested.hr', 'description' => 'app.profiles.suggested.hr_help', 'roles' => ['ponto' => 'manager']],
         'technician' => ['name' => 'app.profiles.suggested.technician', 'description' => 'app.profiles.suggested.technician_help', 'roles' => ['campo' => 'technician', 'ponto' => 'employee']],
         'service_desk' => ['name' => 'app.profiles.suggested.service_desk', 'description' => 'app.profiles.suggested.service_desk_help', 'roles' => ['campo' => 'dispatcher']],
-        'viewer' => ['name' => 'app.profiles.suggested.viewer', 'description' => 'app.profiles.suggested.viewer_help', 'roles' => ['frota' => 'viewer', 'ponto' => 'viewer', 'campo' => 'viewer']],
+        'reception' => ['name' => 'app.profiles.suggested.reception', 'description' => 'app.profiles.suggested.reception_help', 'roles' => ['agenda' => 'desk', 'ponto' => 'employee']],
+        'viewer' => ['name' => 'app.profiles.suggested.viewer', 'description' => 'app.profiles.suggested.viewer_help', 'roles' => ['frota' => 'viewer', 'ponto' => 'viewer', 'campo' => 'viewer', 'agenda' => 'viewer']],
     ],
 
     'locales' => [

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Agenda\BookingController;
 use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
 use App\Http\Controllers\ConnectionsController;
@@ -55,6 +56,12 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     // Campo: the customer's page of a quote (no login; a long random link). Few answers per minute.
     Route::get('/orcamento/{token}', [QuoteLinkController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('field.quote');
     Route::post('/orcamento/{token}', [QuoteLinkController::class, 'answer'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:10,1')->name('field.quote.answer');
+
+    // Agenda: the company's public booking page and the client's link (confirm, reschedule, cancel). No login; few tries per minute.
+    Route::get('/agendar', [BookingController::class, 'show'])->name('agenda.booking');
+    Route::post('/agendar', [BookingController::class, 'store'])->middleware('throttle:6,1')->name('agenda.booking.store');
+    Route::get('/agendar/{token}', [BookingController::class, 'manage'])->where('token', '[A-Za-z0-9]{48}')->name('agenda.manage');
+    Route::post('/agendar/{token}', [BookingController::class, 'update'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:10,1')->name('agenda.manage.update');
 
     // Ponto: the phone's queue (punches kept without signal are sent here when it comes back) and the server's clock.
     Route::middleware(['auth', EnsureLicense::class, RevalidateMembership::class])->group(function (): void {

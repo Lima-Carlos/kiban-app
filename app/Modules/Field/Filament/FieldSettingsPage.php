@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field\Filament;
 
+use App\Filament\Support\MapPoint;
 use App\Modules\Concerns\InModuleMenu;
 use App\Modules\Field\FieldModule;
 use App\Modules\Field\Models\FieldSetting;
@@ -21,7 +22,6 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
-use App\Filament\Support\MapPoint;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 

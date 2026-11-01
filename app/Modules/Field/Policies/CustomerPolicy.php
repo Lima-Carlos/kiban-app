@@ -3,6 +3,8 @@
 namespace App\Modules\Field\Policies;
 
 use App\Models\User;
+use App\Modules\Agenda\Models\Appointment;
+use App\Modules\Agenda\Models\ClientPackage;
 use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Models\WorkOrder;
@@ -22,6 +24,11 @@ class CustomerPolicy extends FieldPolicy
         /** @var Customer $record */
         if (WorkOrder::query()->where('customer_id', $record->getKey())->exists()) {
             return Response::deny(__('field.denied.customer_has_orders'));
+        }
+
+        // The same customer may have a history in the Agenda (appointments, packages): it stays too.
+        if (Appointment::query()->where('customer_id', $record->getKey())->exists() || ClientPackage::query()->where('customer_id', $record->getKey())->exists()) {
+            return Response::deny(__('agenda.denied.client_has_history'));
         }
 
         return parent::delete($user, $record);

@@ -4,6 +4,7 @@ namespace App\Modules\Agenda\Services;
 
 use App\Models\User;
 use App\Modules\Agenda\Filament\Appointments\AppointmentResource;
+use App\Modules\Agenda\Models\AgendaSetting;
 use App\Modules\Agenda\Models\Appointment;
 use App\Notices\Notice;
 use App\Notices\Notifier;
@@ -39,7 +40,7 @@ class AgendaNotices
     protected function desk(Appointment $appointment, string $title, string $icon, string $color, ?User $except = null): void
     {
         $appointment->loadMissing(['client', 'item', 'professional.person']);
-        $timezone = \App\Modules\Agenda\Models\AgendaSetting::timezone();
+        $timezone = AgendaSetting::timezone();
         $starts = $appointment->starts_at;
 
         app(Notifier::class)->send($this->access->deskTeam(), new Notice(

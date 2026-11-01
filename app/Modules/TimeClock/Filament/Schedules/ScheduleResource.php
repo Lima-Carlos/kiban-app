@@ -139,7 +139,7 @@ class ScheduleResource extends ModuleResource
     }
 
     /** One weekday: works? start, break, end. */
-    protected static function dayFields(int $weekday): Grid
+    public static function dayFields(int $weekday): Grid
     {
         $works = fn (Get $get): bool => (bool) $get("week.{$weekday}.works");
 

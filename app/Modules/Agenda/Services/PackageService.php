@@ -3,6 +3,7 @@
 namespace App\Modules\Agenda\Services;
 
 use App\Models\User;
+use App\Modules\Agenda\Enums\AppointmentStatus;
 use App\Modules\Agenda\Models\AgendaSetting;
 use App\Modules\Agenda\Models\Client;
 use App\Modules\Agenda\Models\ClientPackage;
@@ -74,7 +75,7 @@ class PackageService
     /** The package can take this appointment (same client, the service, valid on the day, a session left). */
     public function check(ClientPackage $package, int $clientId, ?int $itemId, array $serviceIds, CarbonImmutable $day, ?int $ignoreAppointment = null): void
     {
-        $left = $package->quantity - $package->appointments()->whereIn('status', \App\Modules\Agenda\Enums\AppointmentStatus::holding())
+        $left = $package->quantity - $package->appointments()->whereIn('status', AppointmentStatus::holding())
             ->when($ignoreAppointment, fn ($query) => $query->whereKeyNot($ignoreAppointment))->count();
 
         $fits = (int) $package->customer_id === $clientId

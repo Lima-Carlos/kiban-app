@@ -5,7 +5,6 @@ namespace App\Modules\Field\Filament\Orders\Pages;
 use App\Filament\Support\NewRecordTitle;
 use App\Modules\Field\Filament\Orders\OrderResource;
 use App\Modules\Field\Models\Customer;
-use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\FieldException;
 use App\Modules\Field\Services\WorkOrderService;
 use Filament\Notifications\Notification;

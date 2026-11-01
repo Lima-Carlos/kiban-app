@@ -10,6 +10,8 @@ use App\Filament\Pages\Home;
 use App\Filament\Pages\PeoplePage;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Modules\Agenda\AgendaModule;
+use App\Modules\Agenda\Filament\CalendarPage;
 use App\Modules\Field\FieldModule;
 use App\Modules\Field\Filament\Dashboard\FieldDashboard;
 use App\Modules\Field\Filament\MyOrdersPage;
@@ -63,6 +65,7 @@ class ConnectionCatalog
         $field = FieldModule::KEY;
         $fleet = FleetModule::KEY;
         $clock = TimeClockModule::KEY;
+        $agenda = AgendaModule::KEY;
 
         $list = [
             // Campo + Ponto (O7): "you have not clocked in yet" at the first order, "clock out" after the last one.
@@ -109,8 +112,19 @@ class ConnectionCatalog
                 audience: fn (User $user): bool => $this->is($user, $clock, 'manager') || $this->is($user, $field, 'manager', 'dispatcher'),
                 url: fn (User $user): string => app(EpiService::class)->canHandle($user) ? EpiPage::getUrl() : Home::getUrl([CurrentModule::QUERY => $field]),
             ),
+            // Agenda + Campo: the pick-up and drop-off ("leva e traz") of an appointment becomes a Campo work order with
+            // one click; the client is the same customer in both systems.
+            new Connection('agenda_pickup', [$agenda, $field], 'heroicon-o-truck',
+                audience: fn (User $user): bool => $this->is($user, $agenda, 'manager', 'desk') || $this->is($user, $field, 'manager', 'dispatcher'),
+                url: fn (User $user): string => $this->is($user, $agenda, 'manager', 'desk') ? CalendarPage::getUrl() : FieldDashboard::getUrl(),
+            ),
+            // Agenda + Ponto: the professionals' hours follow their work schedule and the calendar shows who clocked in.
+            new Connection('agenda_clock', [$agenda, $clock], 'heroicon-o-finger-print',
+                audience: fn (User $user): bool => $this->is($user, $agenda, 'manager', 'desk') || $this->is($user, $clock, 'manager'),
+                url: fn (User $user): string => $this->is($user, $agenda, 'manager', 'desk') ? CalendarPage::getUrl() : PunchResource::getUrl('index'),
+            ),
             // Any pair: one register of people, one login, profiles that give two systems at once.
-            new Connection('one_person', [$fleet, $clock, $field], 'heroicon-o-users',
+            new Connection('one_person', [$fleet, $clock, $field, $agenda], 'heroicon-o-users',
                 audience: fn (User $user): bool => $user->canManageTenant()
                     || collect($this->modules->enabledFor($this->context->get()))->contains(fn (Module $module): bool => $module->managesPeople($user)),
                 url: fn (): string => PeoplePage::getUrl(),

@@ -5,8 +5,8 @@ namespace App\Modules\Field\Filament\Customers;
 use App\Filament\Support\MapPoint;
 use App\Filament\Support\ModuleResource;
 use App\Modules\Field\FieldModule;
-use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Filament\Orders\OrderResource;
+use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Models\Site;
 use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Field\Services\AddressLocator;
@@ -284,7 +284,7 @@ class CustomerResource extends ModuleResource
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    protected static function siteData(array $data): array
+    public static function siteData(array $data): array
     {
         $data['contact_phone'] = Country::phone($data['contact_phone'] ?? null);
         $data['country'] = filled($data['country'] ?? null) ? $data['country'] : Country::current();
@@ -295,7 +295,7 @@ class CustomerResource extends ModuleResource
     /**
      * @param  array<string, mixed>  $data
      */
-    protected static function isEmptySite(array $data): bool
+    public static function isEmptySite(array $data): bool
     {
         return collect(['label', 'postal_code', 'street', 'number', 'complement', 'district', 'city', 'state', 'reference', 'contact_name', 'contact_phone', 'latitude', 'longitude'])
             ->every(fn (string $field): bool => blank($data[$field] ?? null));

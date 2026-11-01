@@ -54,6 +54,14 @@ return [
             'title' => 'Delivered PPE warns the Field team',
             'body' => 'A type of service can say which PPE it needs (e.g. work at height → safety harness). A technician who did not receive that PPE shows a warning when being scheduled and when opening the work order on the phone. It is only a warning: nothing is blocked.',
         ],
+        'agenda_pickup' => [
+            'title' => 'Pick-up becomes a work order',
+            'body' => 'For an appointment with pick-up and drop-off, one tap creates the Field work order to fetch and bring the pet back, at the client\'s address. The client is the same record in both systems.',
+        ],
+        'agenda_clock' => [
+            'title' => 'Appointments follow the Time Clock',
+            'body' => 'People who clock in attend within their Time Clock work schedule (holidays included), and the day\'s calendar shows who has clocked in. Punching stays the employee\'s own act.',
+        ],
         'one_person' => [
             'title' => 'One person, one record',
             'body' => 'Each person is registered once in People and signs in with the same login to every system. Ready-made profiles, such as "Field technician" and "Driver", give access to both systems at once.',
