@@ -15,7 +15,7 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [pessoas.md](pessoas.md): um sistema com vários módulos; quem acessa o quê (perfis de acesso); cadastrar pessoas, enviar o acesso pelo WhatsApp, entrar pelo celular e o app na tela do celular.
 - [avisos.md](avisos.md): os avisos dentro do sistema (o sino e o quadro "Atenção"), sem e-mail.
 - [registros-de-acesso.md](registros-de-acesso.md): Marco Civil, o que fica guardado de cada acesso (IP, porta, aparelho), por quanto tempo e como exportar numa ordem judicial.
-- [conexoes.md](conexoes.md): as conexões entre os sistemas (o que um faz pelo outro), a janela "seus sistemas agora trabalham juntos" e a página Empresa → Sistemas juntos.
+- [conexoes.md](conexoes.md): as conexões entre os sistemas (o que um faz pelo outro), a janela "seus sistemas agora trabalham juntos" e a página Empresa → Integrações (com o contador de novidades no menu).
 - [documentos.md](documentos.md): documentos e vencimentos das pessoas (CNH, ASO, treinamentos NR), com anexo, aviso no sino antes de vencer, a tela Vencimentos e a ligação com a Frota e o Campo.
 - [cursos.md](cursos.md): cursos e treinamentos (parte dos documentos): quem precisa de cada curso, "falta fazer", a tabela pessoas × cursos, próximas renovações, lançar turma e o comprovante de cursos em PDF.
 - [epi.md](epi.md): EPI e ferramentas das pessoas (catálogo com CA, vida útil e estoque, entrega assinada com o dedo no celular, devolução e troca, ficha da NR-6 em PDF, avisos no sino e a ligação com o Campo).
