@@ -34,7 +34,9 @@ use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetReports;
 use App\Modules\Fleet\Services\OdometerService;
 use App\Modules\Fleet\Services\VehicleService;
+use App\Modules\ModuleArrivals;
 use App\Modules\ModuleRegistry;
+use App\Modules\TenantModule;
 use App\Modules\TimeClock\Filament\PunchPage;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
@@ -88,6 +90,28 @@ class ConnectionsTest extends TestCase
     {
         $this->company = $this->tenant($subdomain, $modules);
         $this->owner = $this->signIn($this->company);
+    }
+
+    /**
+     * The company's license now has these systems (as when the Core sends the new license).
+     *
+     * @param  array<string, array<string, mixed>>  $modules
+     */
+    protected function contract(array $modules): void
+    {
+        $this->company->forceFill(['license_token' => $this->licenseToken($this->company, $modules), 'license_fetched_at' => now()])->save();
+        $this->coreLicenses[$this->company->subdomain] = fn (): string => $this->licenseToken($this->company, $modules);
+        $this->company->forgetLicense();
+        $this->useTenant($this->company);
+    }
+
+    /**
+     * These systems were contracted a month after the others (the window only shows up for a system added later).
+     */
+    protected function addedLater(string ...$modules): void
+    {
+        app(ModuleArrivals::class)->record($this->company);
+        TenantModule::query()->where('tenant_id', $this->company->getKey())->whereNotIn('module', $modules)->update(['first_seen_at' => now()->subMonth()]);
     }
 
     /**
@@ -204,19 +228,98 @@ class ConnectionsTest extends TestCase
         }
     }
 
-    public function test_the_owner_sees_the_window_with_every_connection(): void
+    public function test_a_new_company_with_several_systems_gets_no_window(): void
     {
+        // Started with the three systems: nothing was "added later", even days after.
         $this->company();
+        $this->get($this->company->url('/'))->assertOk()->assertDontSee('data-connections-modal', false);
 
+        $this->travelTo(now()->addDays(10));
+        $this->get($this->company->url('/'))->assertOk()->assertDontSee('data-connections-modal', false);
+        $this->assertSame([], app(ModuleArrivals::class)->addedLater($this->company));
+
+        // The "Integrations" page still shows every connection.
+        $this->get(ConnectionsPage::getUrl())->assertOk()->assertSee(__('connections.items.travel_cost.title'));
+    }
+
+    public function test_a_system_contracted_later_brings_the_window(): void
+    {
+        // The company used the Campo; a month later it contracts the Ponto (new license): window with up to 3.
+        $this->company(['campo' => []]);
+        app(ModuleArrivals::class)->record($this->company);
+        $this->travelTo(now()->addMonth());
+        $this->contract(['campo' => [], 'ponto' => []]);
+
+        $this->assertSame(['ponto'], app(ModuleArrivals::class)->addedLater($this->company));
         $this->get($this->company->url('/'))->assertOk()
             ->assertSee('data-connections-modal', false)
             ->assertSee(__('connections.window.title'))
-            ->assertSee(__('connections.window.forever'))
-            ->assertSee(__('connections.items.field_km_to_fleet.title'))
+            ->assertSee(__('connections.window.see_all'))
             ->assertSee(__('connections.items.punch_reminder.title'))
-            ->assertSee(__('connections.items.inspection_after_punch.title'));
+            ->assertDontSee('data-connection-video', false);
 
-        $this->assertCount(9, app(ConnectionCatalog::class)->pending($this->owner));
+        // With the clip recorded (public/videos/conexoes/<key>-<lang>.mp4), the card plays it in place of the icon.
+        $clip = public_path('videos/conexoes/punch_reminder-pt.mp4');
+        @mkdir(dirname($clip), 0777, true);
+        file_put_contents($clip, 'test');
+
+        try {
+            $this->get($this->company->url('/'))->assertOk()
+                ->assertSee('data-connection-video', false)
+                ->assertSee('videos/conexoes/punch_reminder-pt.mp4', false);
+        } finally {
+            @unlink($clip);
+        }
+    }
+
+    public function test_a_system_contracted_in_the_first_days_counts_as_started_together(): void
+    {
+        $this->company(['campo' => []]);
+        app(ModuleArrivals::class)->record($this->company);
+        $this->travelTo(now()->addDays(ModuleArrivals::LATER_DAYS - 1));
+        $this->contract(['campo' => [], 'ponto' => []]);
+
+        $this->assertSame([], app(ModuleArrivals::class)->addedLater($this->company));
+        $this->get($this->company->url('/'))->assertOk()->assertDontSee('data-connections-modal', false);
+    }
+
+    public function test_the_window_shows_at_most_three_picked_for_the_role(): void
+    {
+        $this->company();
+        $this->addedLater('frota');
+        $catalog = app(ConnectionCatalog::class);
+
+        // The owner: the first three of the catalog that involve the Frota.
+        $this->assertSame(['field_km_to_fleet', 'travel_cost', 'inspection_after_punch'], array_keys($catalog->forWindow($this->owner)));
+        $this->get($this->company->url('/'))->assertOk()
+            ->assertSee('data-connection="field_km_to_fleet"', false)
+            ->assertDontSee('data-connection="documents_license"', false)
+            ->assertDontSee('data-connection="punch_reminder"', false);
+
+        // The Frota manager: first the pairs with the Frota, then "one register of people" (all systems).
+        $fleet = $this->member('Fábio Frota', ['frota' => 'manager']);
+        $this->assertSame(['field_km_to_fleet', 'inspection_after_punch', 'documents_license'], array_keys($catalog->forWindow($fleet)));
+
+        // HR (Ponto manager): only what the Frota changes for HR.
+        $hr = $this->member('Rita RH', ['ponto' => 'manager']);
+        $this->assertSame(['documents_license', 'one_person'], array_keys($catalog->forWindow($hr)));
+    }
+
+    public function test_employees_never_get_the_window(): void
+    {
+        $this->company();
+        $this->addedLater('frota');
+        $vehicle = $this->vehicle();
+
+        // A technician who clocks in and drives: the connections matter to them, but the window is only for who manages.
+        $lucas = $this->member('Lucas Técnico', ['campo' => 'technician']);
+        $this->clocksIn($lucas);
+        $this->drives($lucas, $vehicle);
+        $this->assertNotSame([], app(ConnectionCatalog::class)->pending($lucas));
+        $this->assertSame([], app(ConnectionCatalog::class)->forWindow($lucas));
+
+        $this->actingAs($lucas);
+        $this->get($this->company->url('/'))->assertOk()->assertDontSee('data-connections-modal', false);
     }
 
     public function test_each_person_sees_only_what_matters_to_them(): void
@@ -252,6 +355,7 @@ class ConnectionsTest extends TestCase
     public function test_do_not_show_again_is_per_person_and_per_connection(): void
     {
         $this->company();
+        $this->addedLater('frota');
         $admin = $this->member('Paula Admin', ['campo' => 'manager', 'ponto' => 'manager', 'frota' => 'manager']);
 
         $this->postJson(route('connections.dismiss'), ['keys' => ['punch_reminder', 'utilization', 'not_a_connection'], 'forever' => true])
@@ -277,6 +381,7 @@ class ConnectionsTest extends TestCase
     public function test_got_it_without_the_box_brings_the_window_back_the_next_day(): void
     {
         $this->company();
+        $this->addedLater('ponto');
 
         $this->postJson(route('connections.dismiss'), ['keys' => ['punch_reminder'], 'forever' => false])->assertOk();
 
@@ -319,6 +424,7 @@ class ConnectionsTest extends TestCase
     public function test_a_new_connection_shows_up_even_for_who_dismissed_the_old_ones(): void
     {
         $this->company();
+        $this->addedLater('frota');
         app(ConnectionCatalog::class)->dismissAllFor([$this->owner]);
         $this->assertSame([], app(ConnectionCatalog::class)->pending($this->owner));
 

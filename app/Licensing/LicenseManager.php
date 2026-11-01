@@ -3,6 +3,7 @@
 namespace App\Licensing;
 
 use App\Models\Tenant;
+use App\Modules\ModuleArrivals;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -131,5 +132,8 @@ class LicenseManager
         ])->save();
 
         $tenant->forgetLicense();
+
+        // Writes down a system seen for the first time (tells "contracted later" from the first ones).
+        app(ModuleArrivals::class)->record($tenant);
     }
 }
