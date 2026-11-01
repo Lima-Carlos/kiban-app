@@ -193,9 +193,11 @@ class VideoDemoData extends ResetDemoData
         $this->closeMonth($users);
 
         // One correction request waiting for HR (the "approve corrections" video needs it): a medical appointment.
-        $this->at($this->today->subDay()->setTime(9, 0));
+        // Yesterday, unless yesterday is in the month just closed (on the 1st): then today.
+        $requestDay = $this->today->day === 1 ? $this->today : $this->today->subDay();
+        $this->at($requestDay->setTime(9, 0));
         app(AdjustmentService::class)->request($employees['tecnico.video@exemplo.test'], [
-            'date' => $this->today->subDay()->toDateString(), 'type' => Adjustment::EXCUSE, 'minutes' => 45,
+            'date' => $requestDay->toDateString(), 'type' => Adjustment::EXCUSE, 'minutes' => 45,
             'reason' => 'Consulta médica no início da manhã.',
         ], $users['tecnico.video@exemplo.test']);
 
