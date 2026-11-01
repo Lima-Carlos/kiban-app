@@ -319,6 +319,7 @@ return [
         'plural_title' => 'Marcaciones',
         'help' => 'Todas las marcaciones, con foto, lugar y avisos. Una marcación nunca se cambia ni se elimina; lo que deba cambiar entra como corrección (Control horario → Correcciones).',
         'punch_now' => 'Marcar horario',
+        'punch_now_title' => 'Marcar horario',
         'done' => 'Marcación registrada a las :time',
         'done_body' => 'Número :nsr. El comprobante queda guardado aquí.',
         'camera_waiting' => 'Abriendo la cámara…',

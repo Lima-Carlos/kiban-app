@@ -13,7 +13,7 @@ return [
         'ok' => 'Entendi',
     ],
     'page' => [
-        'title' => 'Sistemas juntos',
+        'title' => 'Integrações',
         'help' => 'O que os sistemas da empresa fazem juntos: o que um registra, o outro aproveita.',
         'active' => 'Funcionando agora',
         'none' => 'Com um sistema só ainda não há conexões. Elas aparecem quando a empresa usa dois ou mais sistemas da Kiban Core.',

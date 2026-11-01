@@ -54,7 +54,7 @@ class DoInspection extends Page
 
     public function getTitle(): string|Htmlable
     {
-        return __('fleet.inspections.do');
+        return __('fleet.inspections.do_title');
     }
 
     public function mount(): void

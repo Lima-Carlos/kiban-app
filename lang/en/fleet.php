@@ -37,10 +37,10 @@ return [
         'new' => 'New fuel station',
         'plural' => 'fuel stations',
         'empty' => 'No fuel stations registered',
-        'singular_title' => 'Fuel station',
+        'singular_title' => 'Fuel Station',
     ],
     'odometer' => [
-        'title' => 'Odometer history',
+        'title' => 'Odometer History',
         'empty' => 'No odometer readings',
     ],
     'documents' => [
@@ -48,7 +48,7 @@ return [
         'empty' => 'No documents',
     ],
     'events' => [
-        'title' => 'Important changes',
+        'title' => 'Important Changes',
         'empty' => 'No changes',
         'identity' => 'Plate: :from → :to',
         'odometer' => 'Odometer: :from → :to',
@@ -221,7 +221,7 @@ return [
         'ready_item' => 'Standard items are not deleted. Turn off "Use in the inspection".',
     ],
     'settings' => [
-        'title' => 'Fleet settings',
+        'title' => 'Fleet Settings',
         'units' => 'Units and currency',
         'units_help' => 'Choose before registering the vehicles.',
         'units_locked' => 'There are vehicles registered, so units and currency can no longer change.',
@@ -387,6 +387,7 @@ return [
         'plural' => 'fuel-ups',
         'empty' => 'No fuel-ups',
         'request_code' => 'Fuel up (get a code)',
+        'request_code_title' => 'Fuel Up (Get a Code)',
         'register' => 'Enter fuel-up',
         'generate' => 'Generate code',
         'sections' => [
@@ -419,7 +420,7 @@ return [
         'full_tank_help' => 'Did you fill the tank? Consumption is measured from full tank to full tank.',
         'finished' => 'Fuel-up finished.',
         'cancel' => 'Cancel',
-        'plural_title' => 'Fuel-ups',
+        'plural_title' => 'Fuel-Ups',
     ],
     'station' => [
         'title' => 'Check fuel code',
@@ -445,7 +446,7 @@ return [
         'empty' => 'Nobody from the company has signed in yet',
     ],
     'dashboard' => [
-        'title' => 'Fleet dashboard',
+        'title' => 'Fleet Dashboard',
         'period' => 'Period',
         'months' => '{1} :count month|[2,*] :count months',
         'all_vehicles' => 'All vehicles',
@@ -549,6 +550,7 @@ return [
         'plural_title' => 'Inspections',
         'empty' => 'No inspections',
         'do' => 'Do inspection',
+        'do_title' => 'Do Inspection',
         'do_pending' => 'Do the inspection (pending)',
         'finish' => 'Finish inspection',
         'open' => 'Open',
@@ -610,8 +612,8 @@ return [
         'critical' => 'Critical item',
         'critical_help' => 'With a problem, the vehicle goes to "In maintenance" on its own.',
         'active' => 'Use in the inspection',
-        'plural_title' => 'Inspection items',
-        'singular_title' => 'Inspection item',
+        'plural_title' => 'Inspection Items',
+        'singular_title' => 'Inspection Item',
     ],
     'notices' => [
         'inspection_critical' => 'Vehicle stopped: :plate',

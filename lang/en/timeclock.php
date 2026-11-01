@@ -13,7 +13,7 @@ return [
         'schedule_help' => 'E.g. Monday to Friday 8:00–18:00, or 12x36. Start from a ready model.',
     ],
     'settings' => [
-        'title' => 'Time clock settings',
+        'title' => 'Time Clock Settings',
         'rules' => 'Country and labor rules',
         'rules_help' => 'The country sets the rules. The details (overtime, night premium, tolerance) are in "Calculation rules", just below.',
         'country' => 'Company country',
@@ -199,8 +199,8 @@ return [
         'singular' => 'work schedule',
         'new' => 'New work schedule',
         'plural' => 'work schedules',
-        'singular_title' => 'Work schedule',
-        'plural_title' => 'Work schedules',
+        'singular_title' => 'Work Schedule',
+        'plural_title' => 'Work Schedules',
         'preset' => 'Start from a model',
         'preset_help' => 'Choose the closest one: the form fills itself and everything can be adjusted.',
         'presets' => [
@@ -319,6 +319,7 @@ return [
         'plural_title' => 'Punches',
         'help' => 'All punches, with photo, place and warnings. A punch never changes and is never deleted; anything to change goes in as a correction (Time Clock → Corrections).',
         'punch_now' => 'Clock in',
+        'punch_now_title' => 'Clock In',
         'done' => 'Punch recorded at :time',
         'done_body' => 'Number :nsr. The receipt is kept here.',
         'camera_waiting' => 'Opening the camera…',
@@ -356,7 +357,7 @@ return [
         'singular' => 'clock (tablet)',
         'new' => 'New clock (tablet)',
         'plural' => 'clocks (tablets)',
-        'plural_title' => 'Clocks (tablets)',
+        'plural_title' => 'Clocks (Tablets)',
         'name_placeholder' => 'E.g. Front desk tablet',
         'workplace_help' => 'Where the tablet stays. Its punches count for this place.',
         'status' => 'Status',
@@ -392,7 +393,7 @@ return [
     'timesheet' => [
         'employee' => 'Employee',
         'title' => 'Calculation',
-        'mine' => 'My time sheet',
+        'mine' => 'My Time Sheet',
         'previous' => 'Previous month',
         'next' => 'Next month',
         'totals' => [
@@ -490,7 +491,7 @@ return [
         'cleanup_body' => 'Photos are kept for 12 months (the punches stay). :days days or less to go.',
     ],
     'closing' => [
-        'title' => 'Month closing',
+        'title' => 'Month Closing',
         'help' => 'Closing freezes the month: the hours do not change any more and the employee signs the time sheet. It can only be reopened before the signature.',
         'not_over' => 'This month is not over yet. It can be closed from noon of the 1st of the next month.',
         'file' => 'time sheet :name :month',

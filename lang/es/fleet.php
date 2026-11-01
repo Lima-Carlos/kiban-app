@@ -387,6 +387,7 @@ return [
         'plural' => 'cargas de combustible',
         'empty' => 'Ninguna carga de combustible',
         'request_code' => 'Cargar combustible (generar código)',
+        'request_code_title' => 'Cargar combustible (generar código)',
         'register' => 'Registrar carga',
         'generate' => 'Generar código',
         'sections' => [
@@ -549,6 +550,7 @@ return [
         'plural_title' => 'Inspecciones',
         'empty' => 'Ninguna inspección',
         'do' => 'Hacer inspección',
+        'do_title' => 'Hacer inspección',
         'do_pending' => 'Hacer la inspección (pendiente)',
         'finish' => 'Concluir inspección',
         'open' => 'Abrir',

@@ -169,7 +169,7 @@ return [
         'close' => 'Close',
     ],
     'profiles' => [
-        'title' => 'Access profiles',
+        'title' => 'Access Profiles',
         'help' => 'Each profile says what the person accesses in each system (e.g. Logistics: Fleet manager). Choose the profile when adding someone in People.',
         'create' => 'New profile',
         'name' => 'Profile name',
@@ -207,7 +207,7 @@ return [
         'cleaned' => 'Old warnings removed: :count.',
     ],
     'company_profile' => [
-        'title' => 'Company identity',
+        'title' => 'Company Identity',
         'help' => 'The logo, the color and the data that show on what your customers get: service reports and quotes.',
         'look' => 'Look',
         'logo' => 'Logo',

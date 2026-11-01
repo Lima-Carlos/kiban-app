@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'PPE and tools',
+    'title' => 'PPE and Tools',
     'help' => 'What each person has, what needs replacing and the deliveries waiting for a signature. Deliveries are signed with a finger on the phone.',
     'help_tools' => 'The tools and equipment each person has. Deliveries are signed with a finger on the phone.',
     'empty' => 'No deliveries yet',
@@ -211,7 +211,7 @@ return [
         'terms' => 'Acknowledgment text signed',
     ],
     'person' => [
-        'title' => 'PPE and tools of :name',
+        'title' => 'PPE and Tools of :name',
         'help' => 'What the person has now. To see older returns and replacements, change "Show" to "Everything".',
         'pending' => '{1} 1 delivery waiting for the signature: tap "Sign" on the line.|[2,*] :count deliveries waiting for the signature: tap "Sign" on the line.',
         'empty' => 'Nothing handed to this person',
@@ -221,7 +221,7 @@ return [
         'show_all' => 'Everything (with history)',
     ],
     'mine' => [
-        'title' => 'My deliveries',
+        'title' => 'My Deliveries',
         'help' => 'The PPE and tools you have and when to replace them.',
         'pending' => '{1} You have 1 delivery to sign. Tap "Sign".|[2,*] You have :count deliveries to sign. Tap "Sign".',
         'empty' => 'Nothing handed to you yet',

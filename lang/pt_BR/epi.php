@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'EPI e ferramentas',
+    'title' => 'EPI e Ferramentas',
     'help' => 'O que está com cada pessoa, o que precisa trocar e as entregas esperando assinatura. A entrega é assinada com o dedo, no celular.',
     'help_tools' => 'As ferramentas e equipamentos com cada pessoa. A entrega é assinada com o dedo, no celular.',
     'empty' => 'Nenhuma entrega ainda',
@@ -211,7 +211,7 @@ return [
         'terms' => 'Texto de ciência assinado',
     ],
     'person' => [
-        'title' => 'EPI e ferramentas de :name',
+        'title' => 'EPI e Ferramentas de :name',
         'help' => 'O que está com a pessoa agora. Para ver as devoluções e trocas antigas, mude "Mostrar" para "Tudo".',
         'pending' => '{1} 1 entrega esperando a assinatura: toque em "Assinar" na linha.|[2,*] :count entregas esperando a assinatura: toque em "Assinar" na linha.',
         'empty' => 'Nada entregue para esta pessoa',
@@ -221,7 +221,7 @@ return [
         'show_all' => 'Tudo (com o histórico)',
     ],
     'mine' => [
-        'title' => 'Minhas entregas',
+        'title' => 'Minhas Entregas',
         'help' => 'O EPI e as ferramentas que estão com você e quando trocar.',
         'pending' => '{1} Você tem 1 entrega para assinar. Toque em "Assinar".|[2,*] Você tem :count entregas para assinar. Toque em "Assinar".',
         'empty' => 'Nada entregue para você ainda',
