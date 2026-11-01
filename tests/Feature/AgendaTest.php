@@ -483,13 +483,63 @@ class AgendaTest extends TestCase
         DB::table('ag_items')->insert(['tenant_id' => $other->id, 'customer_id' => $this->maria->getKey(), 'name' => 'Intruso', 'kind' => 'pet', 'created_at' => now(), 'updated_at' => now()]);
     }
 
+    public function test_desk_is_warned_outside_the_hours_and_the_calendar_shows_it(): void
+    {
+        // Sunday 08/11 is a day off: the desk may squeeze one in, with a clear warning.
+        Livewire::test(CreateAppointment::class)
+            ->fillForm([
+                'customer_id' => $this->maria->getKey(),
+                'item_id' => $this->thor->getKey(),
+                'service_ids' => [$this->bath->getKey()],
+                'professional_id' => $this->ana->getKey(),
+                'date' => '2026-11-08',
+                'squeeze' => true,
+                'other_time' => '10:00',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors()
+            ->assertNotified(__('agenda.appointments.day_off', ['name' => 'Ana Banhista']));
+        $appointment = Appointment::query()->sole();
+        $this->assertSame('day_off', app(SlotFinder::class)->outsideHours($appointment));
+
+        // The calendar shows the day off with the appointment in warning color, not a plain "Folga".
+        Livewire::test(CalendarPage::class)->set('day', '2026-11-08')->assertOk()
+            ->assertSee(trans_choice('agenda.calendar.day_off_busy', 1))
+            ->assertSee('data-agenda="outside-hours"', false);
+
+        // Moved to Wednesday 20:00 (after the hours): warned again; at 10:00 it fits and nothing is warned.
+        Livewire::test(ViewAppointment::class, ['record' => $appointment->getKey()])
+            ->callAction('move', ['professional_id' => $this->ana->getKey(), 'date' => '2026-11-04', 'time' => '20:00'])
+            ->assertNotified(__('agenda.appointments.outside', ['name' => 'Ana Banhista']));
+        $this->assertSame('outside', app(SlotFinder::class)->outsideHours($appointment->fresh()));
+        Livewire::test(CalendarPage::class)->set('day', '2026-11-04')->assertSee(trans_choice('agenda.calendar.outside_busy', 1));
+
+        app(AppointmentBook::class)->move($appointment->fresh(), $this->ana->getKey(), '2026-11-04 10:00', $this->owner);
+        $this->assertNull(app(SlotFinder::class)->outsideHours($appointment->fresh()));
+        Livewire::test(CalendarPage::class)->set('day', '2026-11-04')->assertDontSee('data-agenda="outside-hours"', false);
+        Livewire::test(CalendarPage::class)->set('day', '2026-11-08')->assertSee(__('agenda.calendar.day_off'))->assertDontSee(trans_choice('agenda.calendar.day_off_busy', 1));
+
+        // The public page never offers a time on a day off, nor accepts one.
+        $this->assertSame([], $this->times('2026-11-08'));
+        $this->expectException(AgendaException::class);
+        app(AppointmentBook::class)->book([
+            'customer_id' => $this->maria->getKey(), 'item_id' => $this->thor->getKey(), 'professional_id' => $this->ana->getKey(),
+            'starts_at' => '2026-11-08 10:00', 'service_ids' => [$this->bath->getKey()],
+        ], null, Appointment::ONLINE, strict: true);
+    }
+
     public function test_sample_data_for_screenshots(): void
     {
-        $this->artisan('kiban:agenda-demo', ['tenant' => 'petfeliz'])->assertSuccessful();
-        $this->artisan('kiban:agenda-demo', ['tenant' => 'petfeliz'])->assertSuccessful();
+        // Sunday: a day off for everybody, so "today" of the samples moves to Monday.
+        $this->travelTo(CarbonImmutable::parse('2026-11-08 13:00:00', 'UTC'));
+        $this->company = $this->tenant('petdomingo', ['agenda' => []]);
+        $this->signIn($this->company);
+        $this->artisan('kiban:agenda-demo', ['tenant' => 'petdomingo'])->assertSuccessful();
+        $this->artisan('kiban:agenda-demo', ['tenant' => 'petdomingo'])->assertSuccessful();
 
         $this->assertSame(12, Appointment::query()->count());
-        $this->assertSame(1, Appointment::query()->where('status', AppointmentStatus::Ready->value)->count());
+        Appointment::query()->with('professional')->get()->each(fn (Appointment $appointment) => $this->assertNull(app(SlotFinder::class)->outsideHours($appointment), $appointment->starts_at->toDateTimeString()));
+        $this->assertSame(0, Appointment::query()->where('starts_at', '>', now())->whereIn('status', [AppointmentStatus::Delivered->value, AppointmentStatus::Ready->value])->count());
         $this->assertTrue(Client::query()->where('phone', '5511990000005')->sole()->isFlagged());
         $this->artisan('kiban:agenda-demo', ['tenant' => 'nao-existe'])->assertFailed();
     }

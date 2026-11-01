@@ -19,6 +19,8 @@ use App\Modules\Agenda\Services\AgendaPeople;
 use App\Modules\Agenda\Services\AgendaTemplates;
 use App\Modules\Agenda\Services\AppointmentBook;
 use App\Modules\Agenda\Services\PackageService;
+use App\Modules\Agenda\Services\SlotFinder;
+use App\Modules\Agenda\Services\WorkingHours;
 use App\People\Person;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
@@ -116,12 +118,29 @@ class AgendaDemoData extends Command
             [-8, '09:00', 5, 0, ['bath'], AppointmentStatus::NoShow],
         ];
 
+        $days = $this->workingDays($plan, $today, $professionals->all());
+        $slots = app(SlotFinder::class);
+
         foreach ($plan as [$offset, $time, $itemIndex, $who, $keys, $status]) {
             $item = $items[$itemIndex % $items->count()];
-            $start = $today->addDays($offset)->setTimeFromTimeString($time);
+            $day = $days[$offset];
 
-            if (Appointment::query()->where('item_id', $item->getKey())->where('starts_at', $start->utc())->exists()) {
+            // Already there (the command was run again today).
+            if (Appointment::query()->where('item_id', $item->getKey())->where('professional_id', $professionals[$who]->getKey())
+                ->whereBetween('starts_at', [$day->startOfDay()->utc(), $day->endOfDay()->utc()])->exists()) {
                 continue;
+            }
+
+            // The free time of the professional closest to the planned one (inside the hours, no clash).
+            $minutes = $slots->minutes(collect($keys)->map(fn (string $key): ?Service => $services->get($key))->filter(), $item->size);
+            $planned = $day->setTimeFromTimeString($time);
+            $start = collect($slots->slots($professionals[$who], $day, $minutes))
+                ->sortBy(fn (CarbonImmutable $free): int => (int) abs($free->diffInMinutes($planned)))
+                ->first() ?? $planned;
+
+            // Moved to a later day (today is a day off): nothing has happened yet.
+            if ($day->gt($today) && $status->position() > AppointmentStatus::Confirmed->position()) {
+                $status = AppointmentStatus::Confirmed;
             }
 
             try {
@@ -141,6 +160,49 @@ class AgendaDemoData extends Command
                 $this->components->warn($exception->getMessage());
             }
         }
+    }
+
+    /**
+     * The real date of each day offset of the plan, so the samples fall on working days: "today" is today or, on a
+     * day off (e.g. Sunday), the next day all of its professionals work; the next offsets are the following such
+     * days; past offsets look back the same way.
+     *
+     * @param  array<int, array<int, mixed>>  $plan
+     * @param  array<int, Professional>  $professionals
+     * @return array<int, CarbonImmutable> by day offset
+     */
+    protected function workingDays(array $plan, CarbonImmutable $today, array $professionals): array
+    {
+        $hours = app(WorkingHours::class);
+        $byOffset = collect($plan)->groupBy(0);
+        $works = fn (int $offset, CarbonImmutable $day): bool => $byOffset->get($offset)->pluck(3)->unique()
+            ->every(fn (int $who): bool => $hours->intervals($professionals[$who], $day) !== []);
+
+        $days = [];
+        $next = $today;
+
+        foreach ($byOffset->keys()->filter(fn (int $offset): bool => $offset >= 0)->sort() as $offset) {
+            $day = $next;
+
+            for ($tries = 0; $tries < 14 && ! $works($offset, $day); $tries++) {
+                $day = $day->addDay();
+            }
+
+            $days[$offset] = $day;
+            $next = $day->addDay();
+        }
+
+        foreach ($byOffset->keys()->filter(fn (int $offset): bool => $offset < 0) as $offset) {
+            $day = $today->addDays($offset);
+
+            for ($tries = 0; $tries < 14 && ! $works($offset, $day); $tries++) {
+                $day = $day->subDay();
+            }
+
+            $days[$offset] = $day;
+        }
+
+        return $days;
     }
 
     /** Moves the appointment along to the wanted status (marking times as if it really happened). */

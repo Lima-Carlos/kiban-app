@@ -93,13 +93,36 @@ class SlotFinder
     /** The time fits the professional's hours and does not clash with another appointment. */
     public function isFree(Professional $professional, CarbonImmutable $start, int $minutes, ?int $ignore = null): bool
     {
+        return $this->fitsHours($professional, $start, $minutes)
+            && $this->clashes($professional, $start, $start->addMinutes(max(1, $minutes)), $ignore)->isEmpty();
+    }
+
+    /** The time is inside one working piece of the professional (hours, break and time off; clashes not counted). */
+    public function fitsHours(Professional $professional, CarbonImmutable $start, int $minutes): bool
+    {
         $local = $start->setTimezone(AgendaSetting::timezone());
         $end = $local->addMinutes(max(1, $minutes));
         // The day of the start, and the day before (a shift that crosses midnight).
         $pieces = array_merge($this->hours->intervals($professional, $local->subDay()->startOfDay()), $this->hours->intervals($professional, $local->startOfDay()));
-        $inside = collect($pieces)->contains(fn (array $piece): bool => $local->gte($piece[0]) && $end->lte($piece[1]));
 
-        return $inside && $this->clashes($professional, $start, $end, $ignore)->isEmpty();
+        return collect($pieces)->contains(fn (array $piece): bool => $local->gte($piece[0]) && $end->lte($piece[1]));
+    }
+
+    /**
+     * Why an appointment is outside the professional's hours, for the desk's warning: "day_off" (no working time
+     * that day), "outside" (before/after the hours, in the break or in a time off) or null when it fits.
+     */
+    public function outsideHours(Appointment $appointment): ?string
+    {
+        $professional = $appointment->professional;
+        $start = CarbonImmutable::instance($appointment->starts_at);
+        $minutes = max(1, (int) $start->diffInMinutes($appointment->ends_at));
+
+        if ($professional === null || $this->fitsHours($professional, $start, $minutes)) {
+            return null;
+        }
+
+        return $this->hours->intervals($professional, $start->setTimezone(AgendaSetting::timezone())->startOfDay()) === [] ? 'day_off' : 'outside';
     }
 
     /**

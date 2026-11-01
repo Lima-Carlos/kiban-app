@@ -13,6 +13,7 @@ use App\Modules\Agenda\Models\Professional;
 use App\Modules\Agenda\Services\AgendaAccess;
 use App\Modules\Agenda\Services\AgendaException;
 use App\Modules\Agenda\Services\AppointmentBook;
+use App\Modules\Agenda\Services\SlotFinder;
 use App\Modules\Agenda\Services\WorkingHours;
 use App\Modules\Concerns\InModuleMenu;
 use App\Tenancy\TenantContext;
@@ -126,7 +127,7 @@ class CalendarPage extends Page
      * One column per professional with the day's appointments, the hours of the day and (with the Ponto) whether
      * they have clocked in.
      *
-     * @return array<int, array{professional: Professional, appointments: Collection<int, Appointment>, hours: ?string, clock: ?array}>
+     * @return array<int, array{professional: Professional, appointments: Collection<int, Appointment>, hours: ?string, outside: int, clock: ?array}>
      */
     public function columns(): array
     {
@@ -135,13 +136,21 @@ class CalendarPage extends Page
         $appointments = $this->appointments($professionals, $date, $date->endOfDay())->groupBy('professional_id');
         $clock = $date->isSameDay(CarbonImmutable::now(AgendaSetting::timezone())) ? app(AgendaTimeClock::class)->today($professionals) : [];
         $hours = app(WorkingHours::class);
+        $slots = app(SlotFinder::class);
 
-        return $professionals->map(fn (Professional $professional): array => [
-            'professional' => $professional,
-            'appointments' => $appointments->get($professional->getKey(), collect()),
-            'hours' => collect($hours->intervals($professional, $date))->map(fn (array $piece): string => $piece[0]->format('H:i').'–'.$piece[1]->format('H:i'))->implode(' · ') ?: null,
-            'clock' => $clock[$professional->getKey()] ?? null,
-        ])->all();
+        return $professionals->map(function (Professional $professional) use ($appointments, $date, $hours, $slots, $clock): array {
+            $own = $appointments->get($professional->getKey(), collect());
+            $own->each(fn (Appointment $appointment) => $appointment->setRelation('professional', $professional));
+
+            return [
+                'professional' => $professional,
+                'appointments' => $own,
+                'hours' => collect($hours->intervals($professional, $date))->map(fn (array $piece): string => $piece[0]->format('H:i').'–'.$piece[1]->format('H:i'))->implode(' · ') ?: null,
+                // Appointments the desk squeezed in on a day off or outside the hours (shown in warning color).
+                'outside' => $own->filter(fn (Appointment $appointment): bool => $slots->outsideHours($appointment) !== null)->count(),
+                'clock' => $clock[$professional->getKey()] ?? null,
+            ];
+        })->all();
     }
 
     /**

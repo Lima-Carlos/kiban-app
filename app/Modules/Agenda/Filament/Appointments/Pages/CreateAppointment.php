@@ -4,18 +4,21 @@ namespace App\Modules\Agenda\Filament\Appointments\Pages;
 
 use App\Filament\Support\NewRecordTitle;
 use App\Modules\Agenda\Filament\Appointments\AppointmentResource;
+use App\Modules\Agenda\Models\AgendaSetting;
 use App\Modules\Agenda\Models\Appointment;
 use App\Modules\Agenda\Services\AgendaException;
 use App\Modules\Agenda\Services\AgendaFormat;
 use App\Modules\Agenda\Services\AppointmentBook;
 use App\Modules\Agenda\Services\SlotFinder;
+use App\Modules\Agenda\Services\WorkingHours;
+use Carbon\CarbonImmutable;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * New appointment by the desk: everything goes through AppointmentBook. A time outside the free ones ("squeeze in")
- * is booked and the clash, if any, is warned (never blocked: the desk knows its day).
+ * is booked; a clash or a time outside the professional's hours is warned (never blocked: the desk knows its day).
  */
 class CreateAppointment extends CreateRecord
 {
@@ -52,14 +55,31 @@ class CreateAppointment extends CreateRecord
             $this->halt();
         }
 
-        $this->warnClash($appointment);
+        static::warn($appointment);
 
         return $appointment;
     }
 
-    protected function warnClash(Appointment $appointment): void
+    /**
+     * The desk's warnings after booking or moving (never a block): another appointment at the same time, and a time
+     * outside the professional's hours (day off, before/after the hours, break or time off).
+     */
+    public static function warn(Appointment $appointment): void
     {
-        $clashes = app(SlotFinder::class)->clashes($appointment->professional, $appointment->starts_at, $appointment->ends_at, $appointment->getKey());
+        $slots = app(SlotFinder::class);
+        $outside = $slots->outsideHours($appointment);
+
+        if ($outside !== null) {
+            $hours = collect(app(WorkingHours::class)->intervals($appointment->professional, CarbonImmutable::instance($appointment->starts_at)->setTimezone(AgendaSetting::timezone())->startOfDay()))
+                ->map(fn (array $piece): string => $piece[0]->format('H:i').'–'.$piece[1]->format('H:i'))->implode(' · ');
+
+            Notification::make()->warning()->persistent()
+                ->title(__('agenda.appointments.'.$outside, ['name' => $appointment->professional->name()]))
+                ->body($outside === 'outside' ? __('agenda.appointments.outside_body', ['hours' => $hours]) : __('agenda.appointments.day_off_body'))
+                ->send();
+        }
+
+        $clashes = $slots->clashes($appointment->professional, $appointment->starts_at, $appointment->ends_at, $appointment->getKey());
 
         if ($clashes->isNotEmpty()) {
             Notification::make()->warning()->persistent()

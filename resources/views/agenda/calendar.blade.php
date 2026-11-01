@@ -87,7 +87,13 @@
                         @endif
                         <span style="margin-left:auto;font-size:12px;opacity:.7">{{ $column['appointments']->count() }}</span>
                     </div>
-                    <div style="font-size:12px;opacity:.7;margin-bottom:8px">{{ $column['hours'] ?? __('agenda.calendar.day_off') }}</div>
+                    @if ($column['outside'] > 0)
+                        <div data-agenda="outside-hours" style="font-size:12px;margin-bottom:8px;color:#b45309;font-weight:600">
+                            ⚠ {{ $column['hours'] === null ? trans_choice('agenda.calendar.day_off_busy', $column['outside']) : $column['hours'].' · '.trans_choice('agenda.calendar.outside_busy', $column['outside']) }}
+                        </div>
+                    @else
+                        <div style="font-size:12px;opacity:.7;margin-bottom:8px">{{ $column['hours'] ?? __('agenda.calendar.day_off') }}</div>
+                    @endif
 
                     @forelse ($column['appointments'] as $appointment)
                         @php($next = $this->nextStep($appointment))

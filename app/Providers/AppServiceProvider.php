@@ -13,6 +13,7 @@ use App\Modules\ModuleRegistry;
 use App\Tenancy\TenantContext;
 use Filament\Actions\CreateAction;
 use Filament\Auth\Http\Responses\Contracts\LogoutResponse as LogoutResponseContract;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,34 @@ class AppServiceProvider extends ServiceProvider
                 ->successNotificationTitle(__('app.created'))
                 ->label(fn (): string => $newLabel() ?? __('filament-actions::create.single.label', ['label' => $action->getModelLabel()]))
                 ->modalHeading(fn (): string => $newLabel() ?? __('filament-actions::create.single.modal.heading', ['label' => $action->getModelLabel()]));
+        });
+
+        static::configureDatePickers();
+    }
+
+    /**
+     * Every date/time field of the screens follows the language of the account, not the browser's:
+     * "01/11/2026" and "18:05" in pt_BR/es, "11/01/2026" and "6:05 PM" in en (formats in lang/<locale>/app.php).
+     * The browser's own picker ("native") would use the language of the phone/computer, so the Filament picker
+     * is used instead. A format set by a screen itself (->displayFormat()) still wins. Applies to DatePicker
+     * and TimePicker too (both extend DateTimePicker). The public pages and offline phone pages are plain HTML
+     * and keep the browser picker, with the page language in <html lang>.
+     */
+    public static function configureDatePickers(): void
+    {
+        DateTimePicker::configureUsing(function (DateTimePicker $picker): void {
+            $date = fn (): string => __('app.date_format');
+            $time = fn (): string => __('app.time_format');
+            $timeWithSeconds = fn (): string => __('app.time_with_seconds_format');
+
+            $picker
+                ->native(false)
+                ->locale(fn (): string => app()->getLocale())
+                ->defaultDateDisplayFormat($date)
+                ->defaultTimeDisplayFormat($time)
+                ->defaultTimeWithSecondsDisplayFormat($timeWithSeconds)
+                ->defaultDateTimeDisplayFormat(fn (): string => $date().' '.$time())
+                ->defaultDateTimeWithSecondsDisplayFormat(fn (): string => $date().' '.$timeWithSeconds());
         });
     }
 }
