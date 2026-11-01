@@ -67,7 +67,8 @@ class ModuleSwitcherTest extends TestCase
         // (In tests the menu HTML is built once per process; the rule of each screen is checked instead.)
         $this->get($this->company->url('/?sistema=ponto'))->assertOk();
         $this->assertSame('ponto', $this->stored($this->owner));
-        $this->get($this->company->url('/'))->assertOk()->assertSee(__('timeclock.steps.rules'))->assertDontSee(__('fleet.steps.vehicle'));
+        // (With two systems the owner sees the single "Company first steps" list, the same in every system.)
+        $this->get($this->company->url('/'))->assertOk()->assertSee(__('timeclock.steps.rules'))->assertSee(__('app.first_steps.title'));
         $this->assertTrue(TimesheetPage::shouldRegisterNavigation());
         $this->assertFalse(VehicleResource::shouldRegisterNavigation());
 
