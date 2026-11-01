@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Access\CurrentModule;
+use App\Connections\ConnectionCatalog;
 use App\Models\Tenant;
 use App\Modules\Module;
 use App\Modules\ModuleRegistry;
@@ -91,6 +92,35 @@ class Home extends Page
             ->merge(app(EpiService::class)->attention(auth()->user()))
             ->values()
             ->all();
+    }
+
+    /**
+     * "There is news in the integrations of your systems. See": only for who has "Integrations" in the menu
+     * (owner, administrators, managers), while something there is unseen and the note was not closed for these
+     * same connections (a new one brings it back).
+     */
+    public function showsIntegrationsNote(): bool
+    {
+        $user = auth()->user();
+
+        if ($user === null || ! ConnectionsPage::canAccess() || ! ConnectionsPage::shouldRegisterNavigation()) {
+            return false;
+        }
+
+        $unseen = array_keys(app(ConnectionCatalog::class)->unseen($user));
+
+        return $unseen !== [] && array_diff($unseen, session($this->integrationsNoteKey(), [])) !== [];
+    }
+
+    /** "Close" on the note: hidden for the connections unseen now (session only; the menu counter stays). */
+    public function hideIntegrationsNote(): void
+    {
+        session()->put($this->integrationsNoteKey(), array_keys(app(ConnectionCatalog::class)->unseen(auth()->user())));
+    }
+
+    protected function integrationsNoteKey(): string
+    {
+        return 'kiban.integrations_note.'.$this->tenant()->getKey();
     }
 
     public function companyHasModules(): bool

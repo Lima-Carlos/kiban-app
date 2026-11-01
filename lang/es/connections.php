@@ -1,9 +1,15 @@
 <?php
 
 // Conexiones entre los sistemas (App\Connections): la ventana "sus sistemas ahora trabajan juntos", la página
-// "Sistemas juntos" y los textos de las funciones que unen dos sistemas.
+// "Integraciones" y los textos de las funciones que unen dos sistemas.
 return [
     'and' => 'y',
+    'badge' => 'Novedades que aún no ha visto',
+    'home' => [
+        'notice' => 'Hay novedades en las integraciones de sus sistemas.',
+        'see' => 'Ver',
+        'close' => 'Cerrar',
+    ],
     'window' => [
         'title' => 'Novedad: sus sistemas ahora trabajan juntos',
         'intro' => 'Su empresa usa :systems. Vea lo que un sistema hace por el otro:',

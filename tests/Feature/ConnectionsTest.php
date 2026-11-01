@@ -10,6 +10,7 @@ use App\Connections\Connection;
 use App\Connections\ConnectionCatalog;
 use App\Connections\ConnectionDismissal;
 use App\Filament\Pages\ConnectionsPage;
+use App\Filament\Pages\Home;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Field\Enums\OrderStatus;
@@ -54,7 +55,7 @@ use Tests\TestCase;
 /**
  * Connections between the systems: the catalog (which work for the company and matter to each person), the window
  * "your systems now work together" (dismissed per person, per connection and per company; a new connection shows
- * up again), the "Systems together" page, and the new features: the time clock reminder at the first and last work
+ * up again), the "Integrations" page (counter in the menu, note on the start page), and the new features: the time clock reminder at the first and last work
  * order and the technicians' utilization (Campo + Ponto), the inspection suggested after clocking in (Frota +
  * Ponto) and the estimated travel cost (Campo + Frota).
  */
@@ -334,7 +335,7 @@ class ConnectionsTest extends TestCase
         $this->get($this->company->url('/'))->assertOk()->assertSee('data-connection="future_feature"', false);
     }
 
-    public function test_the_systems_together_page(): void
+    public function test_the_integrations_page(): void
     {
         $this->company(['campo' => [], 'ponto' => []]);
 
@@ -359,6 +360,41 @@ class ConnectionsTest extends TestCase
         // Nothing that matters to this person: no page.
         $this->actingAs($this->member('Sem Acesso'));
         $this->get(ConnectionsPage::getUrl())->assertForbidden();
+    }
+
+    public function test_the_integrations_counter_and_the_note_on_the_start_page(): void
+    {
+        $this->company(['campo' => [], 'ponto' => []]);
+        $catalog = app(ConnectionCatalog::class);
+        $total = count($catalog->active());
+
+        // Nothing seen yet: the menu counts every connection and the start page shows the note.
+        $this->assertSame((string) $total, ConnectionsPage::getNavigationBadge());
+        $this->get($this->company->url('/'))->assertOk()->assertSee('data-integrations-note', false)->assertSee(__('connections.home.notice'));
+
+        // "Do not show again" in the window counts as seen for the counter too.
+        $catalog->dismiss($this->owner, ['utilization'], true);
+        $this->assertSame((string) ($total - 1), ConnectionsPage::getNavigationBadge());
+
+        // "Close" on the note hides it, the counter stays.
+        Livewire::test(Home::class)->call('hideIntegrationsNote');
+        $this->get($this->company->url('/'))->assertOk()->assertDontSee('data-integrations-note', false);
+        $this->assertNotNull(ConnectionsPage::getNavigationBadge());
+
+        // Opening the page marks everything as seen: no counter, no note.
+        $this->get(ConnectionsPage::getUrl())->assertOk();
+        $this->assertNull(ConnectionsPage::getNavigationBadge());
+        $this->assertSame([], $catalog->unseen($this->owner));
+
+        // The old address still works.
+        $this->get($this->company->url('/empresa/sistemas-juntos'))->assertRedirect(ConnectionsPage::getUrl());
+
+        // A technician has no note (not in the "Company" group), even with something unseen.
+        $lucas = $this->member('Lucas Técnico', ['campo' => 'technician']);
+        $this->clocksIn($lucas);
+        $this->actingAs($lucas);
+        $this->assertNotSame([], $catalog->unseen($lucas));
+        $this->get($this->company->url('/'))->assertOk()->assertDontSee('data-integrations-note', false);
     }
 
     public function test_the_time_clock_reminder_at_the_first_and_last_order(): void

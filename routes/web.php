@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Pages\ConnectionsPage;
 use App\Http\Controllers\Agenda\BookingController;
 use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
@@ -73,6 +74,9 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
 
         // "Your systems now work together": "Got it" / "Do not show again" of the window (ConnectionCatalog).
         Route::post('/sistemas-juntos/ok', [ConnectionsController::class, 'dismiss'])->middleware('throttle:30,1')->name('connections.dismiss');
+
+        // The old address of the "Integrations" page (it was called "Sistemas juntos"): saved links keep working.
+        Route::get('/'.ConnectionsPage::OLD_SLUG, fn () => redirect(ConnectionsPage::getUrl()))->name('connections.old');
 
         // Campo: the pieces of a work order sent by the technician's phone (also later, without signal).
         Route::post('/campo/os/{order}/enviar', OrderSyncController::class)->whereNumber('order')->middleware('throttle:120,1')->name('field.sync');

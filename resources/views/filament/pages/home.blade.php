@@ -2,6 +2,21 @@
     @php($modules = $this->getModules())
     @php($attention = $this->getAttention())
 
+    {{-- "There is news in the integrations of your systems. See" (owner, administrators, managers; until seen or closed). --}}
+    @if ($this->showsIntegrationsNote())
+        <div data-integrations-note
+             style="padding:7px 12px;border-radius:10px;display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.3;background:rgba(4,66,153,.08)">
+            <x-filament::icon icon="heroicon-m-puzzle-piece" style="width:16px;height:16px;flex:none;color:var(--primary-600)" />
+            <span style="flex:1;min-width:0">{{ __('connections.home.notice') }}</span>
+            <a href="{{ \App\Filament\Pages\ConnectionsPage::getUrl() }}" style="flex:none;font-weight:600;text-decoration:underline;color:var(--primary-600)">{{ __('connections.home.see') }}</a>
+            <button type="button" wire:click="hideIntegrationsNote" aria-label="{{ __('connections.home.close') }}" title="{{ __('connections.home.close') }}"
+                    style="flex:none;display:flex;padding:2px;border-radius:6px;opacity:.6;background:none;border:0;cursor:pointer;color:inherit">
+                <x-filament::icon icon="heroicon-m-x-mark" style="width:16px;height:16px" />
+            </button>
+        </div>
+        <style>.dark [data-integrations-note] { background: rgba(96,165,250,.12) !important; } .dark [data-integrations-note] a { color: var(--primary-400) !important; }</style>
+    @endif
+
     {{-- Urgent and still open: it disappears when solved. --}}
     @if ($attention !== [])
         <x-filament::section icon="heroicon-o-exclamation-triangle" icon-color="danger">

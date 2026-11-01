@@ -11,15 +11,20 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 
 /**
- * "Systems together" (Company group): what the company's systems do together now and, for the owner and the
+ * "Integrations" (Company group): what the company's systems do together now and, for the owner and the
  * administrators, what another system would add ("With the Ponto, you would also have: ...", with the link to the
  * plans in the Kiban account). Helps the customer use (and buy) the second system without pushing.
+ * The menu shows how many connections the person has not seen yet; opening the page marks them as seen.
+ * The old address (empresa/sistemas-juntos) redirects here (routes/web.php).
  */
 class ConnectionsPage extends Page
 {
+    /** The page's address before it was renamed "Integrations" (kept as a redirect). */
+    public const OLD_SLUG = 'empresa/sistemas-juntos';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
 
-    protected static ?string $slug = 'empresa/sistemas-juntos';
+    protected static ?string $slug = 'empresa/integracoes';
 
     protected static ?int $navigationSort = -2;
 
@@ -54,6 +59,30 @@ class ConnectionsPage extends Page
         return __('connections.page.title');
     }
 
+    /** How many connections the person has not seen yet; nothing once they open the page. */
+    public static function getNavigationBadge(): ?string
+    {
+        $user = auth()->user();
+        $count = $user !== null ? count(app(ConnectionCatalog::class)->unseen($user)) : 0;
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string
+    {
+        return 'success';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return __('connections.badge');
+    }
+
+    public function mount(): void
+    {
+        app(ConnectionCatalog::class)->markSeen(auth()->user());
+    }
+
     public function getTitle(): string
     {
         return __('connections.page.title');
@@ -71,9 +100,7 @@ class ConnectionsPage extends Page
      */
     public function active(): array
     {
-        $catalog = app(ConnectionCatalog::class);
-
-        return auth()->user()->canManageTenant() ? $catalog->active() : $catalog->relevant(auth()->user());
+        return app(ConnectionCatalog::class)->forPage(auth()->user());
     }
 
     /**
