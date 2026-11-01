@@ -73,9 +73,9 @@
 
             <div data-connections-list style="padding:4px 20px 12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1 1 auto;min-height:0">
                 @foreach ($pending as $connection)
-                    <div data-connection="{{ $connection->key }}" style="border:1px solid rgba(127,127,127,.22);border-radius:12px;padding:12px 14px;display:flex;gap:12px;flex:none">
-                        <x-filament::icon :icon="$connection->icon" data-connections-icon style="width:22px;height:22px;flex:none;color:#044299;margin-top:2px" />
-                        <div style="min-width:0;flex:1">
+                    <div data-connection="{{ $connection->key }}" style="border:1px solid rgba(127,127,127,.22);border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:12px;flex:none">
+                        @include('filament.connection-media', ['connection' => $connection])
+                        <div style="min-width:0;flex:1 1 200px">
                             <div style="font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:#044299">{{ $catalog->systemsLabel($connection, $enabled) }}</div>
                             <div style="font-size:15px;font-weight:700;margin-top:2px">{{ $connection->title() }}</div>
                             <p style="font-size:14px;margin:4px 0 0;line-height:1.45">{{ $connection->body() }}</p>

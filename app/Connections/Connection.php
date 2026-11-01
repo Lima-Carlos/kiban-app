@@ -3,6 +3,7 @@
 namespace App\Connections;
 
 use App\Models\User;
+use App\Support\LocalVideo;
 use Closure;
 
 /**
@@ -39,6 +40,16 @@ final class Connection
     public function body(): string
     {
         return __('connections.items.'.$this->key.'.body');
+    }
+
+    /**
+     * Short looping clip of the connection, when recorded: public/videos/conexoes/<key>-<lang>.mp4.
+     *
+     * @return array{src: string, poster: ?string}|null
+     */
+    public function video(): ?array
+    {
+        return LocalVideo::find('videos/conexoes/'.$this->key);
     }
 
     /** How many of its systems the company must have. */

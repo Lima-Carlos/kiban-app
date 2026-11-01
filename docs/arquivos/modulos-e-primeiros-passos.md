@@ -15,6 +15,20 @@
 - A tela que depende de outra explica o motivo. Exemplo: em Tarefas, sem nenhuma lista, aparece "Primeiro conclua o passo 'Crie sua primeira lista'". Assim o cliente não tenta cadastrar algo que depende de outra coisa antes. A lista vazia dessa tela também repete o passo que falta, com o botão "Fazer agora" (ex.: Ordens de serviço → "Falta um passo antes: Escolha o seu ramo").
 - O andamento é enviado ao Core logo depois de cada mudança e também a cada 5 minutos. Só é enviado quando algo mudou. No Core, isso aparece na ficha do cliente → **Primeiros passos**, e o e-mail automático de ajuda usa essa informação.
 
+## Primeiros Passos da Empresa (empresa com 2 ou mais sistemas, 01/11/2026)
+- Pedido do dono: quando a empresa tem vários sistemas, o cliente não precisa escolher por onde começar. O Início mostra **uma lista só**, "Primeiros Passos da Empresa", com os passos de todos os sistemas **nesta ordem**:
+  1. **Empresa e Pessoas** (a base de tudo): identidade da empresa, pessoas, equipes e documentos com vencimento;
+  2. **Ponto** (regras, locais e horários, que as agendas do Campo e da Agenda usam);
+  3. **Frota** (veículos e motoristas, que recebem o km do Campo);
+  4. **Campo** e **Agenda** (usam pessoas, horários e veículos);
+  5. **Para terminar:** "Veja como seus sistemas se ajudam", que leva à página Integrações (fica feito quando alguém da empresa abre a página).
+- Cada grupo tem um título pequeno; a numeração continua de um grupo para o outro. Os passos de cada sistema são **os mesmos do sistema** (nada foi copiado), com as mesmas dependências (cadeado + "Disponível depois de: ...").
+- A lista aparece em qualquer sistema escolhido no seletor: no topo enquanto falta algo e, tudo feito, no fim, fechada. Para quem vê a lista única, as listas separadas de cada sistema não aparecem.
+- **Quem vê:** dono e administradores (quem monta a empresa toda). Um gestor de um sistema só (ex.: o RH no Ponto) continua vendo a lista do sistema dele.
+- **Empresa com um sistema só:** tudo como antes (a lista do sistema).
+- **Vídeo "Por onde começar" (opcional):** se existir `public/videos/por-onde-comecar-<idioma>.mp4` (`pt`, `en` ou `es`; capa opcional `.jpg` com o mesmo nome), ele aparece no topo da lista, com os controles (play/pausa). Duração pensada: 30 a 60 segundos. A gravar depois.
+- Os passos de "Empresa e Pessoas" não vão para o Core (o Core continua recebendo os passos de cada sistema, como antes).
+
 ## Seletor de sistemas (aprovado pelo dono em 25/10/2026)
 - No **topo do menu da esquerda**, um ícone para cada sistema que a pessoa pode usar (ex.: Frota e Ponto), lado a lado. O escolhido fica azul.
 - Ao tocar num ícone:
@@ -55,7 +69,8 @@
 - `app/Filament/Support/ModuleResource.php` e `ModuleRecordsPage.php`. Cada tela diz o seu grupo de textos (`$langGroup`), e a chave `new` dá o título da tela de cadastro e do botão ("Novo veículo", "Nova despesa"), em vez do "Criar Veículo" do Filament.
 - `app/Filament/Support/NewRecordTitle.php`: o título "Novo ..." nas telas de cadastro de página inteira.
 - `app/Filament/Support/EmptyListShowsPendingStep.php`: a lista vazia mostra o passo que falta, com o link para ele.
-- `app/Filament/Pages/Home.php` + `resources/views/filament/pages/home.blade.php`: página Início; `home-steps.blade.php` é o quadro dos primeiros passos (no topo enquanto falta algo, no fim quando tudo está feito).
+- `app/Filament/Pages/Home.php` + `resources/views/filament/pages/home.blade.php`: página Início; `home-steps.blade.php` é o quadro dos primeiros passos de um sistema (no topo enquanto falta algo, no fim quando tudo está feito); `home-company-steps.blade.php` é a lista única dos "Primeiros Passos da Empresa"; `home-step-items.blade.php` desenha os passos (usado pelos dois).
+- `app/Onboarding/CompanyFirstSteps.php`: a lista única (ordem dos sistemas, passos de Empresa e Pessoas e o passo final das Integrações). `Step::progress()` calcula o andamento de qualquer lista de passos. `app/Support/LocalVideo.php` acha o vídeo no idioma da pessoa. Testes: `tests/Feature/CompanyFirstStepsTest.php`.
 - `app/Providers/Filament/AppPanelProvider.php`: o painel da casca.
 - `app/Providers/AppServiceProvider.php`: liga as regras de cada módulo; números nos endereços (`/frota/veiculos/12`) só aceitam números, então um endereço digitado errado (`/frota/veiculos/create`) dá "página não encontrada", nunca erro; botões "Novo ..." e "Ordenar por: Padrão" no celular.
 - Mensagens de erro dos formulários: `lang/*/validation.php` com frases simples ("Preencha o campo cliente.") nos 3 idiomas. Onde a frase genérica não basta, a tela usa a sua (ex.: "Com técnico escolhido, informe o dia e a hora.").

@@ -19,6 +19,7 @@ use App\Modules\Fleet\Filament\Inspections\InspectionResource;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Module;
+use App\Modules\ModuleArrivals;
 use App\Modules\ModuleRegistry;
 use App\Modules\TimeClock\Filament\Punches\PunchResource;
 use App\Modules\TimeClock\Filament\PunchPage;
@@ -41,6 +42,9 @@ class ConnectionCatalog
 {
     /** Session key: "Got it" without "Do not show again" hides the window until the next day or sign-in. */
     public const SNOOZE = 'kiban.connections.snoozed';
+
+    /** At most this many connections in the window; the others are on the "Integrations" page. */
+    public const WINDOW_MAX = 3;
 
     /** @var array<string, Connection>|null */
     protected ?array $connections = null;
@@ -183,17 +187,66 @@ class ConnectionCatalog
     }
 
     /**
-     * The window shows up: something pending and not hidden today ("Got it" without the box).
+     * The window shows up only when the company already used one system and contracted another LATER
+     * (ModuleArrivals: at least 3 days after the first one; never in a new company's first days), only for who
+     * manages (owner, administrators and the managers of the systems involved; never employees, technicians or
+     * drivers), only with connections that involve the newer system, at most WINDOW_MAX of them, and not when
+     * hidden today ("Got it" without the box). The rest stays on the "Integrations" page ("See all").
      *
      * @return array<string, Connection>
      */
     public function forWindow(User $user): array
     {
-        if (session(self::SNOOZE.'.'.$this->context->get()->getKey()) === $this->today()) {
+        $tenant = $this->context->get();
+
+        if (session(self::SNOOZE.'.'.$tenant->getKey()) === $this->today()) {
             return [];
         }
 
-        return $this->pending($user);
+        $later = app(ModuleArrivals::class)->addedLater($tenant);
+
+        if ($later === []) {
+            return [];
+        }
+
+        $shown = array_filter($this->pending($user), fn (Connection $connection): bool => array_intersect($connection->modules, $later) !== []
+            && $this->managesAny($user, $connection));
+
+        return $this->pickFor($user, $shown);
+    }
+
+    /**
+     * The WINDOW_MAX connections that matter most to the person's role: first the ones closest to what they manage
+     * (fewer systems of the connection they do not manage, e.g. the Frota manager gets "Frota + Campo" before "one
+     * register of people for all systems"), then the catalog's order. Owners and administrators: the catalog's order.
+     *
+     * @param  array<string, Connection>  $connections
+     * @return array<string, Connection>
+     */
+    protected function pickFor(User $user, array $connections): array
+    {
+        $enabled = $this->enabled();
+        $order = array_flip(array_keys($this->all()));
+        $distance = fn (Connection $connection): int => $user->canManageTenant() ? 0
+            : collect(array_intersect($connection->modules, $enabled))->reject(fn (string $module): bool => $this->isManager($user, $module))->count();
+
+        uksort($connections, fn (string $a, string $b): int => [$distance($connections[$a]), $order[$a] ?? PHP_INT_MAX] <=> [$distance($connections[$b]), $order[$b] ?? PHP_INT_MAX]);
+
+        return array_slice($connections, 0, self::WINDOW_MAX, true);
+    }
+
+    /** Owner, administrator or manager of one of the systems of the connection. */
+    protected function managesAny(User $user, Connection $connection): bool
+    {
+        return $user->canManageTenant()
+            || collect($connection->modules)->contains(fn (string $module): bool => $this->isManager($user, $module));
+    }
+
+    protected function isManager(User $user, string $module): bool
+    {
+        $all = $this->modules->all();
+
+        return isset($all[$module]) && $this->access->role($user, $module) === $all[$module]->managerRole();
     }
 
     /**

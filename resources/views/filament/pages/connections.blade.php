@@ -16,9 +16,9 @@
         @else
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px">
                 @foreach ($active as $connection)
-                    <div data-connection="{{ $connection->key }}" style="{{ $card }}">
-                        <x-filament::icon :icon="$connection->icon" style="width:22px;height:22px;flex:none;color:var(--primary-600);margin-top:2px" />
-                        <div style="min-width:0;flex:1">
+                    <div data-connection="{{ $connection->key }}" style="{{ $card }};flex-wrap:wrap">
+                        @include('filament.connection-media', ['connection' => $connection, 'color' => 'var(--primary-600)'])
+                        <div style="min-width:0;flex:1 1 200px">
                             <div style="font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--primary-600)">{{ $catalog->systemsLabel($connection, $enabled) }}</div>
                             <div style="font-size:15px;font-weight:700;margin-top:2px">{{ $connection->title() }}</div>
                             <p style="font-size:14px;margin:4px 0 0;line-height:1.45">{{ $connection->body() }}</p>
