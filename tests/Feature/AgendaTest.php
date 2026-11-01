@@ -482,4 +482,15 @@ class AgendaTest extends TestCase
         $this->expectException(QueryException::class);
         DB::table('ag_items')->insert(['tenant_id' => $other->id, 'customer_id' => $this->maria->getKey(), 'name' => 'Intruso', 'kind' => 'pet', 'created_at' => now(), 'updated_at' => now()]);
     }
+
+    public function test_sample_data_for_screenshots(): void
+    {
+        $this->artisan('kiban:agenda-demo', ['tenant' => 'petfeliz'])->assertSuccessful();
+        $this->artisan('kiban:agenda-demo', ['tenant' => 'petfeliz'])->assertSuccessful();
+
+        $this->assertSame(12, Appointment::query()->count());
+        $this->assertSame(1, Appointment::query()->where('status', AppointmentStatus::Ready->value)->count());
+        $this->assertTrue(Client::query()->where('phone', '5511990000005')->sole()->isFlagged());
+        $this->artisan('kiban:agenda-demo', ['tenant' => 'nao-existe'])->assertFailed();
+    }
 }

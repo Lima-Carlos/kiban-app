@@ -13,6 +13,8 @@
 | Ponto + Frota | A CNH cadastrada pelo RH avisa a Frota | A CNH de Pessoas → Documentos atualiza a ficha do motorista e aparece no "Atenção" da Frota quando vence (já existia). | RH, gestor e consulta da Frota |
 | Ponto + Campo | Os treinamentos NR avisam o Campo | NR-10, NR-35 e NR-33 vencidas aparecem no "Atenção" do Campo e ao agendar o técnico (já existia). | RH, gestor e atendimento do Campo |
 | Ponto + Campo | O EPI entregue avisa o Campo | O tipo de serviço diz o "EPI necessário" (ex.: cinto para altura). O técnico sem esse EPI entregue aparece com aviso ao agendar e ao abrir a OS no celular. Só aviso, nunca bloqueia (veja `epi.md`). | RH, gestor e atendimento do Campo (o técnico vê o aviso na própria OS) |
+| Agenda + Campo | Leva e traz vira ordem de serviço | No agendamento com leva e traz, "Criar ordem de leva e traz no Campo" abre a OS no endereço do cliente, com o pet e a janela de horário (o cliente é o mesmo cadastro nos dois). Ponte `AgendaField` (01/11/2026). | gestor e recepção da Agenda, gestor e atendimento do Campo |
+| Agenda + Ponto | A Agenda segue o Ponto | Quem bate ponto atende no horário de trabalho do Ponto (feriados incluídos) e a agenda do dia mostra quem já bateu o ponto. Nunca bate por ninguém. Ponte `AgendaTimeClock` (01/11/2026). | gestor e recepção da Agenda, RH |
 | Quaisquer dois | Uma pessoa, um cadastro só | Uma ficha em Pessoas e um login para todos os sistemas; perfis prontos ("Técnico de campo", "Motorista", "Mecânico") dão os dois sistemas de uma vez (já existia). | quem cadastra pessoas |
 
 ## Decisões
