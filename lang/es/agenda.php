@@ -9,7 +9,7 @@ return [
         'services' => 'Revisa los servicios',
         'services_help' => 'Ajusta el tiempo y el precio de cada tamaño (P, M, G, GG).',
         'professionals' => 'Registra a quienes atienden',
-        'professionals_help' => 'Bañadores y peluqueros: en la pantalla Personas, marca "Atiende en la Agenda". Luego ajusta horarios y comisión.',
+        'professionals_help' => 'Bañadores y peluqueros: en la pantalla Empleados, marca "Atiende en la Agenda". Luego ajusta horarios y comisión.',
     ],
 
     'enums' => [
@@ -79,7 +79,7 @@ return [
         'not_yours' => 'Esta cita es de otro profesional.',
         'client_has_history' => 'Este cliente tiene historial (citas, paquetes u órdenes de servicio). Desactívalo en vez de borrarlo.',
         'service_used' => 'Este servicio ya se usó. Desactívalo en vez de borrarlo.',
-        'professional_delete' => 'Los profesionales no se borran. Para sacarlo de la agenda, desmarca "Atiende en la Agenda" en Personas.',
+        'professional_delete' => 'Los profesionales no se borran. Para sacarlo de la agenda, desmarca "Atiende en la Agenda" en Empleados.',
         'appointment_delete' => 'Las citas no se borran. Usa "Cancelar".',
         'package_sold' => 'Este paquete ya se vendió. Desactívalo en vez de borrarlo.',
         'package_used' => 'Este paquete ya se usó en citas.',
@@ -123,7 +123,7 @@ return [
         'outside_busy' => ':count cita fuera del horario|:count citas fuera del horario',
         'book_here' => 'Agendar',
         'flagged' => 'Este cliente falta mucho',
-        'no_professionals' => 'Aún no hay profesionales. En Personas, marca "Atiende en la Agenda".',
+        'no_professionals' => 'Aún no hay profesionales. En Empleados, marca "Atiende en la Agenda".',
         'moved_to' => ':name: :status',
         'clock' => ['in' => 'Control Horario: trabajando desde las :time', 'out' => 'Control Horario: salió a las :time', 'none' => 'Aún no marcó asistencia'],
     ],
@@ -206,7 +206,7 @@ return [
     'professionals' => [
         'singular' => 'profesional', 'plural' => 'profesionales', 'plural_title' => 'Profesionales',
         'new' => 'Nuevo profesional',
-        'empty' => 'Ningún profesional', 'empty_help' => 'En Personas, marca "Atiende en la Agenda" para bañadores y peluqueros.',
+        'empty' => 'Ningún profesional', 'empty_help' => 'En Empleados, marca "Atiende en la Agenda" para bañadores y peluqueros.',
         'setup' => 'Horarios, servicios y comisión',
         'saved' => 'Profesional guardado',
         'week' => 'Horario de la semana',
@@ -224,7 +224,7 @@ return [
         'which_off' => 'Cuál día libre',
         'off_saved' => 'Día libre guardado',
         'off_removed' => 'Día libre quitado',
-        'open_people' => 'Abrir Personas',
+        'open_people' => 'Abrir Empleados',
     ],
 
     'packages' => [

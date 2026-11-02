@@ -50,7 +50,7 @@ return [
         ],
         'documents_license' => [
             'title' => 'The driver\'s license registered by HR warns the Fleet',
-            'body' => 'HR registers the driver\'s license in People → Documents. The driver\'s record in the Fleet is updated by itself, and the Fleet manager sees it in "Attention" when it expires.',
+            'body' => 'HR registers the driver\'s license in Employees → Documents. The driver\'s record in the Fleet is updated by itself, and the Fleet manager sees it in "Attention" when it expires.',
         ],
         'documents_training' => [
             'title' => 'Safety trainings warn the Field team',
@@ -70,7 +70,7 @@ return [
         ],
         'one_person' => [
             'title' => 'One person, one record',
-            'body' => 'Each person is registered once in People and signs in with the same login to every system. Ready-made profiles, such as "Field technician" and "Driver", give access to both systems at once.',
+            'body' => 'Each person is registered once in Employees and signs in with the same login to every system. Ready-made profiles, such as "Field technician" and "Driver", give access to both systems at once.',
         ],
     ],
     'clock' => [

@@ -87,7 +87,7 @@ return [
         'negative_help' => 'A entrega foi registrada mesmo assim. Registre a "Entrada no estoque" em Itens para acertar.',
     ],
     'fields' => [
-        'person' => 'Pessoa',
+        'person' => 'Colaborador',
         'items' => 'Itens',
         'item' => 'Item',
         'quantity' => 'Quantidade',

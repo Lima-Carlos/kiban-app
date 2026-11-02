@@ -50,7 +50,7 @@ return [
         ],
         'documents_license' => [
             'title' => 'A CNH cadastrada pelo RH avisa a Frota',
-            'body' => 'O RH cadastra a CNH em Pessoas → Documentos. A ficha do motorista na Frota é atualizada sozinha, e o gestor da Frota vê no "Atenção" quando ela vence.',
+            'body' => 'O RH cadastra a CNH em Colaboradores → Documentos. A ficha do motorista na Frota é atualizada sozinha, e o gestor da Frota vê no "Atenção" quando ela vence.',
         ],
         'documents_training' => [
             'title' => 'Os treinamentos NR avisam o Campo',
@@ -70,7 +70,7 @@ return [
         ],
         'one_person' => [
             'title' => 'Uma pessoa, um cadastro só',
-            'body' => 'Cada pessoa é cadastrada uma vez em Pessoas e entra com o mesmo login em todos os sistemas. Os perfis prontos, como "Técnico de campo" e "Motorista", já dão o acesso aos dois sistemas de uma vez.',
+            'body' => 'Cada pessoa é cadastrada uma vez em Colaboradores e entra com o mesmo login em todos os sistemas. Os perfis prontos, como "Técnico de campo" e "Motorista", já dão o acesso aos dois sistemas de uma vez.',
         ],
     ],
     'clock' => [

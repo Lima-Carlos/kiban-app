@@ -26,7 +26,7 @@ return [
         'replaced' => 'Replaced (history)',
     ],
     'fields' => [
-        'person' => 'Person',
+        'person' => 'Employee',
         'type' => 'Document',
         'number' => 'Number',
         'issued_on' => 'Issued or taken on',
@@ -162,7 +162,7 @@ return [
         ],
         'matrix' => [
             'heading' => 'Who took each course',
-            'person' => 'Person',
+            'person' => 'Employee',
             'team' => 'Team',
             'all_teams' => 'All teams',
             'empty' => 'No course added yet',
@@ -202,7 +202,7 @@ return [
             'everyone' => 'Everyone',
             'team_label' => 'Team :team',
             'role_label' => ':system: :role',
-            'people' => 'People',
+            'people' => 'Employees',
             'missing' => 'Missing',
             'delete' => 'No longer required',
             'delete_help' => 'People keep the courses they already took.',

@@ -9,7 +9,7 @@ return [
         'services' => 'Check your services',
         'services_help' => 'Adjust the time and price for each size (S, M, L, XL).',
         'professionals' => 'Add the people who work with pets',
-        'professionals_help' => 'Bathers and groomers: on the People screen, check "Works in Appointments". Then set their hours and commission.',
+        'professionals_help' => 'Bathers and groomers: on the Employees screen, check "Works in Appointments". Then set their hours and commission.',
     ],
 
     'enums' => [
@@ -79,7 +79,7 @@ return [
         'not_yours' => 'This appointment belongs to another professional.',
         'client_has_history' => 'This client has history (appointments, packages or service orders). Deactivate instead of deleting.',
         'service_used' => 'This service has already been used. Turn it off instead of deleting.',
-        'professional_delete' => 'Professionals are not deleted. To remove them from the schedule, uncheck "Works in Appointments" in People.',
+        'professional_delete' => 'Professionals are not deleted. To remove them from the schedule, uncheck "Works in Appointments" in Employees.',
         'appointment_delete' => 'Appointments are not deleted. Use "Cancel".',
         'package_sold' => 'This package has already been sold. Turn it off instead of deleting.',
         'package_used' => 'This package has already been used in appointments.',
@@ -123,7 +123,7 @@ return [
         'outside_busy' => ':count appointment outside the hours|:count appointments outside the hours',
         'book_here' => 'Book',
         'flagged' => 'This client often misses appointments',
-        'no_professionals' => 'No professionals yet. In People, check "Works in Appointments".',
+        'no_professionals' => 'No professionals yet. In Employees, check "Works in Appointments".',
         'moved_to' => ':name: :status',
         'clock' => ['in' => 'Time Clock: working since :time', 'out' => 'Time Clock: left at :time', 'none' => 'Has not clocked in yet'],
     ],
@@ -206,7 +206,7 @@ return [
     'professionals' => [
         'singular' => 'professional', 'plural' => 'professionals', 'plural_title' => 'Professionals',
         'new' => 'New professional',
-        'empty' => 'No professionals', 'empty_help' => 'In People, check "Works in Appointments" for bathers and groomers.',
+        'empty' => 'No professionals', 'empty_help' => 'In Employees, check "Works in Appointments" for bathers and groomers.',
         'setup' => 'Hours, services and commission',
         'saved' => 'Professional saved',
         'week' => 'Weekly hours',
@@ -224,7 +224,7 @@ return [
         'which_off' => 'Which day off',
         'off_saved' => 'Day off saved',
         'off_removed' => 'Day off removed',
-        'open_people' => 'Open People',
+        'open_people' => 'Open Employees',
     ],
 
     'packages' => [

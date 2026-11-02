@@ -87,7 +87,7 @@ return [
         'negative_help' => 'The delivery was recorded anyway. Record a "Stock entry" in Items to fix it.',
     ],
     'fields' => [
-        'person' => 'Person',
+        'person' => 'Employee',
         'items' => 'Items',
         'item' => 'Item',
         'quantity' => 'Quantity',

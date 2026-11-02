@@ -9,7 +9,7 @@ return [
         'services' => 'Confira os serviços',
         'services_help' => 'Ajuste o tempo e o preço de cada porte (P, M, G, GG).',
         'professionals' => 'Cadastre quem atende',
-        'professionals_help' => 'Banhistas e tosadores: na tela Pessoas, marque "Atende na Agenda". Depois ajuste horários e comissão.',
+        'professionals_help' => 'Banhistas e tosadores: na tela Colaboradores, marque "Atende na Agenda". Depois ajuste horários e comissão.',
     ],
 
     'enums' => [
@@ -79,7 +79,7 @@ return [
         'not_yours' => 'Este agendamento é de outro profissional.',
         'client_has_history' => 'Este cliente tem histórico (agendamentos, pacotes ou ordens de serviço). Desative em vez de apagar.',
         'service_used' => 'Este serviço já foi usado. Desligue-o em vez de apagar.',
-        'professional_delete' => 'Profissionais não são apagados. Para tirar da agenda, desmarque "Atende na Agenda" em Pessoas.',
+        'professional_delete' => 'Profissionais não são apagados. Para tirar da agenda, desmarque "Atende na Agenda" em Colaboradores.',
         'appointment_delete' => 'Agendamentos não são apagados. Use "Cancelar".',
         'package_sold' => 'Este pacote já foi vendido. Desligue-o em vez de apagar.',
         'package_used' => 'Este pacote já foi usado em agendamentos.',
@@ -123,7 +123,7 @@ return [
         'outside_busy' => ':count atendimento fora do horário|:count atendimentos fora do horário',
         'book_here' => 'Agendar',
         'flagged' => 'Este cliente falta muito',
-        'no_professionals' => 'Nenhum profissional ainda. Em Pessoas, marque "Atende na Agenda".',
+        'no_professionals' => 'Nenhum profissional ainda. Em Colaboradores, marque "Atende na Agenda".',
         'moved_to' => ':name: :status',
         'clock' => ['in' => 'Ponto: trabalhando desde :time', 'out' => 'Ponto: saiu às :time', 'none' => 'Ainda não bateu o ponto'],
     ],
@@ -206,7 +206,7 @@ return [
     'professionals' => [
         'singular' => 'profissional', 'plural' => 'profissionais', 'plural_title' => 'Profissionais',
         'new' => 'Novo profissional',
-        'empty' => 'Nenhum profissional', 'empty_help' => 'Em Pessoas, marque "Atende na Agenda" para banhistas e tosadores.',
+        'empty' => 'Nenhum profissional', 'empty_help' => 'Em Colaboradores, marque "Atende na Agenda" para banhistas e tosadores.',
         'setup' => 'Horários, serviços e comissão',
         'saved' => 'Profissional salvo',
         'week' => 'Horário da semana',
@@ -224,7 +224,7 @@ return [
         'which_off' => 'Qual folga',
         'off_saved' => 'Folga marcada',
         'off_removed' => 'Folga retirada',
-        'open_people' => 'Abrir Pessoas',
+        'open_people' => 'Abrir Colaboradores',
     ],
 
     'packages' => [

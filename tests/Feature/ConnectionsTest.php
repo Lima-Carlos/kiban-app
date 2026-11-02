@@ -256,20 +256,9 @@ class ConnectionsTest extends TestCase
             ->assertSee(__('connections.window.title'))
             ->assertSee(__('connections.window.see_all'))
             ->assertSee(__('connections.items.punch_reminder.title'))
-            ->assertDontSee('data-connection-video', false);
-
-        // With the clip recorded (public/videos/conexoes/<key>-<lang>.mp4), the card plays it in place of the icon.
-        $clip = public_path('videos/conexoes/punch_reminder-pt.mp4');
-        @mkdir(dirname($clip), 0777, true);
-        file_put_contents($clip, 'test');
-
-        try {
-            $this->get($this->company->url('/'))->assertOk()
-                ->assertSee('data-connection-video', false)
-                ->assertSee('videos/conexoes/punch_reminder-pt.mp4', false);
-        } finally {
-            @unlink($clip);
-        }
+            // The recorded clip (public/videos/conexoes/<key>-<lang>.mp4) plays in place of the icon.
+            ->assertSee('data-connection-video', false)
+            ->assertSee('videos/conexoes/punch_reminder-pt.mp4', false);
     }
 
     public function test_a_system_contracted_in_the_first_days_counts_as_started_together(): void

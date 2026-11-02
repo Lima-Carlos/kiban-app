@@ -529,7 +529,7 @@ class EpiTest extends TestCase
 
         $reader->close();
 
-        $this->assertSame('Pessoa', $rows[0][0]);
+        $this->assertSame('Colaborador', $rows[0][0]);
         $this->assertSame(['Ana Souza', 'Instalação', 'Luva de vaqueta', 'EPI'], array_slice($rows[1], 0, 4));
         $this->assertSame(2, $rows[1][7]);
         $this->assertSame('2026-10-20', $rows[1][10]->format('Y-m-d'));

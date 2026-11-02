@@ -26,7 +26,7 @@ return [
         'replaced' => 'Reemplazado (historial)',
     ],
     'fields' => [
-        'person' => 'Persona',
+        'person' => 'Empleado',
         'type' => 'Documento',
         'number' => 'Número',
         'issued_on' => 'Emisión o realización',
@@ -162,7 +162,7 @@ return [
         ],
         'matrix' => [
             'heading' => 'Quién hizo cada curso',
-            'person' => 'Persona',
+            'person' => 'Empleado',
             'team' => 'Equipo',
             'all_teams' => 'Todos los equipos',
             'empty' => 'Ningún curso registrado todavía',
@@ -202,7 +202,7 @@ return [
             'everyone' => 'Todas las personas',
             'team_label' => 'Equipo :team',
             'role_label' => ':system: :role',
-            'people' => 'Personas',
+            'people' => 'Empleados',
             'missing' => 'Falta hacer',
             'delete' => 'Ya no es obligatorio',
             'delete_help' => 'Las personas conservan los cursos que ya hicieron.',

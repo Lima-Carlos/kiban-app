@@ -319,7 +319,7 @@ class PersonDocumentsTest extends TestCase
 
         $reader->close();
 
-        $this->assertSame('Pessoa', $rows[0][0]);
+        $this->assertSame('Colaborador', $rows[0][0]);
         $this->assertSame(['Ana Souza', 'Instalação', 'ASO (exame periódico)'], array_slice($rows[1], 0, 3));
         $this->assertSame('2026-10-01', $rows[1][5]->format('Y-m-d'));
         $this->assertSame('Vencido', $rows[1][6]);

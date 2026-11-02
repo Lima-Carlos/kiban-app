@@ -50,7 +50,7 @@ return [
         ],
         'documents_license' => [
             'title' => 'La licencia de conducir registrada por RR. HH. avisa a la Flota',
-            'body' => 'RR. HH. registra la licencia en Personas → Documentos. La ficha del conductor en la Flota se actualiza sola, y el gestor de la Flota la ve en "Atención" cuando vence.',
+            'body' => 'RR. HH. registra la licencia en Empleados → Documentos. La ficha del conductor en la Flota se actualiza sola, y el gestor de la Flota la ve en "Atención" cuando vence.',
         ],
         'documents_training' => [
             'title' => 'Las capacitaciones de seguridad avisan a Campo',
@@ -70,7 +70,7 @@ return [
         ],
         'one_person' => [
             'title' => 'Una persona, un solo registro',
-            'body' => 'Cada persona se registra una vez en Personas y entra con el mismo usuario en todos los sistemas. Los perfiles listos, como "Técnico de campo" y "Conductor", ya dan acceso a los dos sistemas a la vez.',
+            'body' => 'Cada persona se registra una vez en Empleados y entra con el mismo usuario en todos los sistemas. Los perfiles listos, como "Técnico de campo" y "Conductor", ya dan acceso a los dos sistemas a la vez.',
         ],
     ],
     'clock' => [

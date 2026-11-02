@@ -6,7 +6,7 @@ return [
         'vehicle' => 'Register the first vehicle',
         'vehicle_help' => 'With the current odometer, the next oil change and the next service.',
         'driver' => 'Register a driver',
-        'driver_help' => 'In People, add the driver with their mobile, choose their vehicles and send the access by WhatsApp.',
+        'driver_help' => 'In Employees, add the driver with their mobile, choose their vehicles and send the access by WhatsApp.',
         'station' => 'Register the fuel stations',
         'station_help' => 'Drivers pick the station when refueling.',
     ],

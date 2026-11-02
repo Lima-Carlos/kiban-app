@@ -87,7 +87,7 @@ return [
         'negative_help' => 'La entrega se registró igual. Registre la "Entrada al stock" en Artículos para corregirlo.',
     ],
     'fields' => [
-        'person' => 'Persona',
+        'person' => 'Empleado',
         'items' => 'Artículos',
         'item' => 'Artículo',
         'quantity' => 'Cantidad',

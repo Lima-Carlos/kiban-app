@@ -6,7 +6,7 @@ return [
         'vehicle' => 'Cadastre o primeiro veículo',
         'vehicle_help' => 'Com o km atual, a próxima troca de óleo e a próxima revisão.',
         'driver' => 'Cadastre um motorista',
-        'driver_help' => 'Em Pessoas, adicione o motorista com o celular, escolha os veículos dele e envie o acesso pelo WhatsApp.',
+        'driver_help' => 'Em Colaboradores, adicione o motorista com o celular, escolha os veículos dele e envie o acesso pelo WhatsApp.',
         'station' => 'Cadastre os postos de combustível',
         'station_help' => 'Os motoristas escolhem o posto na hora de abastecer.',
     ],
