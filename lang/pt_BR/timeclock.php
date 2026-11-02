@@ -50,7 +50,7 @@ return [
         'employer_document_type' => 'Tipo de documento',
         'employer_name' => 'Razão social',
         'optional_holidays' => 'Feriados opcionais',
-        'optional_holidays_help' => 'Dias que dependem da empresa ou da cidade. Ligados, contam como feriado para todos.',
+        'optional_holidays_help' => 'Dias que dependem da empresa ou da cidade. Ligados, contam como feriado para todos. Cada dia do Carnaval é separado: desligue os dois se a empresa trabalha no Carnaval.',
     ],
     'enums' => [
         'role' => [
@@ -304,7 +304,8 @@ return [
         ],
         'optional' => [
             'good_friday' => 'Sexta-feira Santa',
-            'carnival' => 'Carnaval',
+            'carnival_monday' => 'Carnaval (segunda-feira)',
+            'carnival_tuesday' => 'Carnaval (terça-feira)',
             'corpus_christi' => 'Corpus Christi',
         ],
     ],

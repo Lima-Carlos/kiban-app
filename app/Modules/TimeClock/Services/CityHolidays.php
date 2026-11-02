@@ -92,20 +92,26 @@ class CityHolidays
     }
 
     /**
-     * Registers the suggested holidays that the city does not have yet.
+     * Registers the suggested holidays that the city does not have yet (patron saint, city anniversary...). A
+     * holiday on the same day and month in the year before too becomes "every year"; the others stay for that year.
      *
      * @return int how many were added
      */
     public function import(City $city, int $year): int
     {
         $added = 0;
+        $before = collect($this->suggestions($city, $year - 1))->keys()->map(fn (string $date): string => substr($date, 5))->all();
+        $existing = Holiday::query()->where('city_id', $city->getKey())->get();
 
         foreach ($this->suggestions($city, $year) as $date => $name) {
-            if (Holiday::query()->where('city_id', $city->getKey())->whereDate('date', $date)->exists()) {
+            $monthDay = substr($date, 5);
+            $recurring = in_array($monthDay, $before, true);
+
+            if ($existing->contains(fn (Holiday $holiday): bool => $holiday->date->toDateString() === $date || ($holiday->recurring && $holiday->date->format('m-d') === $monthDay))) {
                 continue;
             }
 
-            Holiday::query()->create(['date' => $date, 'name' => $name !== '' ? $name : __('timeclock.cities.municipal_holiday'), 'recurring' => false, 'city_id' => $city->getKey()]);
+            $existing->push(Holiday::query()->create(['date' => $date, 'name' => $name !== '' ? $name : __('timeclock.cities.municipal_holiday'), 'recurring' => $recurring, 'city_id' => $city->getKey()]));
             $added++;
         }
 

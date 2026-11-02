@@ -64,6 +64,21 @@ class City extends Model
         return (int) static::query()->create(['name' => $name, 'state' => $state !== '' ? $state : null])->getKey();
     }
 
+    /**
+     * A Brazilian city just registered brings its municipal holidays (patron saint, anniversary...) as a starting
+     * list that the company reviews in Ponto → Holidays. Without internet nothing is added.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (City $city): void {
+            if ($city->ibge_code) {
+                $year = (int) now()->year;
+                app(CityHolidays::class)->import($city, $year);
+                app(CityHolidays::class)->import($city, $year + 1);
+            }
+        });
+    }
+
     public function label(): string
     {
         return $this->state ? $this->name.' - '.$this->state : $this->name;

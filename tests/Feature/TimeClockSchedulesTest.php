@@ -227,8 +227,11 @@ class TimeClockSchedulesTest extends TestCase
 
         $sp = City::create(['name' => 'São Paulo', 'state' => 'SP', 'ibge_code' => 3550308]);
         $campinas = City::create(['name' => 'Campinas', 'state' => 'SP', 'ibge_code' => 3509502]);
-        $this->assertSame(1, $service->import($sp, 2026));
-        $this->assertSame(0, $service->import($sp, 2026)); // does not duplicate
+        // A city registered with its IBGE code already brings its holidays; the same day in the year before too
+        // (the fake answers the same list for every year) makes it "every year". Asking again does not duplicate.
+        $this->assertSame(['Aniversário da Cidade'], $sp->holidays()->pluck('name')->all());
+        $this->assertTrue($sp->holidays()->first()->recurring);
+        $this->assertSame(0, $service->import($sp, 2026));
 
         $branch = Workplace::create(['name' => 'Filial SP', 'timezone' => 'America/Sao_Paulo', 'city_id' => $sp->id]);
         $calendar = app(HolidayCalendar::class);
@@ -307,7 +310,7 @@ class TimeClockSchedulesTest extends TestCase
             ->assertHasFormErrors(['overtime_percent', 'tolerance_punch_minutes']);
 
         Livewire::test(TimeClockSettingsPage::class)
-            ->fillForm(['labor_profile' => 'br_clt', 'overtime_percent' => 60, 'hour_bank' => true, 'hour_bank_months' => 12, 'optional_holidays' => ['carnival' => true]])
+            ->fillForm(['labor_profile' => 'br_clt', 'overtime_percent' => 60, 'hour_bank' => true, 'hour_bank_months' => 12, 'optional_holidays' => ['carnival_tuesday' => true]])
             ->call('save')
             ->assertHasNoFormErrors();
         $settings = TimeClockSetting::current()->fresh();
@@ -315,7 +318,9 @@ class TimeClockSchedulesTest extends TestCase
         $this->assertSame('22:00', $settings->night_start);
         $this->assertTrue($settings->night_reduced_hour);
         $this->assertTrue($settings->hour_bank);
-        $this->assertTrue(app(HolidayCalendar::class)->optionalIsOn('carnival', $settings));
+        // Each Carnival day is chosen apart (some places stop only on Tuesday).
+        $this->assertTrue(app(HolidayCalendar::class)->optionalIsOn('carnival_tuesday', $settings));
+        $this->assertFalse(app(HolidayCalendar::class)->optionalIsOn('carnival_monday', $settings));
 
         // Another country: the company states its rules.
         $other = $this->tenant('madrid', ['ponto' => []], ['country' => 'ES']);

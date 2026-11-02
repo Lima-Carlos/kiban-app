@@ -50,7 +50,7 @@ return [
         'employer_document_type' => 'Document type',
         'employer_name' => 'Legal name',
         'optional_holidays' => 'Optional holidays',
-        'optional_holidays_help' => 'Days that depend on the company or the city. When on, they count as a holiday for everyone.',
+        'optional_holidays_help' => 'Days that depend on the company or the city. When on, they count as a holiday for everyone. Each Carnival day is separate: turn both off if the company works during Carnival.',
     ],
     'enums' => [
         'role' => [
@@ -304,7 +304,8 @@ return [
         ],
         'optional' => [
             'good_friday' => 'Good Friday',
-            'carnival' => 'Carnival',
+            'carnival_monday' => 'Carnival (Monday)',
+            'carnival_tuesday' => 'Carnival (Tuesday)',
             'corpus_christi' => 'Corpus Christi',
         ],
     ],

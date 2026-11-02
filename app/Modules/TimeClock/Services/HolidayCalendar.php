@@ -34,7 +34,8 @@ class HolidayCalendar
     /** Optional days off in Brazil and whether they are on for a new company. */
     public const OPTIONAL = [
         'good_friday' => true,
-        'carnival' => false,
+        'carnival_monday' => false,
+        'carnival_tuesday' => false,
         'corpus_christi' => false,
     ];
 
@@ -86,14 +87,23 @@ class HolidayCalendar
 
         return [
             'good_friday' => [$easter->subDays(2)->toDateString()],
-            'carnival' => [$easter->subDays(48)->toDateString(), $easter->subDays(47)->toDateString()],
+            // Each Carnival day on its own: some places stop only on Tuesday, others not at all.
+            'carnival_monday' => [$easter->subDays(48)->toDateString()],
+            'carnival_tuesday' => [$easter->subDays(47)->toDateString()],
             'corpus_christi' => [$easter->addDays(60)->toDateString()],
         ];
     }
 
     public function optionalIsOn(string $key, TimeClockSetting $settings): bool
     {
-        return (bool) ((array) $settings->optional_holidays + self::OPTIONAL)[$key];
+        $chosen = (array) $settings->optional_holidays;
+
+        // Companies that chose before the split had one "carnival" switch for both days.
+        if (str_starts_with($key, 'carnival_') && ! array_key_exists($key, $chosen) && array_key_exists('carnival', $chosen)) {
+            return (bool) $chosen['carnival'];
+        }
+
+        return (bool) ($chosen + self::OPTIONAL)[$key];
     }
 
     /**
