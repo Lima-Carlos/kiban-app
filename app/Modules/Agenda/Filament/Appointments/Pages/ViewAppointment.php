@@ -2,6 +2,7 @@
 
 namespace App\Modules\Agenda\Filament\Appointments\Pages;
 
+use App\Filament\Support\TimeInput;
 use App\Connections\Bridges\AgendaField;
 use App\Modules\Agenda\Enums\AppointmentStatus;
 use App\Modules\Agenda\Filament\Appointments\AppointmentResource;
@@ -151,7 +152,7 @@ class ViewAppointment extends ViewRecord
                             ->options(fn (): array => Professional::query()->active()->with('person')->get()->mapWithKeys(fn (Professional $professional): array => [$professional->getKey() => $professional->name()])->all())
                             ->required(),
                         DatePicker::make('date')->label(__('agenda.fields.date'))->required(),
-                        TimePicker::make('time')->label(__('agenda.fields.time'))->seconds(false)->format('H:i')->timezone(config('app.timezone'))->required(),
+                        TimeInput::make('time')->label(__('agenda.fields.time'))->required(),
                     ])
                     ->action(function (array $data): void {
                         if ($this->run(fn () => app(AppointmentBook::class)->move($this->getRecord(), (int) $data['professional_id'], $data['date'].' '.substr((string) $data['time'], 0, 5), auth()->user()), __('agenda.appointments.moved'))) {

@@ -217,6 +217,8 @@ return [
             'cycle' => 'Rotativo (ej.: 12x36)',
         ],
         'week' => 'Días y horarios',
+        'same_hours' => 'Mismo horario en todos los días marcados',
+        'same_hours_help' => 'Complete solo el primer día; los demás lo copian. Desactívelo para un día distinto (ej.: sábado hasta el mediodía).',
         'week_help' => 'Marque los días de trabajo. El descanso es opcional. Un fin antes del inicio pasa al día siguiente (turno noche).',
         'cycle' => 'Turno rotativo',
         'cycle_help' => 'Trabaja algunos días y descansa otros, sin importar el día de la semana. Ej.: 12x36 = 1 día de trabajo y 1 de descanso.',

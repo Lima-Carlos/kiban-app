@@ -2,6 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament;
 
+use App\Filament\Support\TimeInput;
 use App\Modules\Concerns\InModuleMenu;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Models\Adjustment;
@@ -253,12 +254,8 @@ class TimesheetPage extends Page
                     ->inline()
                     ->required()
                     ->live(),
-                TimePicker::make('time')
+                TimeInput::make('time')
                     ->label(__('timeclock.adjustments.time'))
-                    ->seconds(false)
-                    ->format('H:i')
-                    // A clock hour of the day ("18:00"), not a moment: Filament must not shift it to UTC.
-                    ->timezone(config('app.timezone'))
                     ->visible(fn (Get $get): bool => $get('type') === Adjustment::ADD_PUNCH)
                     ->required(fn (Get $get): bool => $get('type') === Adjustment::ADD_PUNCH),
                 Toggle::make('next_day')

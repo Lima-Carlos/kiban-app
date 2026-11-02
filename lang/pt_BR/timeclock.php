@@ -217,6 +217,8 @@ return [
             'cycle' => 'Escala (ex.: 12x36)',
         ],
         'week' => 'Dias e horários',
+        'same_hours' => 'Mesmo horário em todos os dias marcados',
+        'same_hours_help' => 'Preencha só o primeiro dia; os outros copiam sozinhos. Desligue para ter um dia diferente (ex.: sábado até meio-dia).',
         'week_help' => 'Marque os dias de trabalho. O intervalo é opcional. Um fim antes do início vira o dia seguinte (turno da noite).',
         'cycle' => 'Escala',
         'cycle_help' => 'Trabalha alguns dias e folga outros, sem olhar o dia da semana. Ex.: 12x36 = 1 dia de trabalho e 1 de folga.',

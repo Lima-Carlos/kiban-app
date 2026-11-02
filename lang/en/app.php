@@ -5,6 +5,7 @@ return [
     'datetime_format' => 'm/d/Y \\a\\t g:i A',
     'time_format' => 'g:i A',
     'time_with_seconds_format' => 'g:i:s A',
+    'time_invalid' => 'Type the time with 4 numbers, for example 0800 for 08:00.',
     'menu' => [
         'account' => 'My Kiban account',
         'privacy' => 'Privacy',

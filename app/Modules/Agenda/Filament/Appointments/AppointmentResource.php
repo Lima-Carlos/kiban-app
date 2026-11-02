@@ -2,6 +2,7 @@
 
 namespace App\Modules\Agenda\Filament\Appointments;
 
+use App\Filament\Support\TimeInput;
 use App\Filament\Support\ModuleResource;
 use App\Modules\Agenda\AgendaModule;
 use App\Modules\Agenda\Enums\AgendaRole;
@@ -180,11 +181,8 @@ class AppointmentResource extends ModuleResource
                             ->helperText(__('agenda.helpers.squeeze'))
                             ->live()
                             ->columnSpan(['sm' => 2]),
-                        TimePicker::make('other_time')
+                        TimeInput::make('other_time')
                             ->label(__('agenda.fields.time'))
-                            ->seconds(false)
-                            ->format('H:i')
-                            ->timezone(config('app.timezone'))
                             ->visible(fn (Get $get): bool => (bool) $get('squeeze'))
                             ->required(fn (Get $get): bool => (bool) $get('squeeze')),
                         Select::make('client_package_id')
@@ -213,8 +211,8 @@ class AppointmentResource extends ModuleResource
                             ->maxLength(250)
                             ->visible(fn (Get $get): bool => static::wantsPickup($get) && blank($get('pickup_site_id')))
                             ->required(fn (Get $get): bool => static::wantsPickup($get) && blank($get('pickup_site_id'))),
-                        TimePicker::make('pickup_from')->label(__('agenda.fields.pickup_from'))->seconds(false)->format('H:i')->timezone(config('app.timezone'))->visible(fn (Get $get): bool => static::wantsPickup($get)),
-                        TimePicker::make('pickup_until')->label(__('agenda.fields.pickup_until'))->seconds(false)->format('H:i')->timezone(config('app.timezone'))->visible(fn (Get $get): bool => static::wantsPickup($get)),
+                        TimeInput::make('pickup_from')->label(__('agenda.fields.pickup_from'))->visible(fn (Get $get): bool => static::wantsPickup($get)),
+                        TimeInput::make('pickup_until')->label(__('agenda.fields.pickup_until'))->visible(fn (Get $get): bool => static::wantsPickup($get)),
                     ]),
                 Textarea::make('notes')
                     ->label(__('agenda.fields.notes'))

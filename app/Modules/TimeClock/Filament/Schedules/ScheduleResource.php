@@ -2,6 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament\Schedules;
 
+use App\Filament\Support\TimeInput;
 use App\Filament\Support\ModuleResource;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
@@ -97,6 +98,9 @@ class ScheduleResource extends ModuleResource
                             }
                         }
 
+                        // A model with a different day (e.g. Saturday until noon) opens with the days apart.
+                        $set('same_hours', static::allDaysEqual((array) ($preset['week'] ?? [])));
+
                         if ($preset['type'] === Schedule::CYCLE) {
                             $set('anchor_date', today()->toDateString());
                         }
@@ -117,7 +121,18 @@ class ScheduleResource extends ModuleResource
                 Section::make(__('timeclock.schedules.week'))
                     ->description(__('timeclock.schedules.week_help'))
                     ->visible($isWeekly)
-                    ->components(collect(range(1, 7))->map(fn (int $weekday) => static::dayFields($weekday))->all()),
+                    ->components([
+                        // Type the first working day once; the other marked days copy it (off for e.g. a short Saturday).
+                        Toggle::make('same_hours')
+                            ->label(__('timeclock.schedules.same_hours'))
+                            ->helperText(__('timeclock.schedules.same_hours_help'))
+                            ->default(true)
+                            ->dehydrated(false)
+                            ->afterStateHydrated(fn (Toggle $component, Get $get) => $component->state(static::allDaysEqual((array) $get('week'))))
+                            ->live()
+                            ->afterStateUpdated(fn (Get $get, Set $set) => static::copySameHours($get, $set)),
+                        ...collect(range(1, 7))->map(fn (int $weekday) => static::dayFields($weekday))->all(),
+                    ]),
                 Section::make(__('timeclock.schedules.cycle'))
                     ->description(__('timeclock.schedules.cycle_help'))
                     ->visible(fn (Get $get): bool => ! $isWeekly($get))
@@ -142,23 +157,69 @@ class ScheduleResource extends ModuleResource
     public static function dayFields(int $weekday): Grid
     {
         $works = fn (Get $get): bool => (bool) $get("week.{$weekday}.works");
+        // With "same hours", only the first working day is typed; the others show the copy, read-only.
+        $copied = fn (Get $get): bool => (bool) $get('same_hours') && static::sourceDay((array) $get('week')) !== $weekday;
+        $copy = fn (Get $get, Set $set) => static::copySameHours($get, $set);
 
         return Grid::make(['default' => 2, 'md' => 5])->components([
             Toggle::make("week.{$weekday}.works")
                 ->label(__('timeclock.weekdays.'.$weekday))
                 ->inline(false)
-                ->live(),
-            static::time("week.{$weekday}.start")->label(__('timeclock.schedules.start'))->visible($works),
-            static::time("week.{$weekday}.break_start")->label(__('timeclock.schedules.break_start'))->visible($works),
-            static::time("week.{$weekday}.break_end")->label(__('timeclock.schedules.break_end'))->visible($works),
-            static::time("week.{$weekday}.end")->label(__('timeclock.schedules.end'))->visible($works),
+                ->live()
+                ->afterStateUpdated($copy),
+            ...collect(['start', 'break_start', 'break_end', 'end'])->map(fn (string $part) => static::time("week.{$weekday}.{$part}")
+                ->label(__('timeclock.schedules.'.$part))
+                ->visible($works)
+                ->disabled($copied)
+                ->dehydrated()
+                ->live(onBlur: true)
+                ->afterStateUpdated($copy))->all(),
         ]);
     }
 
-    protected static function time(string $field): TimePicker
+    /** The first marked day of the week: the one typed when every day has the same hours. */
+    protected static function sourceDay(array $week): ?int
     {
-        // Clock hours of the schedule ("08:00"), not moments: Filament must not shift them to UTC.
-        return TimePicker::make($field)->seconds(false)->format('H:i')->timezone(config('app.timezone'));
+        foreach (range(1, 7) as $weekday) {
+            if ($week[$weekday]['works'] ?? false) {
+                return $weekday;
+            }
+        }
+
+        return null;
+    }
+
+    /** Whether every marked day already has the same hours (an existing schedule opens with the switch to match). */
+    protected static function allDaysEqual(array $week): bool
+    {
+        return collect(range(1, 7))
+            ->filter(fn (int $weekday): bool => (bool) ($week[$weekday]['works'] ?? false))
+            ->map(fn (int $weekday): string => implode('|', array_map(fn (string $part): string => substr((string) ($week[$weekday][$part] ?? ''), 0, 5), ['start', 'break_start', 'break_end', 'end'])))
+            ->unique()
+            ->count() <= 1;
+    }
+
+    protected static function copySameHours(Get $get, Set $set): void
+    {
+        $week = (array) $get('week');
+        $source = static::sourceDay($week);
+
+        if (! $get('same_hours') || $source === null) {
+            return;
+        }
+
+        foreach (range(1, 7) as $weekday) {
+            if ($weekday !== $source && ($week[$weekday]['works'] ?? false)) {
+                foreach (['start', 'break_start', 'break_end', 'end'] as $part) {
+                    $set("week.{$weekday}.{$part}", $week[$source][$part] ?? null);
+                }
+            }
+        }
+    }
+
+    protected static function time(string $field): TextInput
+    {
+        return TimeInput::make($field);
     }
 
     public static function table(Table $table): Table

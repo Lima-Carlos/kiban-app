@@ -2,6 +2,7 @@
 
 namespace App\Modules\TimeClock\Filament;
 
+use App\Filament\Support\TimeInput;
 use App\Modules\Concerns\InModuleMenu;
 use App\Modules\TimeClock\Enums\LaborProfile;
 use App\Modules\TimeClock\Models\TimeClockSetting;
@@ -127,8 +128,8 @@ class TimeClockSettingsPage extends Page
                     ->components([
                         $this->percent('overtime_percent', 'overtime_percent'),
                         $this->percent('rest_day_overtime_percent', 'rest_day_overtime_percent'),
-                        TimePicker::make('night_start')->label(__('timeclock.settings.night_start'))->seconds(false)->format('H:i')->timezone(config('app.timezone'))->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
-                        TimePicker::make('night_end')->label(__('timeclock.settings.night_end'))->seconds(false)->format('H:i')->timezone(config('app.timezone'))->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
+                        TimeInput::make('night_start')->label(__('timeclock.settings.night_start'))->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
+                        TimeInput::make('night_end')->label(__('timeclock.settings.night_end'))->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
                         $this->percent('night_percent', 'night_percent'),
                         Toggle::make('night_reduced_hour')
                             ->label(__('timeclock.settings.night_reduced_hour'))

@@ -5,6 +5,7 @@ return [
     'datetime_format' => 'd/m/Y \\à\\s H:i',
     'time_format' => 'H:i',
     'time_with_seconds_format' => 'H:i:s',
+    'time_invalid' => 'Digite a hora com 4 números, por exemplo 0800 para 08:00.',
     'menu' => [
         'account' => 'Minha conta Kiban',
         'privacy' => 'Privacidade',

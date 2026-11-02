@@ -217,6 +217,8 @@ return [
             'cycle' => 'Rotation (e.g. 12x36)',
         ],
         'week' => 'Days and hours',
+        'same_hours' => 'Same hours on every marked day',
+        'same_hours_help' => 'Fill in only the first day; the others copy it. Turn it off for a different day (e.g. Saturday until noon).',
         'week_help' => 'Mark the working days. The break is optional. An end before the start is on the next day (night shift).',
         'cycle' => 'Rotation',
         'cycle_help' => 'Works some days and rests others, regardless of the weekday. E.g. 12x36 = 1 working day and 1 day off.',
