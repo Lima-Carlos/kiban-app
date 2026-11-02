@@ -17,7 +17,7 @@ class Workplace extends Model
 
     protected $table = 'tc_workplaces';
 
-    protected $fillable = ['name', 'address', 'city', 'state', 'timezone', 'latitude', 'longitude', 'radius_meters', 'is_active'];
+    protected $fillable = ['name', 'address', 'city', 'state', 'timezone', 'latitude', 'longitude', 'radius_meters', 'is_active', 'city_id'];
 
     protected $attributes = ['is_active' => true];
 

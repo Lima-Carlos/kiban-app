@@ -4,6 +4,7 @@ namespace App\Modules\TimeClock\Filament\Workplaces;
 
 use App\Filament\Support\MapPoint;
 use App\Filament\Support\ModuleResource;
+use App\Modules\TimeClock\Models\City;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\TimeClockModule;
 use App\Support\Geo;
@@ -89,6 +90,12 @@ class WorkplaceResource extends ModuleResource
                     TextInput::make('state')
                         ->label(__('timeclock.fields.state'))
                         ->maxLength(40),
+                    Select::make('city_id')
+                        ->label(__('timeclock.cities.holiday_city'))
+                        ->helperText(__('timeclock.cities.workplace_help'))
+                        ->placeholder(__('timeclock.cities.none'))
+                        ->options(fn (): array => City::query()->orderBy('name')->get()->mapWithKeys(fn (City $city): array => [$city->getKey() => $city->label()])->all())
+                        ->columnSpanFull(),
                 ]),
                 Section::make(__('timeclock.workplaces.map'))
                     ->description(__('timeclock.workplaces.map_help'))

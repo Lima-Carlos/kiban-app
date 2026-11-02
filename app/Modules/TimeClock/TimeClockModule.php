@@ -14,6 +14,7 @@ use App\Modules\TimeClock\Filament\Dashboard\MonthStatsWidget;
 use App\Modules\TimeClock\Filament\Dashboard\NowWidget;
 use App\Modules\TimeClock\Filament\Dashboard\TimeClockDashboard;
 use App\Modules\TimeClock\Filament\Employees\EmployeeResource;
+use App\Modules\TimeClock\Filament\Cities\CityResource;
 use App\Modules\TimeClock\Filament\Holidays\HolidayResource;
 use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
 use App\Modules\TimeClock\Filament\Kiosks\KioskResource;
@@ -25,6 +26,7 @@ use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Filament\Workplaces\WorkplaceResource;
 use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Closing;
+use App\Modules\TimeClock\Models\City;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Holiday;
 use App\Modules\TimeClock\Models\Kiosk;
@@ -34,6 +36,7 @@ use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\Policies\AdjustmentPolicy;
 use App\Modules\TimeClock\Policies\EmployeePolicy;
+use App\Modules\TimeClock\Policies\CityPolicy;
 use App\Modules\TimeClock\Policies\HolidayPolicy;
 use App\Modules\TimeClock\Policies\KioskPolicy;
 use App\Modules\TimeClock\Policies\PunchPolicy;
@@ -114,7 +117,7 @@ class TimeClockModule extends Module
 
     public function resources(): array
     {
-        return [PunchResource::class, AdjustmentResource::class, EmployeeResource::class, ScheduleResource::class, WorkplaceResource::class, HolidayResource::class, KioskResource::class];
+        return [PunchResource::class, AdjustmentResource::class, EmployeeResource::class, ScheduleResource::class, WorkplaceResource::class, HolidayResource::class, CityResource::class, KioskResource::class];
     }
 
     public function widgets(): array
@@ -257,6 +260,7 @@ class TimeClockModule extends Module
             Employee::class => EmployeePolicy::class,
             Schedule::class => SchedulePolicy::class,
             Holiday::class => HolidayPolicy::class,
+            City::class => CityPolicy::class,
             Punch::class => PunchPolicy::class,
             Adjustment::class => AdjustmentPolicy::class,
             Kiosk::class => KioskPolicy::class,

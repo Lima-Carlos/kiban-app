@@ -4,6 +4,7 @@ namespace App\Modules\TimeClock\Services;
 
 use App\Modules\TimeClock\Models\Holiday;
 use App\Modules\TimeClock\Models\TimeClockSetting;
+use App\Modules\TimeClock\Models\Workplace;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
@@ -96,15 +97,17 @@ class HolidayCalendar
     }
 
     /**
-     * Every holiday between two days for a workplace (date => name).
+     * Every holiday between two days for a workplace and a city (date => name). Without a city, the one of the
+     * workplace counts. Holidays of other workplaces or cities do not apply.
      *
      * @return array<string, string>
      */
-    public function between(CarbonInterface $from, CarbonInterface $to, ?int $workplaceId = null): array
+    public function between(CarbonInterface $from, CarbonInterface $to, ?int $workplaceId = null, ?int $cityId = null): array
     {
         $from = CarbonImmutable::parse($from->toDateString());
         $to = CarbonImmutable::parse($to->toDateString());
         $settings = TimeClockSetting::current();
+        $cityId ??= $workplaceId ? Workplace::query()->whereKey($workplaceId)->value('city_id') : null;
         $days = [];
 
         for ($year = $from->year; $year <= $to->year; $year++) {
@@ -112,7 +115,9 @@ class HolidayCalendar
         }
 
         $company = Holiday::query()
-            ->where(fn ($query) => $query->whereNull('workplace_id')->when($workplaceId, fn ($query) => $query->orWhere('workplace_id', $workplaceId)))
+            ->where(fn ($query) => $query->where(fn ($query) => $query->whereNull('workplace_id')->whereNull('city_id'))
+                ->when($workplaceId, fn ($query) => $query->orWhere('workplace_id', $workplaceId))
+                ->when($cityId, fn ($query) => $query->orWhere('city_id', $cityId)))
             ->where(fn ($query) => $query->where('recurring', true)->orWhereBetween('date', [$from->toDateString(), $to->toDateString()]))
             ->get();
 
@@ -141,9 +146,9 @@ class HolidayCalendar
         return $days;
     }
 
-    public function holidayOn(CarbonInterface $date, ?int $workplaceId = null): ?string
+    public function holidayOn(CarbonInterface $date, ?int $workplaceId = null, ?int $cityId = null): ?string
     {
-        return $this->between($date, $date, $workplaceId)[$date->toDateString()] ?? null;
+        return $this->between($date, $date, $workplaceId, $cityId)[$date->toDateString()] ?? null;
     }
 
     /** Easter Sunday (Gregorian calendar, "anonymous" algorithm): the moving holidays come from it. */

@@ -10,11 +10,13 @@ use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
 use App\Modules\TimeClock\Filament\Holidays\Pages\ManageHolidays;
 use App\Modules\TimeClock\Filament\Schedules\Pages\ManageSchedules;
 use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
+use App\Modules\TimeClock\Models\City;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Holiday;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Services\CityHolidays;
 use App\Modules\TimeClock\Services\HolidayCalendar;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\ScheduleService;
@@ -22,6 +24,9 @@ use App\People\PeopleService;
 use App\People\PersonRuleException;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Factory as HttpFactory;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -201,6 +206,46 @@ class TimeClockSchedulesTest extends TestCase
 
         Livewire::test(ManageHolidays::class)->assertCanSeeTableRecords(Holiday::all());
         Livewire::test(NationalHolidaysWidget::class)->assertSee(__('timeclock.holidays.national.tiradentes'))->call('nextYear')->assertSee('2027');
+    }
+
+    public function test_city_holidays_follow_the_workplace_city_or_the_employee_city(): void
+    {
+        // A clean HTTP client: the Core fake of the tests would answer everything first.
+        Http::swap(new HttpFactory);
+        Http::fake([
+            'servicodados.ibge.gov.br/*' => Http::response([['id' => 3550308, 'nome' => 'São Paulo', 'microrregiao' => ['mesorregiao' => ['UF' => ['sigla' => 'SP']]]]]),
+            'raw.githubusercontent.com/*' => Http::response([
+                ['data' => '25/01/2026', 'nome' => 'Aniversário da Cidade', 'tipo' => 'MUNICIPAL', 'uf' => 'SP', 'codigo_ibge' => 3550308],
+                ['data' => '10/05/2026', 'nome' => 'Outra cidade', 'tipo' => 'MUNICIPAL', 'uf' => 'SP', 'codigo_ibge' => 3509502],
+            ]),
+        ]);
+        Cache::flush();
+
+        $service = app(CityHolidays::class);
+        $this->assertSame([3550308 => 'São Paulo - SP'], $service->search('sao pau'));
+
+        $sp = City::create(['name' => 'São Paulo', 'state' => 'SP', 'ibge_code' => 3550308]);
+        $campinas = City::create(['name' => 'Campinas', 'state' => 'SP', 'ibge_code' => 3509502]);
+        $this->assertSame(1, $service->import($sp, 2026));
+        $this->assertSame(0, $service->import($sp, 2026)); // does not duplicate
+
+        $branch = Workplace::create(['name' => 'Filial SP', 'timezone' => 'America/Sao_Paulo', 'city_id' => $sp->id]);
+        $calendar = app(HolidayCalendar::class);
+        $day = CarbonImmutable::parse('2026-01-25');
+
+        // The workplace city counts; another workplace and a company-wide view do not have it.
+        $this->assertSame('Aniversário da Cidade', $calendar->holidayOn($day, $branch->id));
+        $this->assertNull($calendar->holidayOn($day, $this->office->id));
+        $this->assertNull($calendar->holidayOn($day));
+        // An employee that follows another city (home office) has that city's days, not the workplace's.
+        $this->assertNull($calendar->holidayOn($day, $branch->id, $campinas->id));
+        $this->assertSame('Aniversário da Cidade', $calendar->holidayOn($day, $this->office->id, $sp->id));
+
+        // Without internet nothing is added and nothing breaks.
+        Cache::flush();
+        Http::swap(new HttpFactory);
+        Http::fake(['*' => Http::response('', 500)]);
+        $this->assertSame([], $service->suggestions($campinas, 2026));
     }
 
     public function test_calculation_rules_follow_the_profile(): void

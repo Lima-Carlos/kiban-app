@@ -148,7 +148,7 @@ class ScheduleCalendar
      */
     public function period(Employee $employee, CarbonInterface $from, CarbonInterface $to): array
     {
-        $holidays = app(HolidayCalendar::class)->between($from, $to, $employee->workplace_id);
+        $holidays = app(HolidayCalendar::class)->between($from, $to, $employee->workplace_id, $employee->city_id);
         $days = [];
 
         for ($date = CarbonImmutable::parse($from->toDateString()); $date->lte($to); $date = $date->addDay()) {

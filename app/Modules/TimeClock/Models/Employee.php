@@ -20,7 +20,7 @@ class Employee extends Model
 
     protected $table = 'tc_employees';
 
-    protected $fillable = ['registration', 'pis', 'admitted_on', 'terminated_on', 'job_title', 'workplace_id', 'is_external', 'is_active'];
+    protected $fillable = ['registration', 'pis', 'admitted_on', 'terminated_on', 'job_title', 'workplace_id', 'is_external', 'is_active', 'city_id'];
 
     protected $attributes = ['is_active' => true, 'is_external' => false];
 

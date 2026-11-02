@@ -17,7 +17,7 @@ class Holiday extends Model
 
     protected $table = 'tc_holidays';
 
-    protected $fillable = ['date', 'name', 'recurring', 'workplace_id'];
+    protected $fillable = ['date', 'name', 'recurring', 'workplace_id', 'city_id'];
 
     protected $attributes = ['recurring' => false];
 
@@ -35,5 +35,13 @@ class Holiday extends Model
     public function workplace(): BelongsTo
     {
         return $this->belongsTo(Workplace::class);
+    }
+
+    /**
+     * @return BelongsTo<City, $this>
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 }

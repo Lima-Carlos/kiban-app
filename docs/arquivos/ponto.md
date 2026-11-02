@@ -449,3 +449,11 @@ Funciona como o WhatsApp: **sem sinal, a batida fica guardada no celular e é en
 Explicação completa em `conexoes.md`.
 - **Com o Campo:** o técnico que chega na primeira OS sem ter batido a entrada recebe o lembrete "Bater a entrada agora?" (e o da saída depois da última OS). É só um lembrete com o link para "Bater ponto": a batida continua sendo do funcionário, com selfie e local (Portaria 671). No painel do Campo, o gestor vê o aproveitamento de cada técnico (horas em OS ÷ horas trabalhadas no Ponto).
 - **Com a Frota:** depois de bater a entrada, o motorista vê no topo da tela "Fazer a vistoria do veículo agora" para cada veículo dele ainda sem vistoria no período (segue a frequência da Frota; só sugestão). Fica na tela do ponto, não no comprovante.
+
+## Feriados por cidade (02/11/2026)
+- Tela **Ponto → Cidades** (`CityResource`, tabela `tc_cities`): cadastre as cidades da empresa. No Brasil, digite o nome e escolha na lista oficial do IBGE (`CityHolidays::search`); sem internet ou fora do Brasil, é só digitar o nome.
+- **Sugerir feriados** (`CityHolidays::import`): traz os feriados municipais do ano da base aberta `joaopbini/feriados-brasil` (MIT). É só uma sugestão: a empresa confere com a lei da prefeitura e ajusta em Feriados. Sem internet ou sem dados, nada quebra: cadastre à mão.
+- O **local de trabalho** tem uma "Cidade dos feriados"; cada colaborador segue a cidade do seu local, ou outra (home office em outra cidade), em Colaboradores → Ponto → "Cidade dos feriados".
+- Um feriado com cidade vale só para quem segue essa cidade; sem cidade nem local, vale para toda a empresa. Regra em `HolidayCalendar::between()`.
+- Migração `2026_11_09_100000_create_tc_cities.php`. Pesquisa de fontes: `docs/planejamento/pesquisa-home-office-feriados.md` (no Core).
+
