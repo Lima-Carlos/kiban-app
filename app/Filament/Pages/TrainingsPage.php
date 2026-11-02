@@ -20,6 +20,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
@@ -155,8 +156,9 @@ class TrainingsPage extends Page implements HasActions, HasSchemas
             ->schema(fn (): array => $this->classFields())
             ->action(function (array $data): void {
                 $people = (array) ($data['person_ids'] ?? []);
-                unset($data['person_ids']);
-                $documents = $this->trainings()->launchClass($data, $people, auth()->user());
+                $personFiles = (array) ($data['person_files'] ?? []);
+                unset($data['person_ids'], $data['person_files']);
+                $documents = $this->trainings()->launchClass($data, $people, auth()->user(), $personFiles);
                 Notification::make()->success()
                     ->title(trans_choice('documents.trainings.actions.launched', $documents->count(), ['count' => $documents->count()]))
                     ->send();
@@ -209,6 +211,7 @@ class TrainingsPage extends Page implements HasActions, HasSchemas
                 ->options(fn (): array => Person::query()->active()->orderBy('name')->pluck('name', 'id')->all())
                 ->multiple()
                 ->searchable()
+                ->live()
                 ->required(),
             FileUpload::make('file_path')
                 ->label(__('documents.trainings.fields.certificate'))
@@ -221,6 +224,23 @@ class TrainingsPage extends Page implements HasActions, HasSchemas
                 ->automaticallyResizeImagesToWidth('1600')
                 ->automaticallyResizeImagesToHeight('1600')
                 ->maxSize(self::MAX_FILE_KB),
+            // A file for each chosen person (their own certificate); it wins over the shared one.
+            Section::make(__('documents.trainings.fields.person_certificates'))
+                ->description(__('documents.trainings.helpers.person_certificates'))
+                ->collapsed()
+                ->visible(fn (Get $get): bool => count((array) $get('person_ids')) > 1)
+                ->schema(fn (Get $get): array => Person::query()->active()->whereKey((array) $get('person_ids'))->orderBy('name')->get()
+                    ->map(fn (Person $person): FileUpload => FileUpload::make('person_files.'.$person->getKey())
+                        ->label($person->name)
+                        ->disk('local')
+                        ->visibility('private')
+                        ->directory(fn (): string => 'tenants/'.$this->tenant()->getKey().'/people/documents')
+                        ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic'])
+                        ->automaticallyResizeImagesMode('contain')
+                        ->automaticallyResizeImagesToWidth('1600')
+                        ->automaticallyResizeImagesToHeight('1600')
+                        ->maxSize(self::MAX_FILE_KB))
+                    ->all()),
             Textarea::make('notes')
                 ->label(__('documents.fields.notes'))
                 ->rows(2),

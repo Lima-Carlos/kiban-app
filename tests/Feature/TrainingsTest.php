@@ -288,6 +288,18 @@ class TrainingsTest extends TestCase
         Storage::disk('local')->assertMissing($paths[0]);
         Storage::disk('local')->assertExists($paths[1]);
 
+        // A file for each person wins over the shared one; when everyone has their own, the shared upload is dropped.
+        $anaFile = 'tenants/'.$this->company->id.'/people/documents/ana.pdf';
+        $brunoFile = 'tenants/'.$this->company->id.'/people/documents/bruno.pdf';
+        Storage::disk('local')->put($anaFile, '%PDF-1.4 ana');
+        Storage::disk('local')->put($brunoFile, '%PDF-1.4 bruno');
+        Storage::disk('local')->put($file, '%PDF-1.4 test');
+        $own = $this->trainings()->launchClass([
+            'document_type_id' => $this->type('nr33')->getKey(), 'issued_on' => '2026-10-30', 'file_path' => $file, 'training_kind' => 'initial',
+        ], [$ana->getKey(), $bruno->getKey()], $this->owner, [$ana->getKey() => [$anaFile], $bruno->getKey() => $brunoFile]);
+        $this->assertSame([$anaFile, $brunoFile], $own->sortBy('person_id')->pluck('file_path')->values()->all());
+        Storage::disk('local')->assertMissing($file);
+
         // The course details show in the person's list and in "My documents".
         Livewire::withQueryParams(['pessoa' => $ana->getKey()])->test(PersonDocumentsPage::class)
             ->assertSee('Reciclagem · Senai · 8 h')

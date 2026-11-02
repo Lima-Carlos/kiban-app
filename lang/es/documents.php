@@ -140,12 +140,14 @@ return [
             'workload_short' => 'Horas',
             'kind' => 'Tipo de curso',
             'people' => 'Quién hizo el curso',
-            'certificate' => 'Certificado (foto o PDF)',
+            'certificate' => 'Mismo certificado para todos (foto o PDF)',
+            'person_certificates' => 'Certificado de cada empleado',
             'taken_on' => 'Fecha del curso',
         ],
         'helpers' => [
             'people' => 'Elija a todas las personas del grupo. Cada una recibe su propio documento.',
-            'certificate' => 'Opcional. Cada persona guarda su copia. Solo el dueño, los administradores, RR. HH. y la propia persona lo ven.',
+            'certificate' => 'Opcional. Si toda la clase tiene el mismo certificado, adjúntelo aquí: cada empleado guarda su copia. Si cada uno tiene el suyo, use "Certificado de cada empleado" abajo. Solo el dueño, los administradores, RR. HH. y el empleado lo ven.',
+            'person_certificates' => 'Opcional. Adjunte el certificado de cada empleado (vale en lugar del mismo certificado para todos).',
             'renewal' => 'Quien ya tenía este curso queda con el nuevo, y el anterior pasa al historial.',
         ],
         'status' => [

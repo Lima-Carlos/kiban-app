@@ -60,3 +60,6 @@
 ## Para depois
 - Avisar a própria pessoa no sino quando o curso dela estiver vencendo.
 - Agenda de turmas futuras (data marcada, vagas, lista de presença).
+
+## Lançar turma: certificados
+Na turma, o certificado pode ser **um só para todos** (cada colaborador fica com a sua cópia) ou **um arquivo para cada colaborador** (bloco "Certificado de cada colaborador", aparece com 2 ou mais escolhidos). O arquivo de cada um vale no lugar do igual para todos. Regra em `TrainingService::launchClass()`.

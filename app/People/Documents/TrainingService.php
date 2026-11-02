@@ -365,7 +365,7 @@ class TrainingService
      * @param  array<int, int|string>  $personIds
      * @return Collection<int, PersonDocument>
      */
-    public function launchClass(array $data, array $personIds, ?User $by = null): Collection
+    public function launchClass(array $data, array $personIds, ?User $by = null, array $personFiles = []): Collection
     {
         $type = DocumentType::query()->trainings()->findOrFail($data['document_type_id']);
         $people = Person::query()->active()->whereKey($personIds)->orderBy('name')->get();
@@ -374,18 +374,36 @@ class TrainingService
             throw new InvalidArgumentException('No people for the class.');
         }
 
-        $file = filled($data['file_path'] ?? null) ? (string) $data['file_path'] : null;
+        // One certificate for everyone (copied for each person) and/or a file of each person (which wins).
+        $shared = filled($data['file_path'] ?? null) ? (string) $data['file_path'] : null;
+        $own = [];
+
+        foreach ($personFiles as $personId => $file) {
+            $file = is_array($file) ? (string) (reset($file) ?: '') : (string) $file;
+
+            if ($file !== '') {
+                $own[(int) $personId] = $file;
+            }
+        }
+
         $copies = [];
+        $sharedUsed = false;
 
         try {
-            return DB::transaction(function () use ($people, $type, $data, $file, $by, &$copies): Collection {
-                return $people->map(function (Person $person, int $index) use ($type, $data, $file, $by, &$copies): PersonDocument {
-                    $path = $file;
+            $documents = DB::transaction(function () use ($people, $type, $data, $shared, $own, $by, &$copies, &$sharedUsed): Collection {
+                return $people->map(function (Person $person) use ($type, $data, $shared, $own, $by, &$copies, &$sharedUsed): PersonDocument {
+                    $path = $own[$person->getKey()] ?? null;
 
-                    if ($file !== null && $index > 0) {
-                        $path = dirname($file).'/'.Str::random(40).'.'.pathinfo($file, PATHINFO_EXTENSION);
-                        Storage::disk('local')->copy($file, $path);
-                        $copies[] = $path;
+                    if ($path === null && $shared !== null) {
+                        $path = $shared;
+
+                        if ($sharedUsed) {
+                            $path = dirname($shared).'/'.Str::random(40).'.'.pathinfo($shared, PATHINFO_EXTENSION);
+                            Storage::disk('local')->copy($shared, $path);
+                            $copies[] = $path;
+                        }
+
+                        $sharedUsed = true;
                     }
 
                     return $this->documents->add($person, array_merge($data, [
@@ -394,6 +412,13 @@ class TrainingService
                     ]), $by);
                 })->toBase();
             });
+
+            // Everyone had their own file: the shared upload was not needed.
+            if ($shared !== null && ! $sharedUsed) {
+                Storage::disk('local')->delete($shared);
+            }
+
+            return $documents;
         } catch (\Throwable $exception) {
             // Nothing was saved: the copies of the certificate go too.
             Storage::disk('local')->delete($copies);

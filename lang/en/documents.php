@@ -140,12 +140,14 @@ return [
             'workload_short' => 'Hours',
             'kind' => 'Kind of course',
             'people' => 'Who took the course',
-            'certificate' => 'Certificate (photo or PDF)',
+            'certificate' => 'Same certificate for everyone (photo or PDF)',
+            'person_certificates' => 'Certificate of each employee',
             'taken_on' => 'Course date',
         ],
         'helpers' => [
             'people' => 'Choose everyone in the class. Each one gets their own document.',
-            'certificate' => 'Optional. Each person keeps their own copy. Only the owner, the administrators, HR and the person see it.',
+            'certificate' => 'Optional. If the whole class has the same certificate, attach it here: each employee keeps their own copy. If each one has their own, use "Certificate of each employee" below. Only the owner, the administrators, HR and the employee see it.',
+            'person_certificates' => 'Optional. Attach each employee\'s own certificate (used instead of the same certificate for everyone).',
             'renewal' => 'Who already had this course gets the new one, and the previous one goes to the history.',
         ],
         'status' => [
