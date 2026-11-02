@@ -9,6 +9,7 @@ use App\Http\Controllers\Field\OrderReportController;
 use App\Http\Controllers\Field\OrderSyncController;
 use App\Http\Controllers\Field\QuoteLinkController;
 use App\Http\Controllers\Fleet\StationCheckController;
+use App\Http\Controllers\LicenseRefreshController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\PersonDocumentFileController;
@@ -70,6 +71,9 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
         Route::post('/ponto/enviar', [PhoneQueueController::class, 'send'])->middleware('throttle:60,1')->name('timeclock.queue');
 
         // Alerts on the person's phone (web push): the phone is kept when the person allows it.
+        // A part contracted elsewhere shows up when the person comes back to the tab (see license-sync).
+        Route::post('/licenca/atualizar', LicenseRefreshController::class)->middleware('throttle:20,1')->name('license.sync');
+
         Route::post('/avisos/celular', PhoneAlertController::class)->middleware('throttle:20,1')->name('phone-alerts.subscribe');
 
         // "Your systems now work together": "Got it" / "Do not show again" of the window (ConnectionCatalog).

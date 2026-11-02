@@ -122,6 +122,8 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.license-notice'))
             // "News: your systems now work together" (ConnectionCatalog), until each person dismisses it.
             ->renderHook(PanelsRenderHook::BODY_END, fn () => view('filament.connections-modal'))
+            // A part contracted in the Core shows up when the person comes back to this tab.
+            ->renderHook(PanelsRenderHook::BODY_END, fn () => view('filament.license-sync'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

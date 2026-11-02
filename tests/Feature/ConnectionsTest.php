@@ -50,6 +50,7 @@ use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -275,6 +276,21 @@ class ConnectionsTest extends TestCase
             ->assertSee('data-connection-youtube', false)
             ->assertSee('https://www.youtube.com/watch?v=abc123', false)
             ->assertSee(__('connections.video.youtube'));
+    }
+
+    public function test_a_part_contracted_elsewhere_shows_up_when_the_person_comes_back(): void
+    {
+        $this->company(['campo' => []]);
+        $this->get($this->company->url('/'))->assertOk()->assertSee('visibilitychange', false);
+
+        // Nothing changed: the page keeps as it is.
+        $this->postJson($this->company->url('/licenca/atualizar'))->assertOk()->assertJson(['changed' => false]);
+
+        // The Core now has one more part: the next check tells the page to reload.
+        $this->coreLicenses[$this->company->subdomain] = fn (): string => $this->licenseToken($this->company, ['campo' => [], 'ponto' => []]);
+        Cache::flush();
+        $this->postJson($this->company->url('/licenca/atualizar'))->assertOk()->assertJson(['changed' => true]);
+        $this->assertTrue($this->company->fresh()->license()->hasModule('ponto'));
     }
 
     public function test_a_system_contracted_in_the_first_days_counts_as_started_together(): void

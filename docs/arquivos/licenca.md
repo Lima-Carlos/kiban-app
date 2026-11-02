@@ -38,3 +38,7 @@
 - `app/Console/Commands/RefreshLicenses.php`: comando `kiban:licenses`.
 - Telas: `resources/views/filament/license-notice.blade.php` e `resources/views/filament/trial-banner.blade.php` (a faixa do teste).
 - Testes: `tests/Feature/LicenseTest.php` e `tests/Feature/TrialBannerTest.php` (a faixa).
+
+## Parte nova aparece na hora (02/11/2026)
+Quando a pessoa volta para a aba depois de ficar fora mais de 8 segundos (por exemplo, depois de contratar ou testar outra parte na Área do cliente), a página pede uma licença nova em `POST /licenca/atualizar` (`LicenseRefreshController`, no máximo uma renovação real a cada 15 s por empresa) e recarrega sozinha só se as partes mudaram. Peça do navegador: `resources/views/filament/license-sync.blade.php`. Sem internet, nada acontece (a licença é renovada de qualquer jeito a cada poucos minutos).
+
