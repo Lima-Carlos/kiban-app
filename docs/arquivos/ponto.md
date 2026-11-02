@@ -466,3 +466,6 @@ Para empresas fora do Brasil, em Ponto → Feriados aparece **"Trazer os feriado
 ## Cidade dos feriados sem precisar cadastrar antes (02/11/2026)
 O campo "Cidade dos feriados" (local de trabalho, colaborador e feriado) busca qualquer cidade do Brasil ao digitar, além das já cadastradas (`HolidayCitySelect`). A cidade escolhida da lista do IBGE é cadastrada ao salvar. No local de trabalho, se o campo ficar vazio, vale a cidade digitada em "Cidade" e "Estado" (achada pelo nome, sem ligar para acento ou maiúscula; fora da lista, fica com o nome digitado). Regra em `City::resolve()`.
 
+## Foto na batida: a empresa escolhe (02/11/2026)
+Em Configurações do Ponto → Fotos e privacidade: "Foto (selfie) ao bater pelo celular" e "Foto ao bater no tablet da empresa", separados (ligados por padrão). Desligado, a batida vale só com a hora e o local (celular) ou com o código (tablet): não abre a câmera, não mostra o aviso de privacidade e não marca "sem foto". Regra em `PhotoNoticeService::photosOn()`; migração `2026_11_11_100000_add_punch_photo_choices_to_tc_settings.php`.
+

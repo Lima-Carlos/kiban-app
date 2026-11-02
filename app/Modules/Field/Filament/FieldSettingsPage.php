@@ -64,7 +64,7 @@ class FieldSettingsPage extends Page
 
     public function mount(): void
     {
-        $this->form->fill(FieldSetting::current()->only(['business', 'currency', 'signature_required', 'travel_speed_kmh', 'route_factor', 'leave_alert_minutes', 'return_days', 'base_latitude', 'base_longitude']));
+        $this->form->fill(FieldSetting::current()->only(['business', 'currency', 'signature_required', 'ask_km', 'travel_speed_kmh', 'route_factor', 'leave_alert_minutes', 'return_days', 'base_latitude', 'base_longitude']));
     }
 
     public function form(Schema $schema): Schema
@@ -94,6 +94,10 @@ class FieldSettingsPage extends Page
                         Toggle::make('signature_required')
                             ->label(__('field.fields.signature_required'))
                             ->helperText(__('field.settings.signature_help'))
+                            ->inline(false),
+                        Toggle::make('ask_km')
+                            ->label(__('field.settings.ask_km'))
+                            ->helperText(__('field.settings.ask_km_help'))
                             ->inline(false),
                     ]),
                 Section::make(__('field.settings.day'))

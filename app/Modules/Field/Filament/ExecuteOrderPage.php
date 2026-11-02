@@ -169,7 +169,8 @@ class ExecuteOrderPage extends Page
      */
     protected function vehicles(): array
     {
-        if (! app(TenantContext::class)->get()->license()->hasModule(FleetModule::KEY)) {
+        // Only when the company asks for the km at the arrival (Campo settings; off by default).
+        if (! FieldSetting::current()->ask_km || ! app(TenantContext::class)->get()->license()->hasModule(FleetModule::KEY)) {
             return [];
         }
 

@@ -389,3 +389,7 @@ Explicação completa e decisões em `conexoes.md`.
 - **Aproveitamento (com o Ponto):** no Painel → Por técnico, só para o gestor: horas em atendimento ÷ horas trabalhadas no Ponto (ex.: "39% · 3,5 h de 9 h").
 - **Custo do deslocamento (com a Frota):** na ficha da OS concluída e no Painel → Por técnico, só para o gestor: "≈ R$ 30,00 · 25 km", calculado pelo km da chegada menos a leitura anterior do mesmo dia × custo por km do veículo. Sem os dados, nada aparece.
 - No celular, a tabela "Por técnico" vira um cartão por técnico.
+
+## Km na chegada: opcional (02/11/2026)
+O km do veículo no "Cheguei" agora vem **desligado**: o técnico raramente lembra do km na porta do cliente, e a Frota já recebe o km pelos abastecimentos e vistorias. Quem quiser liga em Configurações do Campo → "Pedir o km do veículo na chegada" (`fd_settings.ask_km`).
+

@@ -571,6 +571,8 @@ return [
         'signer' => 'Nombre de quien firma',
         'clear' => 'Borrar',
         'save_signature' => 'Guardar firma',
+        'ask_km' => 'Pedir el km del vehículo al llegar',
+        'ask_km_help' => 'Activado, el técnico escribe el km al tocar "Llegué" y va a la Flota. Desactivado (lo normal), la Flota recibe el km por las cargas de combustible y las inspecciones.',
         'signature_help' => 'Escribe el nombre y pide al cliente que firme en el recuadro.',
         'finish' => 'Terminar servicio',
         'pause' => 'Dejar pendiente',

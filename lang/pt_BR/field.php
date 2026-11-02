@@ -571,6 +571,8 @@ return [
         'signer' => 'Nome de quem assina',
         'clear' => 'Limpar',
         'save_signature' => 'Salvar assinatura',
+        'ask_km' => 'Pedir o km do veículo na chegada',
+        'ask_km_help' => 'Ligado, o técnico informa o km ao tocar em "Cheguei" e ele vai para a Frota. Desligado (o normal), a Frota recebe o km pelos abastecimentos e vistorias.',
         'signature_help' => 'Escreva o nome e peça para o cliente assinar no quadro.',
         'finish' => 'Concluir serviço',
         'pause' => 'Deixar pendente',

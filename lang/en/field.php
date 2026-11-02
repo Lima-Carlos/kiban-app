@@ -571,6 +571,8 @@ return [
         'signer' => 'Name of who signs',
         'clear' => 'Clear',
         'save_signature' => 'Save signature',
+        'ask_km' => 'Ask for the vehicle km at arrival',
+        'ask_km_help' => 'On, the technician types the km when tapping "I arrived" and it goes to the Fleet. Off (the usual), the Fleet gets the km from fuel-ups and inspections.',
         'signature_help' => 'Write the name and ask the customer to sign on the pad.',
         'finish' => 'Finish service',
         'pause' => 'Put on hold',
