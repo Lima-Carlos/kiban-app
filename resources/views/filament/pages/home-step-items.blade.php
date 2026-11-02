@@ -21,7 +21,7 @@
                 @endif
             </div>
             @if ($step['available'] && ! $step['done'] && $step['url'])
-                <x-filament::button tag="a" :href="$step['url']" size="sm">{{ __('app.home.do_it') }}</x-filament::button>
+                <x-filament::button tag="a" :href="\App\Onboarding\StepGuide::link($step['url'])" size="sm">{{ __('app.home.do_it') }}</x-filament::button>
             @endif
         </li>
     @endforeach

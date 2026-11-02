@@ -24,6 +24,9 @@ return [
         'no_modules_help' => 'The systems your company subscribes to appear here. Contact Kiban to subscribe.',
     ],
     'first_steps' => [
+        'guide' => 'Step :number of :total: :label',
+        'back' => 'Back to the steps',
+        'next' => 'Next step',
         'title' => 'Company First Steps',
         'help' => 'The steps of all your systems, in the right order: start with the company and the people, which every system uses.',
         'video' => 'Where to Start',

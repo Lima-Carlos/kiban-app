@@ -24,6 +24,9 @@ return [
         'no_modules_help' => 'Los sistemas contratados por la empresa aparecen aquí. Hable con Kiban para contratar.',
     ],
     'first_steps' => [
+        'guide' => 'Paso :number de :total: :label',
+        'back' => 'Volver a los pasos',
+        'next' => 'Siguiente paso',
         'title' => 'Primeros pasos de la empresa',
         'help' => 'Los pasos de todos sus sistemas, en el orden correcto: empiece por la empresa y las personas, que todos los sistemas usan.',
         'video' => 'Por dónde empezar',

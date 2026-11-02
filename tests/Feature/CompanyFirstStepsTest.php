@@ -111,12 +111,28 @@ class CompanyFirstStepsTest extends TestCase
         $this->assertFalse(app(CompanyFirstSteps::class)->applies($tenant, $manager));
     }
 
+    public function test_a_step_opened_from_the_list_shows_the_guide_bar_with_the_next_step(): void
+    {
+        $tenant = $this->tenant('aurora', ['campo' => [], 'ponto' => []]);
+        $this->signIn($tenant);
+
+        // The "Do it now" buttons carry the guide flag.
+        $this->get($tenant->url('/'))->assertOk()->assertSee('passo=1', false);
+
+        // Identity is step 1: next is "People"; without the flag there is no bar.
+        $this->get($tenant->url('/empresa/identidade?passo=1'))->assertOk()
+            ->assertSee('data-step-guide', false)
+            ->assertSee(__('app.first_steps.back'))
+            ->assertSee(__('app.first_steps.next'));
+        $this->get($tenant->url('/empresa/identidade'))->assertOk()->assertDontSee('data-step-guide', false);
+    }
+
     public function test_every_text_in_the_three_languages(): void
     {
         foreach (['pt_BR', 'en', 'es'] as $locale) {
             app()->setLocale($locale);
 
-            foreach (['title', 'help', 'video', 'company', 'together', 'identity', 'identity_help', 'people', 'people_help', 'teams', 'teams_help', 'documents', 'documents_help', 'integrations', 'integrations_help'] as $key) {
+            foreach (['title', 'help', 'video', 'company', 'together', 'identity', 'identity_help', 'people', 'people_help', 'teams', 'teams_help', 'documents', 'documents_help', 'integrations', 'integrations_help', 'guide', 'back', 'next'] as $key) {
                 $this->assertNotSame('app.first_steps.'.$key, __('app.first_steps.'.$key));
             }
         }

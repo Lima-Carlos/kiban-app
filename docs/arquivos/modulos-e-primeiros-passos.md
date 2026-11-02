@@ -17,7 +17,7 @@
 
 ## Primeiros Passos da Empresa (empresa com 2 ou mais sistemas, 01/11/2026)
 - Pedido do dono: quando a empresa tem vários sistemas, o cliente não precisa escolher por onde começar. O Início mostra **uma lista só**, "Primeiros Passos da Empresa", com os passos de todos os sistemas **nesta ordem**:
-  1. **Empresa e Pessoas** (a base de tudo): identidade da empresa, pessoas, equipes e documentos com vencimento;
+  1. **Empresa e Colaboradores** (a base de tudo): identidade da empresa, pessoas, equipes e documentos com vencimento;
   2. **Ponto** (regras, locais e horários, que as agendas do Campo e da Agenda usam);
   3. **Frota** (veículos e motoristas, que recebem o km do Campo);
   4. **Campo** e **Agenda** (usam pessoas, horários e veículos);
@@ -27,7 +27,7 @@
 - **Quem vê:** dono e administradores (quem monta a empresa toda). Um gestor de um sistema só (ex.: o RH no Ponto) continua vendo a lista do sistema dele.
 - **Empresa com um sistema só:** tudo como antes (a lista do sistema).
 - **Vídeo "Por onde começar" (opcional):** se existir `public/videos/por-onde-comecar-<idioma>.mp4` (`pt`, `en` ou `es`; capa opcional `.jpg` com o mesmo nome), ele aparece no topo da lista, com os controles (play/pausa). Duração pensada: 30 a 60 segundos. A gravar depois.
-- Os passos de "Empresa e Pessoas" não vão para o Core (o Core continua recebendo os passos de cada sistema, como antes).
+- Os passos de "Empresa e Colaboradores" não vão para o Core (o Core continua recebendo os passos de cada sistema, como antes).
 
 ## Seletor de sistemas (aprovado pelo dono em 25/10/2026)
 - No **topo do menu da esquerda**, um ícone para cada sistema que a pessoa pode usar (ex.: Frota e Ponto), lado a lado. O escolhido fica azul.
@@ -70,7 +70,8 @@
 - `app/Filament/Support/NewRecordTitle.php`: o título "Novo ..." nas telas de cadastro de página inteira.
 - `app/Filament/Support/EmptyListShowsPendingStep.php`: a lista vazia mostra o passo que falta, com o link para ele.
 - `app/Filament/Pages/Home.php` + `resources/views/filament/pages/home.blade.php`: página Início; `home-steps.blade.php` é o quadro dos primeiros passos de um sistema (no topo enquanto falta algo, no fim quando tudo está feito); `home-company-steps.blade.php` é a lista única dos "Primeiros Passos da Empresa"; `home-step-items.blade.php` desenha os passos (usado pelos dois).
-- `app/Onboarding/CompanyFirstSteps.php`: a lista única (ordem dos sistemas, passos de Empresa e Pessoas e o passo final das Integrações). `Step::progress()` calcula o andamento de qualquer lista de passos. `app/Support/LocalVideo.php` acha o vídeo no idioma da pessoa. Testes: `tests/Feature/CompanyFirstStepsTest.php`.
+- `app/Onboarding/CompanyFirstSteps.php`: a lista única (ordem dos sistemas, passos de Empresa e Colaboradores e o passo final das Integrações). `Step::progress()` calcula o andamento de qualquer lista de passos. `app/Support/LocalVideo.php` acha o vídeo no idioma da pessoa. Testes: `tests/Feature/CompanyFirstStepsTest.php`.
+- `app/Onboarding/StepGuide.php` e `resources/views/filament/step-guide.blade.php`: a barra "Passo N de M · Voltar aos passos · Próximo passo". O botão "Fazer agora" da lista acrescenta `?passo=1` ao endereço; a tela do passo mostra a barra e o botão leva direto ao próximo passo que falta (sem voltar ao Início). Só para dono e administrador, quando vale a lista única.
 - `app/Providers/Filament/AppPanelProvider.php`: o painel da casca.
 - `app/Providers/AppServiceProvider.php`: liga as regras de cada módulo; números nos endereços (`/frota/veiculos/12`) só aceitam números, então um endereço digitado errado (`/frota/veiculos/create`) dá "página não encontrada", nunca erro; botões "Novo ..." e "Ordenar por: Padrão" no celular.
 - Mensagens de erro dos formulários: `lang/*/validation.php` com frases simples ("Preencha o campo cliente.") nos 3 idiomas. Onde a frase genérica não basta, a tela usa a sua (ex.: "Com técnico escolhido, informe o dia e a hora.").
