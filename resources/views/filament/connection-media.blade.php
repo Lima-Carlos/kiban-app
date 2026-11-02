@@ -21,9 +21,11 @@
         </button>
 
         <template x-teleport="body">
+            {{-- x-show only toggles the outer layer; the centring lives in the inner one (x-show would drop "display:flex"). --}}
             <div x-show="open" x-cloak x-on:keydown.escape.window="open = false" x-effect="if (! open && $refs.clip) { $refs.clip.pause() }"
-                 style="position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.8)"
-                 x-on:click.self="open = false" role="dialog" aria-modal="true">
+                 style="position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.8)" role="dialog" aria-modal="true">
+                <div data-connection-dialog x-on:click.self="open = false"
+                     style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
                 <div style="width:100%;max-width:880px;max-height:100%;display:flex;flex-direction:column;gap:10px">
                     <div style="display:flex;align-items:center;gap:10px;color:#fff">
                         <div style="flex:1;min-width:0;font-weight:700;font-size:16px">{{ $connection->title() }}</div>
@@ -37,6 +39,7 @@
                         <a href="{{ $youtube }}" target="_blank" rel="noopener" data-connection-youtube
                            style="align-self:flex-start;color:#fff;font-weight:600;text-decoration:underline">{{ __('connections.video.youtube') }} →</a>
                     @endif
+                </div>
                 </div>
             </div>
         </template>
