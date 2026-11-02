@@ -37,6 +37,7 @@ class ScheduleService
             'night_shift' => ['type' => Schedule::WEEKLY, 'week' => $weekdays($day('22:00', '02:00', '03:00', '06:00'))],
             '12x36_day' => ['type' => Schedule::CYCLE, 'work_days' => 1, 'off_days' => 1, 'start_time' => '07:00', 'end_time' => '19:00', 'break_minutes' => 60],
             '12x36_night' => ['type' => Schedule::CYCLE, 'work_days' => 1, 'off_days' => 1, 'start_time' => '19:00', 'end_time' => '07:00', 'break_minutes' => 60],
+            '24x48' => ['type' => Schedule::CYCLE, 'work_days' => 1, 'off_days' => 2, 'start_time' => '07:00', 'end_time' => '07:00', 'break_minutes' => 60],
             '6x1' => ['type' => Schedule::CYCLE, 'work_days' => 6, 'off_days' => 1, 'start_time' => '08:00', 'end_time' => '16:20', 'break_minutes' => 60],
         ];
     }

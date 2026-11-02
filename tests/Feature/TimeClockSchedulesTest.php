@@ -169,6 +169,22 @@ class TimeClockSchedulesTest extends TestCase
         $this->assertSame('Seg, Qua e Sex', ScheduleResource::daysLabel([1, 3, 5]));
     }
 
+    public function test_a_rotation_is_picked_by_its_name(): void
+    {
+        // "24x48" fills the days on and off by itself (the numbers only show for "Other").
+        Livewire::test(ManageSchedules::class)
+            ->mountAction('create')
+            ->fillForm(['name' => 'Plantão 24x48', 'type' => 'cycle', 'start_time' => '07:00', 'end_time' => '07:00', 'break_minutes' => 60, 'anchor_date' => '2026-11-03'])
+            ->fillForm(['rotation' => '24x48'])
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+
+        $schedule = Schedule::sole();
+        $this->assertSame([1, 2], [(int) $schedule->work_days, (int) $schedule->off_days]);
+        $this->assertSame('24x48', ScheduleResource::rotationOf(1, 2));
+        $this->assertSame('other', ScheduleResource::rotationOf(3, 3));
+    }
+
     public function test_schedule_history_of_an_employee(): void
     {
         $office = $this->preset('office');

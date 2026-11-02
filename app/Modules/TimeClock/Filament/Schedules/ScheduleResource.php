@@ -49,6 +49,14 @@ class ScheduleResource extends ModuleResource
 
     protected static ?int $navigationSort = 15;
 
+    /** Usual rotations: [working days in a row, days off in a row]. "12x36" = 12 h on, 36 h off: one day on, one off. */
+    public const ROTATIONS = ['12x36' => [1, 1], '24x48' => [1, 2], '24x72' => [1, 3], '6x1' => [6, 1], '5x1' => [5, 1], '4x2' => [4, 2]];
+
+    public static function rotationOf(int $work, int $off): string
+    {
+        return (string) (array_search([$work, $off], self::ROTATIONS, true) ?: 'other');
+    }
+
     public static function getModelLabel(): string
     {
         return __('timeclock.schedules.singular');
@@ -106,6 +114,7 @@ class ScheduleResource extends ModuleResource
                         }
 
                         if ($preset['type'] === Schedule::CYCLE) {
+                            $set('rotation', static::rotationOf((int) $preset['work_days'], (int) $preset['off_days']));
                             $set('anchor_date', today()->toDateString());
                         }
                     }),
@@ -157,8 +166,26 @@ class ScheduleResource extends ModuleResource
                     ->visible(fn (Get $get): bool => ! $isWeekly($get))
                     ->columns(['default' => 2, 'md' => 3])
                     ->components([
-                        TextInput::make('work_days')->label(__('timeclock.schedules.work_days'))->integer()->minValue(1)->maxValue(30),
-                        TextInput::make('off_days')->label(__('timeclock.schedules.off_days'))->integer()->minValue(0)->maxValue(30),
+                        ToggleButtons::make('rotation')
+                            ->label(__('timeclock.schedules.rotation'))
+                            ->options(collect(array_keys(self::ROTATIONS))->mapWithKeys(fn (string $key): array => [$key => __('timeclock.schedules.rotations.'.$key)])->all() + ['other' => __('timeclock.schedules.rotations.other')])
+                            ->inline()
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateHydrated(fn (ToggleButtons $component, Get $get) => filled($get('work_days')) ? $component->state(static::rotationOf((int) $get('work_days'), (int) $get('off_days'))) : null)
+                            ->afterStateUpdated(function (?string $state, Set $set): void {
+                                if (isset(self::ROTATIONS[$state])) {
+                                    [$work, $off] = self::ROTATIONS[$state];
+                                    $set('work_days', $work);
+                                    $set('off_days', $off);
+                                }
+                            })
+                            ->helperText(fn (Get $get): ?string => isset(self::ROTATIONS[$get('rotation')]) ? __('timeclock.schedules.rotations_help.'.$get('rotation')) : null)
+                            ->columnSpanFull(),
+                        TextInput::make('work_days')->label(__('timeclock.schedules.work_days'))->integer()->minValue(1)->maxValue(30)
+                            ->visible(fn (Get $get): bool => $get('rotation') === 'other')->dehydratedWhenHidden(),
+                        TextInput::make('off_days')->label(__('timeclock.schedules.off_days'))->integer()->minValue(0)->maxValue(30)
+                            ->visible(fn (Get $get): bool => $get('rotation') === 'other')->dehydratedWhenHidden(),
                         DatePicker::make('anchor_date')->label(__('timeclock.schedules.anchor_date'))->helperText(__('timeclock.schedules.anchor_date_help')),
                         static::time('start_time')->label(__('timeclock.schedules.start')),
                         static::time('end_time')->label(__('timeclock.schedules.end')),
@@ -183,6 +210,7 @@ class ScheduleResource extends ModuleResource
 
         // Each field is hidden on its own (a hidden container would not save its fields).
         return Grid::make(['default' => 2, 'md' => 5])
+            ->extraAttributes(fn (Get $get): array => $inGroup($get) ? ['style' => 'display:none'] : [])
             ->components([
                 Toggle::make("week.{$weekday}.works")
                     ->label(__('timeclock.weekdays.'.$weekday))
