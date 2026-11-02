@@ -272,6 +272,31 @@ class TimeClockSchedulesTest extends TestCase
         $this->assertSame([], $service->suggestions('PT', 2027));
     }
 
+    public function test_the_holiday_city_comes_from_the_typed_city_or_the_ibge_list(): void
+    {
+        Http::swap(new HttpFactory);
+        Http::fake(['servicodados.ibge.gov.br/*' => Http::response([
+            ['id' => 3169406, 'nome' => 'Três Pontas', 'microrregiao' => ['mesorregiao' => ['UF' => ['sigla' => 'MG']]]],
+            ['id' => 3550308, 'nome' => 'São Paulo', 'microrregiao' => ['mesorregiao' => ['UF' => ['sigla' => 'SP']]]],
+        ])]);
+        Cache::flush();
+
+        // Nothing chosen: the city typed on the workplace (any case, no accents) becomes its holiday city.
+        $matriz = Workplace::create(['name' => 'Matriz', 'timezone' => 'America/Sao_Paulo', 'city' => 'tres pontas', 'state' => 'mg']);
+        $this->assertSame(['Três Pontas', 'MG', 3169406], [$matriz->holidayCity->name, $matriz->holidayCity->state, $matriz->holidayCity->ibge_code]);
+
+        // The same city is not registered twice; a city picked from the IBGE list is registered on save.
+        $loja = Workplace::create(['name' => 'Loja', 'timezone' => 'America/Sao_Paulo', 'city' => 'Três Pontas', 'state' => 'MG']);
+        $this->assertSame($matriz->city_id, $loja->city_id);
+        $filial = Workplace::create(['name' => 'Filial', 'timezone' => 'America/Sao_Paulo', 'city_id' => 'ibge:3550308']);
+        $this->assertSame('São Paulo', $filial->holidayCity->name);
+        $this->assertSame(2, City::query()->count());
+
+        // A city outside the list (or without internet) is kept with the typed name, to register holidays by hand.
+        $fora = Workplace::create(['name' => 'Lisboa', 'timezone' => 'Europe/Lisbon', 'city' => 'Lisboa']);
+        $this->assertSame(['Lisboa', null], [$fora->holidayCity->name, $fora->holidayCity->ibge_code]);
+    }
+
     public function test_calculation_rules_follow_the_profile(): void
     {
         // Brazil (CLT): never below the law.

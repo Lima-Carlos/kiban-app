@@ -5,6 +5,7 @@ namespace App\Modules\TimeClock\Services;
 use App\Access\AccessManager;
 use App\Models\ModuleAccess;
 use App\Modules\TimeClock\Enums\TimeClockRole;
+use App\Modules\TimeClock\Filament\HolidayCitySelect;
 use App\Modules\TimeClock\Models\City;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Schedule;
@@ -82,11 +83,10 @@ class TimeClockPeople
                         ->required(fn (Get $get): bool => (bool) $get('clocks_in') && ! $get('is_external'))
                         ->helperText(fn (): ?string => Workplace::query()->exists() ? null : __('timeclock.helpers.no_workplace'))
                         ->columnSpanFull(),
-                    Select::make('city_id')
+                    HolidayCitySelect::make('city_id')
                         ->label(__('timeclock.cities.employee_city'))
                         ->helperText(__('timeclock.cities.employee_city_help'))
                         ->placeholder(__('timeclock.cities.workplace_city'))
-                        ->options(fn (): array => City::query()->orderBy('name')->get()->mapWithKeys(fn (City $city): array => [$city->getKey() => $city->label()])->all())
                         ->columnSpanFull(),
                 ]),
             Select::make('role')

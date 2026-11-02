@@ -463,3 +463,6 @@ Quem trabalha de casa usa a opção **"Trabalha fora do local (rua ou home offic
 ## Feriados de outros países (02/11/2026)
 Para empresas fora do Brasil, em Ponto → Feriados aparece **"Trazer os feriados do meu país"** (`CountryHolidays`): traz os feriados nacionais deste ano e do próximo da lista pública Nager.Date (feriados só de uma região ficam de fora). É só uma sugestão: a empresa confere e ajusta; sem internet, nada é adicionado e ela cadastra à mão. As regras de jornada e hora extra de cada país ainda não são calculadas (hoje só a CLT do Brasil): anotado para análise antes de vender o Ponto lá fora.
 
+## Cidade dos feriados sem precisar cadastrar antes (02/11/2026)
+O campo "Cidade dos feriados" (local de trabalho, colaborador e feriado) busca qualquer cidade do Brasil ao digitar, além das já cadastradas (`HolidayCitySelect`). A cidade escolhida da lista do IBGE é cadastrada ao salvar. No local de trabalho, se o campo ficar vazio, vale a cidade digitada em "Cidade" e "Estado" (achada pelo nome, sem ligar para acento ou maiúscula; fora da lista, fica com o nome digitado). Regra em `City::resolve()`.
+

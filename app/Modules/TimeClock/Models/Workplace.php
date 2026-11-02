@@ -5,6 +5,7 @@ namespace App\Modules\TimeClock\Models;
 use App\Modules\ReportsFirstSteps;
 use App\Tenancy\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -24,6 +25,14 @@ class Workplace extends Model
     /** Radius choices on the form (meters). */
     public const RADII = [100, 200, 300, 500, 1000, 2000];
 
+    /** The holiday city: the one chosen, or else the city typed on the workplace (City::resolve). */
+    protected static function booted(): void
+    {
+        static::saving(function (Workplace $workplace): void {
+            $workplace->city_id = City::resolve($workplace->city_id, $workplace->city, $workplace->state);
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -32,6 +41,14 @@ class Workplace extends Model
             'radius_meters' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * @return BelongsTo<City, $this>
+     */
+    public function holidayCity(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'city_id');
     }
 
     /**

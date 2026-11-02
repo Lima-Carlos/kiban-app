@@ -82,7 +82,7 @@ class EmployeeService
             'admitted_on' => $data['admitted_on'],
             'job_title' => $data['job_title'] ?? null,
             'workplace_id' => $workplace?->getKey(),
-            'city_id' => filled($data['city_id'] ?? null) && City::query()->whereKey($data['city_id'])->exists() ? (int) $data['city_id'] : null,
+            'city_id' => City::resolve($data['city_id'] ?? null),
             'is_external' => $external,
             'is_active' => true,
             'terminated_on' => null,

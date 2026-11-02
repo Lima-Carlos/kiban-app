@@ -3,6 +3,7 @@
 namespace App\Modules\TimeClock\Filament\Holidays;
 
 use App\Filament\Support\ModuleResource;
+use App\Modules\TimeClock\Filament\HolidayCitySelect;
 use App\Modules\TimeClock\Models\City;
 use App\Modules\TimeClock\Models\Holiday;
 use App\Modules\TimeClock\Models\Workplace;
@@ -74,11 +75,10 @@ class HolidayResource extends ModuleResource
                     ->placeholder(__('timeclock.holidays.whole_company'))
                     ->helperText(__('timeclock.holidays.workplace_help'))
                     ->options(fn (): array => Workplace::query()->orderBy('name')->pluck('name', 'id')->all()),
-                Select::make('city_id')
+                HolidayCitySelect::make('city_id')
                     ->label(__('timeclock.cities.holiday_city'))
                     ->placeholder(__('timeclock.cities.none'))
-                    ->helperText(__('timeclock.cities.holiday_help'))
-                    ->options(fn (): array => City::query()->orderBy('name')->get()->mapWithKeys(fn (City $city): array => [$city->getKey() => $city->label()])->all()),
+                    ->helperText(__('timeclock.cities.holiday_help')),
             ]);
     }
 

@@ -21,6 +21,16 @@ class Holiday extends Model
 
     protected $attributes = ['recurring' => false];
 
+    /** A city picked from the IBGE list on the form ("ibge:<code>") is registered on save. */
+    protected static function booted(): void
+    {
+        static::saving(function (Holiday $holiday): void {
+            if ($holiday->isDirty('city_id')) {
+                $holiday->city_id = City::resolve($holiday->city_id);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
