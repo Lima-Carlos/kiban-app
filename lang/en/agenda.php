@@ -5,7 +5,9 @@ return [
 
     'steps' => [
         'business' => 'Choose your type of business',
-        'business_help' => 'Pet shop comes ready with bath, grooming, hydration, nails and pick-up and drop-off, with price and time by size.',
+        'business_help' => 'Pick the business only to bring ready services. Appointments works for any company that serves by appointment (you change everything later). Choosing again only adds what is missing.',
+        'business_note' => 'Describe what your company does',
+        'business_note_help' => 'E.g. air-conditioning installation and maintenance. Only for your own reference; clients do not see it.',
         'services' => 'Check your services',
         'services_help' => 'Adjust the time and price for each size (S, M, L, XL).',
         'professionals' => 'Add the people who work with pets',
@@ -305,6 +307,7 @@ return [
             ],
             'package' => '4-bath package',
         ],
+        'general' => ['name' => 'General appointments (any business)', 'help' => 'Two services to start with: Appointment (1 h) and Follow-up (30 min). You change names, times and prices.', 'services' => ['appointment' => 'Appointment', 'return_visit' => 'Follow-up']],
         'none' => ['name' => 'Other business', 'help' => 'No ready-made services: you add your own.'],
     ],
 

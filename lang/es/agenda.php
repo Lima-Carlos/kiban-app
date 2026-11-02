@@ -5,7 +5,9 @@ return [
 
     'steps' => [
         'business' => 'Elige tu rubro',
-        'business_help' => 'La peluquería canina viene lista con baño, corte, hidratación, uñas y buscar y llevar, con precio y tiempo por tamaño.',
+        'business_help' => 'Elija el rubro solo para traer servicios listos. La Agenda sirve para cualquier empresa que atiende con cita (usted cambia todo después). Elegir de nuevo solo agrega lo que falta.',
+        'business_note' => 'Describa a qué se dedica su empresa',
+        'business_note_help' => 'Ej.: instalación y mantenimiento de aire acondicionado. Solo para su referencia; el cliente no lo ve.',
         'services' => 'Revisa los servicios',
         'services_help' => 'Ajusta el tiempo y el precio de cada tamaño (P, M, G, GG).',
         'professionals' => 'Registra a quienes atienden',
@@ -305,6 +307,7 @@ return [
             ],
             'package' => 'Paquete 4 baños',
         ],
+        'general' => ['name' => 'Atención general (cualquier rubro)', 'help' => 'Dos servicios para empezar: Atención (1 h) y Seguimiento (30 min). Usted cambia nombres, tiempos y precios.', 'services' => ['appointment' => 'Atención', 'return_visit' => 'Seguimiento']],
         'none' => ['name' => 'Otro rubro', 'help' => 'Sin servicios listos: tú registras los tuyos.'],
     ],
 

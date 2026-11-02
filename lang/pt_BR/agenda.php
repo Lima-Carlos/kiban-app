@@ -5,7 +5,9 @@ return [
 
     'steps' => [
         'business' => 'Escolha o seu ramo',
-        'business_help' => 'Pet shop traz prontos banho, tosa, hidratação, unhas e leva e traz, com preço e tempo por porte.',
+        'business_help' => 'Escolha o ramo só para trazer serviços prontos. A Agenda serve para qualquer empresa que atende com hora marcada (você muda tudo depois). Escolher de novo só acrescenta o que falta.',
+        'business_note' => 'Descreva o que a sua empresa faz',
+        'business_note_help' => 'Ex.: instalação e manutenção de ar-condicionado. Fica só para você lembrar; o cliente não vê.',
         'services' => 'Confira os serviços',
         'services_help' => 'Ajuste o tempo e o preço de cada porte (P, M, G, GG).',
         'professionals' => 'Cadastre quem atende',
@@ -305,6 +307,7 @@ return [
             ],
             'package' => 'Pacote 4 banhos',
         ],
+        'general' => ['name' => 'Atendimento geral (qualquer ramo)', 'help' => 'Dois serviços para começar: Atendimento (1 h) e Retorno (30 min). Você muda nomes, tempos e preços.', 'services' => ['appointment' => 'Atendimento', 'return_visit' => 'Retorno']],
         'none' => ['name' => 'Outro ramo', 'help' => 'Sem serviços prontos: você cadastra os seus.'],
     ],
 

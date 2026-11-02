@@ -131,6 +131,21 @@ class AgendaTest extends TestCase
             app(SlotFinder::class)->slots($professional ?? $this->ana, CarbonImmutable::parse($date, 'America/Sao_Paulo'), $minutes));
     }
 
+    public function test_any_business_can_start_from_general_services_and_describe_itself(): void
+    {
+        $this->company = $this->tenant('arfrio', ['agenda' => []]);
+        $this->owner = $this->signIn($this->company);
+
+        Livewire::test(AgendaSettingsPage::class)
+            ->fillForm(['business' => 'none', 'business_note' => 'Instalação de ar-condicionado'])
+            ->call('save')->assertHasNoErrors();
+        $this->assertSame('Instalação de ar-condicionado', AgendaSetting::current()->business_note);
+
+        $this->assertSame(['services' => 2], app(AgendaTemplates::class)->apply('general'));
+        $this->assertSame(['services' => 0], app(AgendaTemplates::class)->apply('general'));
+        $this->assertEqualsCanonicalizing(['Atendimento', 'Retorno'], Service::query()->pluck('name')->all());
+    }
+
     public function test_free_times_follow_hours_break_duration_and_other_appointments(): void
     {
         // Mon–Fri 08:00–18:00 with lunch 12:00–13:00, every 30 minutes, 1 hour of bath.

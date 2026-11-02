@@ -23,6 +23,7 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -67,7 +68,7 @@ class AgendaSettingsPage extends Page
     public function mount(): void
     {
         $settings = AgendaSetting::current();
-        $this->form->fill($settings->only(['business', 'currency', 'online_booking', 'slot_minutes', 'min_notice_minutes', 'booking_days', 'cancel_hours', 'no_show_flag', 'pickup_enabled', 'field_service_type_id', 'booking_message'])
+        $this->form->fill($settings->only(['business', 'business_note', 'currency', 'online_booking', 'slot_minutes', 'min_notice_minutes', 'booking_days', 'cancel_hours', 'no_show_flag', 'pickup_enabled', 'field_service_type_id', 'booking_message'])
             + ['business' => $settings->business ?? 'petshop']);
     }
 
@@ -86,7 +87,13 @@ class AgendaSettingsPage extends Page
                             ->hiddenLabel()
                             ->options(app(AgendaTemplates::class)->businesses())
                             ->descriptions(collect(AgendaSetting::BUSINESSES)->mapWithKeys(fn (string $business): array => [$business => __('agenda.templates.'.$business.'.help')])->all())
+                            ->live()
                             ->required(),
+                        TextInput::make('business_note')
+                            ->label(__('agenda.settings.business_note'))
+                            ->helperText(__('agenda.settings.business_note_help'))
+                            ->maxLength(300)
+                            ->visible(fn (Get $get): bool => $get('business') === 'none'),
                         Select::make('currency')
                             ->label(__('field.settings.currency'))
                             ->options(collect(Country::CURRENCIES)->unique()->mapWithKeys(fn (string $code): array => [$code => Country::currencyName($code)])->sort()->all())

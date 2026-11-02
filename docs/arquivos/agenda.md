@@ -81,3 +81,6 @@ Agenda → **Comissões** (gestor): por mês, por profissional, os atendimentos 
 
 ## Fica para a v2
 Lembrete automático pelo WhatsApp oficial (cota + pacote), sinal por Pix (Asaas), Google Agenda, lista de espera, avaliação do cliente, várias unidades, clube de assinatura, código por SMS/WhatsApp no link, ficha de saúde/vacinas do pet, e o segundo ramo (estética automotiva).
+
+## Qualquer ramo (02/11/2026)
+Nas Configurações da Agenda, "Ramo" tem agora **Pet shop**, **Atendimento geral (qualquer ramo)** (dois serviços para começar: Atendimento e Retorno) e **Outro ramo**, que pede "Descreva o que a sua empresa faz" (campo `business_note`, só para o dono lembrar). Migração `2026_11_08_100000_add_business_note_to_ag_settings.php`.

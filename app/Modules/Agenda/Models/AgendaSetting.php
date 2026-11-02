@@ -17,11 +17,11 @@ class AgendaSetting extends Model
 {
     use BelongsToTenant, ReportsFirstSteps;
 
-    public const BUSINESSES = ['petshop', 'none'];
+    public const BUSINESSES = ['petshop', 'general', 'none'];
 
     protected $table = 'ag_settings';
 
-    protected $fillable = ['business', 'currency', 'online_booking', 'slot_minutes', 'min_notice_minutes', 'booking_days', 'cancel_hours', 'no_show_flag', 'pickup_enabled', 'field_service_type_id', 'booking_message', 'configured_at'];
+    protected $fillable = ['business', 'business_note', 'currency', 'online_booking', 'slot_minutes', 'min_notice_minutes', 'booking_days', 'cancel_hours', 'no_show_flag', 'pickup_enabled', 'field_service_type_id', 'booking_message', 'configured_at'];
 
     protected function casts(): array
     {

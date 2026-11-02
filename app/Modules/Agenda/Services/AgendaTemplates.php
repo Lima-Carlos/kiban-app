@@ -30,6 +30,12 @@ class AgendaTemplates
         'pickup' => ['minutes' => 0, 'price' => 2000, 'addon' => true, 'pickup' => true, 'color' => '#B45309'],
     ];
 
+    /** Any other business: two generic services to start from (name, minutes). */
+    protected const GENERAL = [
+        'appointment' => ['minutes' => 60, 'color' => '#0369A1'],
+        'return_visit' => ['minutes' => 30, 'color' => '#15803D'],
+    ];
+
     /**
      * @return array<string, string>
      */
@@ -45,6 +51,10 @@ class AgendaTemplates
      */
     public function apply(string $business): array
     {
+        if ($business === 'general') {
+            return $this->applyGeneral();
+        }
+
         if ($business !== 'petshop') {
             return ['services' => 0];
         }
@@ -91,5 +101,31 @@ class AgendaTemplates
 
             return ['services' => $added];
         });
+    }
+
+    /**
+     * @return array{services: int}
+     */
+    protected function applyGeneral(): array
+    {
+        $added = 0;
+        $sort = (int) Service::query()->max('sort');
+
+        foreach (self::GENERAL as $key => $model) {
+            if (Service::query()->where('template_key', $key)->exists()) {
+                continue;
+            }
+
+            Service::create([
+                'template_key' => $key,
+                'name' => __('agenda.templates.general.services.'.$key),
+                'duration_minutes' => $model['minutes'],
+                'color' => $model['color'],
+                'sort' => ++$sort,
+            ]);
+            $added++;
+        }
+
+        return ['services' => $added];
     }
 }
