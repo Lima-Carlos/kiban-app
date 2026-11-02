@@ -13,10 +13,10 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
@@ -98,8 +98,12 @@ class ScheduleResource extends ModuleResource
                             }
                         }
 
-                        // A model with a different day (e.g. Saturday until noon) opens with the days apart.
-                        $set('same_hours', static::allDaysEqual((array) ($preset['week'] ?? [])));
+                        // The model's week opens grouped (e.g. Monday to Friday together, Saturday apart).
+                        $group = static::groupOf((array) ($preset['week'] ?? []));
+                        $set('same_days', $group['days']);
+                        foreach ($group['hours'] as $part => $value) {
+                            $set('group_'.$part, $value);
+                        }
 
                         if ($preset['type'] === Schedule::CYCLE) {
                             $set('anchor_date', today()->toDateString());
@@ -122,15 +126,30 @@ class ScheduleResource extends ModuleResource
                     ->description(__('timeclock.schedules.week_help'))
                     ->visible($isWeekly)
                     ->components([
-                        // Type the first working day once; the other marked days copy it (off for e.g. a short Saturday).
-                        Toggle::make('same_hours')
-                            ->label(__('timeclock.schedules.same_hours'))
-                            ->helperText(__('timeclock.schedules.same_hours_help'))
-                            ->default(true)
+                        // 1. The days that share the same hours (e.g. Monday to Friday): one row of hours for all of them.
+                        CheckboxList::make('same_days')
+                            ->label(__('timeclock.schedules.same_days'))
+                            ->helperText(__('timeclock.schedules.same_days_help'))
+                            ->options(collect(range(1, 7))->mapWithKeys(fn (int $weekday): array => [$weekday => __('timeclock.weekdays_short.'.$weekday)])->all())
+                            ->columns(['default' => 4, 'sm' => 7])
+                            ->default([1, 2, 3, 4, 5])
                             ->dehydrated(false)
-                            ->afterStateHydrated(fn (Toggle $component, Get $get) => $component->state(static::allDaysEqual((array) $get('week'))))
+                            ->afterStateHydrated(fn (CheckboxList $component, Get $get) => filled($get('week')) ? $component->state(static::groupOf((array) $get('week'))['days']) : null)
                             ->live()
-                            ->afterStateUpdated(fn (Get $get, Set $set) => static::copySameHours($get, $set)),
+                            ->afterStateUpdated(fn (Get $get, Set $set) => static::syncGroup($get, $set)),
+                        Grid::make(['default' => 2, 'md' => 5])
+                            ->visible(fn (Get $get): bool => filled($get('same_days')))
+                            ->components([
+                                Text::make(fn (Get $get): string => static::daysLabel((array) $get('same_days')))->weight('bold'),
+                                ...collect(['start', 'break_start', 'break_end', 'end'])->map(fn (string $part) => static::time('group_'.$part)
+                                    ->label(__('timeclock.schedules.'.$part))
+                                    ->dehydrated(false)
+                                    ->required(in_array($part, ['start', 'end'], true))
+                                    ->afterStateHydrated(fn (TextInput $component, Get $get) => filled($get('week')) ? $component->state(static::groupOf((array) $get('week'))['hours'][$part] ?? null) : null)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn (Get $get, Set $set) => static::syncGroup($get, $set)))->all(),
+                            ]),
+                        // 2. Every other day on its own row: off unless switched on.
                         ...collect(range(1, 7))->map(fn (int $weekday) => static::dayFields($weekday))->all(),
                     ]),
                 Section::make(__('timeclock.schedules.cycle'))
@@ -153,68 +172,93 @@ class ScheduleResource extends ModuleResource
             ]);
     }
 
-    /** One weekday: works? start, break, end. */
+    /**
+     * One weekday outside the group: works? (off = day off) and its own hours. The days of the group are hidden
+     * here but still saved, with the group's hours.
+     */
     public static function dayFields(int $weekday): Grid
     {
+        $inGroup = fn (Get $get): bool => in_array($weekday, array_map('intval', (array) $get('same_days')), true);
         $works = fn (Get $get): bool => (bool) $get("week.{$weekday}.works");
-        // With "same hours", only the first working day is typed; the others show the copy, read-only.
-        $copied = fn (Get $get): bool => (bool) $get('same_hours') && static::sourceDay((array) $get('week')) !== $weekday;
-        $copy = fn (Get $get, Set $set) => static::copySameHours($get, $set);
 
-        return Grid::make(['default' => 2, 'md' => 5])->components([
-            Toggle::make("week.{$weekday}.works")
-                ->label(__('timeclock.weekdays.'.$weekday))
-                ->inline(false)
-                ->live()
-                ->afterStateUpdated($copy),
-            ...collect(['start', 'break_start', 'break_end', 'end'])->map(fn (string $part) => static::time("week.{$weekday}.{$part}")
-                ->label(__('timeclock.schedules.'.$part))
-                ->visible($works)
-                ->disabled($copied)
-                ->dehydrated()
-                ->live(onBlur: true)
-                ->afterStateUpdated($copy))->all(),
-        ]);
+        // Each field is hidden on its own (a hidden container would not save its fields).
+        return Grid::make(['default' => 2, 'md' => 5])
+            ->components([
+                Toggle::make("week.{$weekday}.works")
+                    ->label(__('timeclock.weekdays.'.$weekday))
+                    ->helperText(fn (Get $get): ?string => $works($get) ? null : __('timeclock.schedules.day_off'))
+                    ->inline(false)
+                    ->live()
+                    ->hidden($inGroup)
+                    ->dehydratedWhenHidden()
+                    // On save, a day of the group is a working day whatever the screen showed.
+                    ->dehydrateStateUsing(fn ($state, Get $get): bool => $inGroup($get) || (bool) $state),
+                ...collect(['start', 'break_start', 'break_end', 'end'])->map(fn (string $part) => static::time("week.{$weekday}.{$part}")
+                    ->label(__('timeclock.schedules.'.$part))
+                    ->visible(fn (Get $get): bool => $works($get) && ! $inGroup($get))
+                    ->required(fn (Get $get): bool => in_array($part, ['start', 'end'], true) && $works($get) && ! $inGroup($get))
+                    ->dehydratedWhenHidden()
+                    // ...with the group's hours.
+                    ->dehydrateStateUsing(fn ($state, Get $get) => $inGroup($get) ? $get('group_'.$part) : $state))->all(),
+            ]);
     }
 
-    /** The first marked day of the week: the one typed when every day has the same hours. */
-    protected static function sourceDay(array $week): ?int
+    /**
+     * The biggest set of working days with the very same hours (an existing schedule opens grouped that way).
+     *
+     * @return array{days: array<int, int>, hours: array<string, ?string>}
+     */
+    public static function groupOf(array $week): array
     {
-        foreach (range(1, 7) as $weekday) {
-            if ($week[$weekday]['works'] ?? false) {
-                return $weekday;
-            }
-        }
-
-        return null;
-    }
-
-    /** Whether every marked day already has the same hours (an existing schedule opens with the switch to match). */
-    protected static function allDaysEqual(array $week): bool
-    {
-        return collect(range(1, 7))
-            ->filter(fn (int $weekday): bool => (bool) ($week[$weekday]['works'] ?? false))
-            ->map(fn (int $weekday): string => implode('|', array_map(fn (string $part): string => substr((string) ($week[$weekday][$part] ?? ''), 0, 5), ['start', 'break_start', 'break_end', 'end'])))
-            ->unique()
-            ->count() <= 1;
-    }
-
-    protected static function copySameHours(Get $get, Set $set): void
-    {
-        $week = (array) $get('week');
-        $source = static::sourceDay($week);
-
-        if (! $get('same_hours') || $source === null) {
-            return;
-        }
+        $groups = [];
 
         foreach (range(1, 7) as $weekday) {
-            if ($weekday !== $source && ($week[$weekday]['works'] ?? false)) {
-                foreach (['start', 'break_start', 'break_end', 'end'] as $part) {
-                    $set("week.{$weekday}.{$part}", $week[$source][$part] ?? null);
-                }
+            if (! ($week[$weekday]['works'] ?? false)) {
+                continue;
+            }
+
+            $hours = [];
+            foreach (['start', 'break_start', 'break_end', 'end'] as $part) {
+                $hours[$part] = filled($week[$weekday][$part] ?? null) ? substr((string) $week[$weekday][$part], 0, 5) : null;
+            }
+
+            $groups[json_encode($hours)]['hours'] = $hours;
+            $groups[json_encode($hours)]['days'][] = $weekday;
+        }
+
+        return collect($groups)->sortByDesc(fn (array $group): int => count($group['days']))->first() ?? ['days' => [], 'hours' => []];
+    }
+
+    /** The group's days get its hours and are working days. */
+    protected static function syncGroup(Get $get, Set $set): void
+    {
+        foreach (array_map('intval', (array) $get('same_days')) as $weekday) {
+            $set("week.{$weekday}.works", true);
+
+            foreach (['start', 'break_start', 'break_end', 'end'] as $part) {
+                $set("week.{$weekday}.{$part}", $get('group_'.$part));
             }
         }
+    }
+
+    /** "Mon to Fri", "Mon, Wed and Fri"... */
+    public static function daysLabel(array $days): string
+    {
+        $days = collect($days)->map(fn ($day): int => (int) $day)->sort()->values();
+
+        if ($days->isEmpty()) {
+            return '';
+        }
+
+        $consecutive = $days->count() > 2 && $days->last() - $days->first() === $days->count() - 1;
+
+        if ($consecutive) {
+            return __('timeclock.schedules.days_range', ['from' => __('timeclock.weekdays_short.'.$days->first()), 'to' => __('timeclock.weekdays_short.'.$days->last())]);
+        }
+
+        $names = $days->map(fn (int $day): string => __('timeclock.weekdays_short.'.$day));
+
+        return $names->count() === 1 ? $names->first() : $names->slice(0, -1)->implode(', ').' '.__('timeclock.schedules.days_and').' '.$names->last();
     }
 
     protected static function time(string $field): TextInput

@@ -9,6 +9,7 @@ use App\Modules\TimeClock\Filament\Employees\Pages\ListEmployees;
 use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
 use App\Modules\TimeClock\Filament\Holidays\Pages\ManageHolidays;
 use App\Modules\TimeClock\Filament\Schedules\Pages\ManageSchedules;
+use App\Modules\TimeClock\Filament\Schedules\ScheduleResource;
 use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
 use App\Modules\TimeClock\Models\City;
 use App\Modules\TimeClock\Models\Employee;
@@ -139,6 +140,33 @@ class TimeClockSchedulesTest extends TestCase
             ->callTableAction('duplicate', $schedule)
             ->assertNotified();
         $this->assertSame(2, Schedule::count());
+    }
+
+    public function test_days_with_the_same_hours_are_typed_once(): void
+    {
+        // Monday to Friday share one row of hours; Saturday has its own; Sunday stays off (a day off).
+        Livewire::test(ManageSchedules::class)
+            ->mountAction('create')
+            ->fillForm([
+                'name' => 'Comercial com sábado',
+                'type' => 'weekly',
+                'same_days' => ['1', '2', '3', '4', '5'],
+                'group_start' => '08:00', 'group_break_start' => '12:00', 'group_break_end' => '13:00', 'group_end' => '18:00',
+                'week.6.works' => true, 'week.6.start' => '08:00', 'week.6.end' => '12:00',
+            ])
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+
+        $week = Schedule::sole()->week;
+        $this->assertTrue((bool) $week[5]['works']);
+        $this->assertSame('18:00', substr((string) $week[5]['end'], 0, 5));
+        $this->assertSame('12:00', substr((string) $week[6]['end'], 0, 5));
+        $this->assertFalse((bool) ($week[7]['works'] ?? false));
+
+        // Opening it again shows Monday to Friday grouped.
+        $this->assertSame([1, 2, 3, 4, 5], ScheduleResource::groupOf($week)['days']);
+        $this->assertSame('Seg a Sex', ScheduleResource::daysLabel([1, 2, 3, 4, 5]));
+        $this->assertSame('Seg, Qua e Sex', ScheduleResource::daysLabel([1, 3, 5]));
     }
 
     public function test_schedule_history_of_an_employee(): void
