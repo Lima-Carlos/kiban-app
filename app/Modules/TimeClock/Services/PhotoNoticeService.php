@@ -90,6 +90,14 @@ class PhotoNoticeService
     }
 
     /** The company shows the "Punch without photo" button (default: yes). */
+    /** Whether the punch takes a photo there ("phone" or "kiosk"): the company chooses each one. */
+    public function photosOn(string $source): bool
+    {
+        $settings = TimeClockSetting::current();
+
+        return (bool) ($source === Punch::KIOSK ? $settings->photo_on_kiosk : $settings->photo_on_phone);
+    }
+
     public function allowsWithoutPhoto(): bool
     {
         return (bool) TimeClockSetting::current()->allow_punch_without_photo;

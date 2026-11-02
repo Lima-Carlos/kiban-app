@@ -134,7 +134,13 @@ class PunchPage extends Page
     /** The privacy notice of the photos still has to be read (first time, or a new version). */
     public function needsPhotoNotice(): bool
     {
-        return ! app(PhotoNoticeService::class)->acknowledged($this->employee());
+        return $this->takesPhoto() && ! app(PhotoNoticeService::class)->acknowledged($this->employee());
+    }
+
+    /** The company may punch on the phone without a photo (Ponto settings). */
+    public function takesPhoto(): bool
+    {
+        return app(PhotoNoticeService::class)->photosOn('phone');
     }
 
     public function allowsWithoutPhoto(): bool

@@ -69,9 +69,11 @@
         </script>
     @elseif ($step === 'photo')
         <h1>{{ __('timeclock.kiosk.hello', ['name' => $employee->person->name]) }}</h1>
-        <p>{{ __('timeclock.kiosk.photo_help') }}</p>
+        @if ($photos ?? true)
+            <p>{{ __('timeclock.kiosk.photo_help') }}</p>
+        @endif
 
-        <form method="post" action="{{ url('/relogio/bater') }}" id="punch-form">
+        <form method="post" action="{{ url('/relogio/bater') }}" id="punch-form" data-photos="{{ ($photos ?? true) ? '1' : '0' }}">
             <input type="hidden" name="ticket" value="{{ $ticket }}">
             <input type="hidden" name="photo" id="photo">
             <video id="camera" autoplay playsinline muted style="width:100%;border-radius:10px;background:#000;display:none"></video>
@@ -92,6 +94,12 @@
                 var video = document.getElementById('camera');
                 var form = document.getElementById('punch-form');
                 var ready = false;
+
+                // The company may punch on the tablet without a photo: no camera at all.
+                if (form.dataset.photos !== '1') {
+                    form.addEventListener('submit', function () { document.getElementById('punch-button').disabled = true; });
+                    return;
+                }
 
                 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 } }, audio: false })

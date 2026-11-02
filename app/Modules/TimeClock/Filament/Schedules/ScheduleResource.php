@@ -158,8 +158,10 @@ class ScheduleResource extends ModuleResource
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(fn (Get $get, Set $set) => static::syncGroup($get, $set)))->all(),
                             ]),
-                        // 2. Every other day on its own row: off unless switched on.
-                        ...collect(range(1, 7))->map(fn (int $weekday) => static::dayFields($weekday))->all(),
+                        // 2. Every other day on its own row: off unless switched on. One grid for all the days, so the
+                        //    days of the group (hidden) leave no empty space.
+                        Grid::make(['default' => 2, 'md' => 5])
+                            ->components(collect(range(1, 7))->flatMap(fn (int $weekday): array => static::dayFields($weekday))->all()),
                     ]),
                 Section::make(__('timeclock.schedules.cycle'))
                     ->description(__('timeclock.schedules.cycle_help'))
@@ -201,18 +203,19 @@ class ScheduleResource extends ModuleResource
 
     /**
      * One weekday outside the group: works? (off = day off) and its own hours. The days of the group are hidden
-     * here but still saved, with the group's hours.
+     * here but still saved, with the group's hours. Each day starts a new row of the grid.
+     *
+     * @return array<int, mixed>
      */
-    public static function dayFields(int $weekday): Grid
+    public static function dayFields(int $weekday): array
     {
         $inGroup = fn (Get $get): bool => in_array($weekday, array_map('intval', (array) $get('same_days')), true);
         $works = fn (Get $get): bool => (bool) $get("week.{$weekday}.works");
 
         // Each field is hidden on its own (a hidden container would not save its fields).
-        return Grid::make(['default' => 2, 'md' => 5])
-            ->extraAttributes(fn (Get $get): array => $inGroup($get) ? ['style' => 'display:none'] : [])
-            ->components([
+        return [
                 Toggle::make("week.{$weekday}.works")
+                    ->columnStart(1)
                     ->label(__('timeclock.weekdays.'.$weekday))
                     ->helperText(fn (Get $get): ?string => $works($get) ? null : __('timeclock.schedules.day_off'))
                     ->inline(false)
@@ -228,7 +231,7 @@ class ScheduleResource extends ModuleResource
                     ->dehydratedWhenHidden()
                     // ...with the group's hours.
                     ->dehydrateStateUsing(fn ($state, Get $get) => $inGroup($get) ? $get('group_'.$part) : $state))->all(),
-            ]);
+        ];
     }
 
     /**

@@ -110,7 +110,7 @@ class PunchService
             $flags[] = Punch::OUTSIDE_RADIUS;
         }
 
-        if (blank($data['photo_path'] ?? null)) {
+        if (blank($data['photo_path'] ?? null) && app(PhotoNoticeService::class)->photosOn($kiosk !== null ? Punch::KIOSK : 'phone')) {
             $flags[] = ($data['photo_declined'] ?? false) ? Punch::PHOTO_DECLINED : Punch::NO_PHOTO;
         }
 

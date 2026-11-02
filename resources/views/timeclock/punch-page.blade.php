@@ -4,7 +4,8 @@
     $plan = $this->todayPlan();
     $today = $this->today();
     $needsNotice = $this->needsPhotoNotice();
-    $withoutPhoto = $this->allowsWithoutPhoto();
+    $takesPhoto = $this->takesPhoto();
+    $withoutPhoto = $takesPhoto && $this->allowsWithoutPhoto();
 @endphp
 
 <x-filament-panels::page>
@@ -34,7 +35,7 @@
                 x-data="{
                     stream: null,
                     notice: @js($needsNotice),
-                    camera: 'waiting',
+                    camera: @js($takesPhoto ? 'waiting' : 'off'),
                     location: 'waiting',
                     coords: null,
                     busy: false,
@@ -55,7 +56,7 @@
                     problems: [],
                     init() {
                         // The camera opens only after the privacy notice of the photos was acknowledged.
-                        if (!this.notice) { this.startCamera(); }
+                        if (!this.notice && this.camera !== 'off') { this.startCamera(); }
 
                         if (navigator.geolocation) {
                             navigator.geolocation.getCurrentPosition(
@@ -126,7 +127,7 @@
                                 id: KibanPunchQueue.uuid(),
                                 owner: this.owner,
                                 taken_at: KibanPunchQueue.now(),
-                                photo: withoutPhoto ? null : this.selfie(),
+                                photo: withoutPhoto || this.camera === 'off' ? null : this.selfie(),
                                 latitude: this.coords?.latitude ?? null,
                                 longitude: this.coords?.longitude ?? null,
                                 accuracy: this.coords?.accuracy ?? null,

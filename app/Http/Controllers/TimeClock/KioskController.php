@@ -82,12 +82,16 @@ class KioskController extends Controller
     {
         $notices = app(PhotoNoticeService::class);
 
+        // Without photos on the tablet there is no notice to read: straight to the punch button.
+        $photos = $notices->photosOn(Punch::KIOSK);
+
         return view('timeclock.kiosk', [
             'kiosk' => $kiosk,
-            'step' => $notices->acknowledged($employee) ? 'photo' : 'notice',
+            'step' => ! $photos || $notices->acknowledged($employee) ? 'photo' : 'notice',
+            'photos' => $photos,
             'employee' => $employee,
             'paragraphs' => $notices->paragraphs(),
-            'withoutPhoto' => $notices->allowsWithoutPhoto(),
+            'withoutPhoto' => $photos && $notices->allowsWithoutPhoto(),
             // Who typed the PIN, for this tablet, for a few minutes (nothing to change in the page).
             'ticket' => Crypt::encryptString(json_encode(['employee' => $employee->getKey(), 'kiosk' => $kiosk->getKey(), 'until' => now()->addMinutes(self::TICKET_MINUTES)->getTimestamp()])),
         ]);
@@ -105,7 +109,7 @@ class KioskController extends Controller
         // Without the acknowledgement of the notice no photo is stored; "without photo" only when the company allows it.
         $notices = app(PhotoNoticeService::class);
         $declined = $request->boolean('without_photo') && $notices->allowsWithoutPhoto();
-        $photo = $declined || ! $notices->acknowledged($employee) ? null : (string) $request->input('photo');
+        $photo = $declined || ! $notices->photosOn(Punch::KIOSK) || ! $notices->acknowledged($employee) ? null : (string) $request->input('photo');
 
         try {
             $punch = $punches->punch($employee, [

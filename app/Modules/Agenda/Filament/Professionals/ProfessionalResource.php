@@ -208,7 +208,7 @@ class ProfessionalResource extends ModuleResource
                 ->description($hasClock ? __('agenda.professionals.week_help_clock') : __('agenda.professionals.week_help'))
                 ->compact()
                 ->collapsible()
-                ->components(collect(range(1, 7))->map(fn (int $weekday) => ScheduleResource::dayFields($weekday))->all()),
+                ->components([Grid::make(['default' => 2, 'md' => 5])->components(collect(range(1, 7))->flatMap(fn (int $weekday): array => ScheduleResource::dayFields($weekday))->all())]),
             Section::make(__('agenda.professionals.services'))
                 ->description(__('agenda.professionals.services_help'))
                 ->compact()

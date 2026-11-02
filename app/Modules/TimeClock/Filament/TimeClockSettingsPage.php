@@ -85,6 +85,8 @@ class TimeClockSettingsPage extends Page
             'employer_document' => $settings->employer_document,
             'employer_name' => $settings->employer_name,
             'allow_punch_without_photo' => (bool) $settings->allow_punch_without_photo,
+            'photo_on_phone' => (bool) $settings->photo_on_phone,
+            'photo_on_kiosk' => (bool) $settings->photo_on_kiosk,
             'privacy_contact' => $settings->privacy_contact,
         ]);
     }
@@ -163,9 +165,18 @@ class TimeClockSettingsPage extends Page
                     ->description(__('timeclock.settings.photos_help'))
                     ->columns(['default' => 1, 'sm' => 2])
                     ->components([
+                        Toggle::make('photo_on_phone')
+                            ->label(__('timeclock.settings.photo_on_phone'))
+                            ->helperText(__('timeclock.settings.photo_on_phone_help'))
+                            ->live(),
+                        Toggle::make('photo_on_kiosk')
+                            ->label(__('timeclock.settings.photo_on_kiosk'))
+                            ->helperText(__('timeclock.settings.photo_on_kiosk_help'))
+                            ->live(),
                         Toggle::make('allow_punch_without_photo')
                             ->label(__('timeclock.settings.allow_without_photo'))
-                            ->helperText(__('timeclock.settings.allow_without_photo_help')),
+                            ->helperText(__('timeclock.settings.allow_without_photo_help'))
+                            ->visible(fn (Get $get): bool => (bool) $get('photo_on_phone') || (bool) $get('photo_on_kiosk')),
                         TextInput::make('privacy_contact')
                             ->label(__('timeclock.settings.privacy_contact'))
                             ->placeholder(__('timeclock.settings.privacy_contact_placeholder'))
@@ -249,6 +260,8 @@ class TimeClockSettingsPage extends Page
         // Photos and privacy (a new contact changes the notice: everyone reads it again).
         $settings->forceFill([
             'allow_punch_without_photo' => (bool) ($state['allow_punch_without_photo'] ?? true),
+            'photo_on_phone' => (bool) ($state['photo_on_phone'] ?? true),
+            'photo_on_kiosk' => (bool) ($state['photo_on_kiosk'] ?? true),
             'privacy_contact' => filled($state['privacy_contact'] ?? null) ? trim((string) $state['privacy_contact']) : null,
         ]);
 

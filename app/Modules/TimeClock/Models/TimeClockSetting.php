@@ -33,13 +33,13 @@ class TimeClockSetting extends Model
     protected $attributes = [
         'overtime_percent' => 50, 'rest_day_overtime_percent' => 100, 'night_start' => '22:00', 'night_end' => '05:00',
         'night_percent' => 20, 'night_reduced_hour' => true, 'tolerance_punch_minutes' => 5, 'tolerance_day_minutes' => 10,
-        'hour_bank' => false, 'hour_bank_months' => 6, 'allow_punch_without_photo' => true,
+        'hour_bank' => false, 'hour_bank_months' => 6, 'allow_punch_without_photo' => true, 'photo_on_phone' => true, 'photo_on_kiosk' => true,
     ];
 
     protected $fillable = [
         'country', 'labor_profile',
         'overtime_percent', 'rest_day_overtime_percent', 'night_start', 'night_end', 'night_percent', 'night_reduced_hour',
-        'tolerance_punch_minutes', 'tolerance_day_minutes', 'hour_bank', 'hour_bank_months', 'optional_holidays',
+        'tolerance_punch_minutes', 'tolerance_day_minutes', 'hour_bank', 'hour_bank_months', 'optional_holidays', 'photo_on_phone', 'photo_on_kiosk',
     ];
 
     protected function casts(): array
@@ -58,6 +58,8 @@ class TimeClockSetting extends Model
             'optional_holidays' => 'array',
             'last_nsr' => 'integer',
             'allow_punch_without_photo' => 'boolean',
+            'photo_on_phone' => 'boolean',
+            'photo_on_kiosk' => 'boolean',
         ];
     }
 
