@@ -231,6 +231,9 @@ return [
     'company_profile' => [
         'title' => 'Identidad de la empresa',
         'help' => 'El logo, el color y los datos que aparecen en lo que reciben tus clientes: informes de servicio y presupuestos.',
+        'where' => 'Dónde aparece la identidad',
+        'where_help' => 'Informe de la orden de servicio, presupuesto enviado por enlace, ficha de EPP y herramientas (PDF), comprobante de cursos (PDF) y página de citas de la Agenda. No cambia el aspecto interno del sistema (menús y pantallas): eso sigue con la marca Kiban Core.',
+        'where_note' => 'Aparecen el logo, el color principal y los datos de la empresa. Todavía no aparece en la pantalla del control horario ni en la app.',
         'look' => 'Apariencia',
         'logo' => 'Logo',
         'logo_help' => 'PNG o JPG, de preferencia con fondo blanco o transparente.',

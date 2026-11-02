@@ -16,6 +16,7 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -77,6 +78,13 @@ class CompanyProfilePage extends Page
             ->statePath('data')
             ->columns(1)
             ->components([
+                Section::make(__('app.company_profile.where'))
+                    ->icon(Heroicon::OutlinedInformationCircle)
+                    ->collapsible()
+                    ->components([
+                        Text::make(__('app.company_profile.where_help')),
+                        Text::make(__('app.company_profile.where_note')),
+                    ]),
                 Section::make(__('app.company_profile.look'))
                     ->columns(['default' => 1, 'sm' => 2])
                     ->components([

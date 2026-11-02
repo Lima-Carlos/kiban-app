@@ -231,6 +231,9 @@ return [
     'company_profile' => [
         'title' => 'Company Identity',
         'help' => 'The logo, the color and the data that show on what your customers get: service reports and quotes.',
+        'where' => 'Where the identity appears',
+        'where_help' => 'Service order report, quote sent by link, PPE and tools sheet (PDF), course proof (PDF) and the Appointments booking page. It does not change how the system looks inside (menus and screens): that stays with the Kiban Core brand.',
+        'where_note' => 'The logo, main color and company data appear. It does not appear yet on the time clock screen or in the app.',
         'look' => 'Look',
         'logo' => 'Logo',
         'logo_help' => 'PNG or JPG, ideally with a white or transparent background.',

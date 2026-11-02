@@ -287,6 +287,8 @@ Na tela Pessoas, dar a função "Técnico" a mais gente do que o plano permite �
 **Com a O5, a primeira versão vendável do Kiban Campo (O1 a O5, com O2b) está completa.**
 
 ### Identidade da empresa (Empresa → Identidade da empresa)
+
+**Onde aparece (02/11/2026):** relatório da ordem de serviço, orçamento pelo link, ficha de EPI e ferramentas, comprovante de cursos e página de agendamento da Agenda. Não muda o visual interno do sistema e ainda não aparece na tela do ponto nem no app. A própria tela da Identidade explica isso.
 - Tela nova, comum a todos os sistemas, só para o dono e os administradores.
 - Guarda: logo (PNG ou JPG), cor principal, nome da empresa, CNPJ ou documento, telefone, e-mail, site, endereço e o **rodapé dos relatórios** (ex.: "Garantia de 90 dias").
 - Sem nada preenchido, os relatórios usam o nome da empresa e o azul da Kiban.
