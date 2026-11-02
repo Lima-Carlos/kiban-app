@@ -116,6 +116,8 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('filament.module-switcher'))
             // "Free trial: N days left Â· See plans" (owner/administrators, while every system is in trial).
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.trial-banner'))
+            // "Your invoice is due in 3 days / today / overdue" (owner/administrators).
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.payment-banner'))
             // "Step 2 of 9 · Back · Next step" above a company first step opened from the start list.
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.step-guide'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.install-hint'))

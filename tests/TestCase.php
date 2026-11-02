@@ -69,6 +69,9 @@ abstract class TestCase extends BaseTestCase
      * @param  array<string, array<string, mixed>>  $modules
      * @param  array<string, mixed>  $tenantClaims
      */
+    /** The "billing" claim of the licenses made by the test (oldest unpaid invoice), when set. @var array<string, mixed> */
+    protected array $billingClaim = [];
+
     protected function licenseToken(Tenant|string $tenant, array $modules = ['demo' => []], array $tenantClaims = [], int $hours = 72, ?string $privateKey = null): string
     {
         $subdomain = $tenant instanceof Tenant ? $tenant->subdomain : $tenant;
@@ -103,7 +106,7 @@ abstract class TestCase extends BaseTestCase
                 'features' => [],
             ], $modules),
             'limits_tolerance' => ['percent' => 0, 'grace_days' => 0],
-        ];
+        ] + ($this->billingClaim === [] ? [] : ['billing' => $this->billingClaim]);
 
         return JWT::encode($claims, $privateKey ?? static::keys()['private'], 'RS256', 'test-key');
     }

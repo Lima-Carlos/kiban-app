@@ -47,6 +47,7 @@ return [
     'created' => 'Registro hecho',
     'default_sort' => 'Predeterminado',
     'more_actions' => 'Más acciones',
+    'payment' => ['days' => '{1} Su factura vence mañana.|[2,*] Su factura vence en :count días.', 'today' => 'Su factura vence hoy.', 'overdue' => 'Su factura está vencida. Pague para no perder el acceso.', 'see' => 'Ver facturas'],
     'trial' => [
         'days' => 'Prueba gratis: queda :count día|Prueba gratis: quedan :count días',
         'today' => 'Prueba gratis: termina hoy',

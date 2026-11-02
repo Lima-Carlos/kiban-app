@@ -47,6 +47,7 @@ return [
     'created' => 'Cadastro feito',
     'default_sort' => 'Padrão',
     'more_actions' => 'Mais ações',
+    'payment' => ['days' => '{1} Sua fatura vence amanhã.|[2,*] Sua fatura vence em :count dias.', 'today' => 'Sua fatura vence hoje.', 'overdue' => 'Sua fatura está vencida. Pague para não perder o acesso.', 'see' => 'Ver faturas'],
     'trial' => [
         'days' => 'Teste grátis: falta :count dia|Teste grátis: faltam :count dias',
         'today' => 'Teste grátis: termina hoje',

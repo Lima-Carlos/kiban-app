@@ -47,6 +47,7 @@ return [
     'created' => 'Saved',
     'default_sort' => 'Default',
     'more_actions' => 'More actions',
+    'payment' => ['days' => '{1} Your invoice is due tomorrow.|[2,*] Your invoice is due in :count days.', 'today' => 'Your invoice is due today.', 'overdue' => 'Your invoice is overdue. Pay it to keep your access.', 'see' => 'See invoices'],
     'trial' => [
         'days' => 'Free trial: :count day left|Free trial: :count days left',
         'today' => 'Free trial: ends today',
