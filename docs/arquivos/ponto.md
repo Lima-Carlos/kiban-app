@@ -457,3 +457,6 @@ Explicação completa em `conexoes.md`.
 - Um feriado com cidade vale só para quem segue essa cidade; sem cidade nem local, vale para toda a empresa. Regra em `HolidayCalendar::between()`.
 - Migração `2026_11_09_100000_create_tc_cities.php`. Pesquisa de fontes: `docs/planejamento/pesquisa-home-office-feriados.md` (no Core).
 
+## Home office (02/11/2026)
+Quem trabalha de casa usa a opção **"Trabalha fora do local (rua ou home office)"** na ficha do colaborador (a mesma do funcionário externo): bate o ponto pelo celular ou pelo computador, com selfie e localização gravadas, sem exigir local de trabalho nem raio, e com o comprovante de sempre. Em outra cidade, indique a "Cidade dos feriados". Para o advogado (veja `docs/planejamento/pesquisa-home-office-feriados.md` no Core): teletrabalho **por jornada** tem controle de ponto, extras e banco de horas; **por tarefa** pode ficar sem controle, mas isso depende do contrato. O Kiban não decide isso: a empresa confirma o tipo do contrato.
+
