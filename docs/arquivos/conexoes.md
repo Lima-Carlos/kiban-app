@@ -65,3 +65,7 @@ O comando `kiban:video-demo` marca todas as conexões como vistas para as contas
 - Migrações: `database/migrations/2026_11_02_100000_create_connection_dismissals_table.php`, `2026_11_06_100000_create_connection_views_table.php` e `2026_11_07_100000_create_tenant_modules_table.php`.
 - Textos: `lang/*/connections.php`.
 - Testes: `tests/Feature/ConnectionsTest.php`.
+
+## Vídeo com play (02/11/2026)
+O cartão da integração mostra a imagem de capa com o selo do par de sistemas (ex.: "Campo + Frota") e um botão de play. Ao clicar, o vídeo abre numa janela grande no meio da tela, com som, sem repetir, e com "Ver no YouTube" quando houver o link do vídeo de treinamento (`config/kiban.php` → `connection_youtube`: chave da integração → idioma → link; preencher quando cada vídeo for publicado). Peças: `resources/views/filament/connection-media.blade.php` e `Connection::youtubeUrl()`.
+

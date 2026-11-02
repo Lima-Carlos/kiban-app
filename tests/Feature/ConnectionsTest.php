@@ -257,8 +257,24 @@ class ConnectionsTest extends TestCase
             ->assertSee(__('connections.window.see_all'))
             ->assertSee(__('connections.items.punch_reminder.title'))
             // The recorded clip (public/videos/conexoes/<key>-<lang>.mp4) plays in place of the icon.
+            ->assertSee('data-connection-play', false)
             ->assertSee('data-connection-video', false)
+            ->assertDontSee('data-connection-youtube', false)
             ->assertSee('videos/conexoes/punch_reminder-pt.mp4', false);
+    }
+
+    public function test_the_video_opens_in_a_window_with_a_youtube_link_when_there_is_one(): void
+    {
+        config(['kiban.connection_youtube' => ['punch_reminder' => ['pt_BR' => 'https://www.youtube.com/watch?v=abc123']]]);
+        $this->company(['campo' => []]);
+        app(ModuleArrivals::class)->record($this->company);
+        $this->travelTo(now()->addMonth());
+        $this->contract(['campo' => [], 'ponto' => []]);
+
+        $this->get($this->company->url('/'))->assertOk()
+            ->assertSee('data-connection-youtube', false)
+            ->assertSee('https://www.youtube.com/watch?v=abc123', false)
+            ->assertSee(__('connections.video.youtube'));
     }
 
     public function test_a_system_contracted_in_the_first_days_counts_as_started_together(): void

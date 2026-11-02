@@ -131,6 +131,15 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Training videos of the integrations on YouTube
+    |--------------------------------------------------------------------------
+    | connection key => [language => link]. Filled when each video is published (the card then shows
+    | "Watch on YouTube" under the video). Empty = no link.
+    */
+    'connection_youtube' => [],
+
     'brand' => [
         'blue' => '#044299',
         'gray' => '#39383A',

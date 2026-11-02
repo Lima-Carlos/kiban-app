@@ -10,6 +10,7 @@ return [
         'see' => 'Ver',
         'close' => 'Fechar',
     ],
+    'video' => ['play' => 'Assistir: :title', 'close' => 'Fechar', 'youtube' => 'Ver no YouTube'],
     'window' => [
         'title' => 'Novidade: seus sistemas agora trabalham juntos',
         'intro' => 'A empresa usa :systems. Veja o que um sistema faz pelo outro:',

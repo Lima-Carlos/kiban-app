@@ -10,6 +10,7 @@ return [
         'see' => 'See',
         'close' => 'Close',
     ],
+    'video' => ['play' => 'Watch: :title', 'close' => 'Close', 'youtube' => 'Watch on YouTube'],
     'window' => [
         'title' => 'News: your systems now work together',
         'intro' => 'Your company uses :systems. See what one system does for the other:',

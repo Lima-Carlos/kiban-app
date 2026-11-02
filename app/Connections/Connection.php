@@ -52,6 +52,14 @@ final class Connection
         return LocalVideo::find('videos/conexoes/'.$this->key);
     }
 
+    /** Link to the training video of this connection on YouTube (kiban.connection_youtube, by language), if published. */
+    public function youtubeUrl(): ?string
+    {
+        $links = (array) config('kiban.connection_youtube.'.$this->key, []);
+
+        return ($links[app()->getLocale()] ?? $links[config('app.fallback_locale')] ?? null) ?: null;
+    }
+
     /** How many of its systems the company must have. */
     public function needed(): int
     {
