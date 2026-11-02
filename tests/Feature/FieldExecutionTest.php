@@ -206,6 +206,11 @@ class FieldExecutionTest extends TestCase
         $reading = OdometerReading::query()->where('vehicle_id', $vehicle->getKey())->latest('id')->first();
         $this->assertSame([20150, OdometerSource::WorkOrder], [$reading->value, $reading->source]);
         $this->assertSame(20150, $vehicle->fresh()->odometer);
+        // The screen knows the vehicle's km, to warn the technician before sending a lower one.
+        $this->actingAs($this->technician);
+        $this->get(\App\Modules\Field\Filament\ExecuteOrderPage::getUrl(['order' => $this->order->getKey()]))->assertOk()
+            ->assertSeeInOrder(['odometer', '20150'], false)
+            ->assertSee('km_lower', false);
     }
 
     public function test_the_technicians_screens(): void

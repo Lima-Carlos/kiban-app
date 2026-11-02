@@ -165,7 +165,7 @@ class ExecuteOrderPage extends Page
     /**
      * The technician's vehicles in Kiban Frota (for the km at arrival), when the company has it.
      *
-     * @return array<int, array{id: int, name: string}>
+     * @return array<int, array{id: int, name: string, odometer: int}>
      */
     protected function vehicles(): array
     {
@@ -182,7 +182,7 @@ class ExecuteOrderPage extends Page
         $vehicles = $driver->any_vehicle ? Vehicle::query()->get() : $driver->vehicles()->get();
 
         return $vehicles->filter(fn (Vehicle $vehicle): bool => $vehicle->isActiveForRecords())
-            ->map(fn (Vehicle $vehicle): array => ['id' => $vehicle->getKey(), 'name' => $vehicle->displayName()])
+            ->map(fn (Vehicle $vehicle): array => ['id' => $vehicle->getKey(), 'name' => $vehicle->displayName(), 'odometer' => (int) $vehicle->odometer])
             ->values()
             ->all();
     }

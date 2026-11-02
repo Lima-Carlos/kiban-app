@@ -162,6 +162,13 @@
                 }
             },
             checkIn() {
+                // A km below the vehicle's current one would be refused by the fleet: say it before sending.
+                const chosen = this.order.vehicles.find((v) => String(v.id) === String(this.vehicle));
+                if (this.km !== '' && chosen && parseInt(this.km, 10) < chosen.odometer) {
+                    this.problem = this.texts.km_lower.replace(':km', chosen.odometer);
+                    return;
+                }
+                this.problem = null;
                 this.locating = true;
                 const arriving = !this.order.checkedIn;
                 const send = async (coords) => {

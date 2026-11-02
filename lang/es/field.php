@@ -549,6 +549,7 @@ return [
         'arrival' => '1. Llegada',
         'arrival_help' => 'Toca cuando llegues al cliente. El sistema guarda la hora y el lugar.',
         'arrival_point_help' => 'Toca cuando llegues al cliente. Esta dirección todavía no tiene punto en el mapa: tu ubicación se convierte en el punto del cliente.',
+        'km_lower' => 'El km escrito es menor que el del vehículo (:km). Revise el tablero y escríbalo de nuevo.',
         'km' => 'Km del vehículo',
         'locating' => 'Buscando la ubicación...',
         'arrived' => 'Llegué',

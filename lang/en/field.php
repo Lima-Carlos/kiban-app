@@ -549,6 +549,7 @@ return [
         'arrival' => '1. Arrival',
         'arrival_help' => 'Tap when you arrive at the customer. The system keeps the time and the place.',
         'arrival_point_help' => 'Tap when you arrive at the customer. This address has no point on the map yet: your location becomes the customer\'s point.',
+        'km_lower' => 'The km you typed is lower than the vehicle's (:km). Check the dashboard and type it again.',
         'km' => 'Vehicle km',
         'locating' => 'Finding the location...',
         'arrived' => 'I arrived',
