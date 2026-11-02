@@ -284,6 +284,10 @@ return [
         'previous_year' => 'Previous year',
         'next_year' => 'Next year',
         'optional_help' => 'Good Friday, Carnival and Corpus Christi are chosen in',
+        'country_bring' => 'Bring my country\'s holidays',
+        'country_help' => 'Brings this year\'s and next year\'s national holidays from a public list. It is only a suggestion: check it against your country\'s law and fix anything wrong. Regional, state or city holidays are yours to register.',
+        'country_none' => 'No holidays found for your country (or no internet). Register them by hand.',
+        'country_done' => '{0} No new holidays.|{1} 1 holiday added. Check the list.|[2,*] :count holidays added. Check the list.',
         'no_national' => 'For companies outside Brazil, add your country\'s holidays below.',
         'national' => [
             'new_year' => 'New Year\'s Day',

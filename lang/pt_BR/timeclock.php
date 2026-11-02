@@ -284,6 +284,10 @@ return [
         'previous_year' => 'Ano anterior',
         'next_year' => 'Próximo ano',
         'optional_help' => 'A Sexta-feira Santa, o Carnaval e o Corpus Christi são escolhidos em',
+        'country_bring' => 'Trazer os feriados do meu país',
+        'country_help' => 'Traz os feriados nacionais deste ano e do próximo de uma lista pública. É só uma sugestão: confira com a lei do seu país e ajuste o que estiver errado. Feriados de uma região, estado ou cidade você cadastra à mão.',
+        'country_none' => 'Não encontramos feriados do seu país (ou sem internet). Cadastre à mão.',
+        'country_done' => '{0} Nenhum feriado novo.|{1} 1 feriado trazido. Confira na lista.|[2,*] :count feriados trazidos. Confira na lista.',
         'no_national' => 'Para empresas de fora do Brasil, cadastre abaixo os feriados do seu país.',
         'national' => [
             'new_year' => 'Confraternização Universal',

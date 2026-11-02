@@ -460,3 +460,6 @@ Explicação completa em `conexoes.md`.
 ## Home office (02/11/2026)
 Quem trabalha de casa usa a opção **"Trabalha fora do local (rua ou home office)"** na ficha do colaborador (a mesma do funcionário externo): bate o ponto pelo celular ou pelo computador, com selfie e localização gravadas, sem exigir local de trabalho nem raio, e com o comprovante de sempre. Em outra cidade, indique a "Cidade dos feriados". Para o advogado (veja `docs/planejamento/pesquisa-home-office-feriados.md` no Core): teletrabalho **por jornada** tem controle de ponto, extras e banco de horas; **por tarefa** pode ficar sem controle, mas isso depende do contrato. O Kiban não decide isso: a empresa confirma o tipo do contrato.
 
+## Feriados de outros países (02/11/2026)
+Para empresas fora do Brasil, em Ponto → Feriados aparece **"Trazer os feriados do meu país"** (`CountryHolidays`): traz os feriados nacionais deste ano e do próximo da lista pública Nager.Date (feriados só de uma região ficam de fora). É só uma sugestão: a empresa confere e ajusta; sem internet, nada é adicionado e ela cadastra à mão. As regras de jornada e hora extra de cada país ainda não são calculadas (hoje só a CLT do Brasil): anotado para análise antes de vender o Ponto lá fora.
+

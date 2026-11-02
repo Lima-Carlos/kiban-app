@@ -284,6 +284,10 @@ return [
         'previous_year' => 'Año anterior',
         'next_year' => 'Año siguiente',
         'optional_help' => 'El Viernes Santo, el Carnaval y el Corpus Christi se eligen en',
+        'country_bring' => 'Traer los feriados de mi país',
+        'country_help' => 'Trae los feriados nacionales de este año y del próximo de una lista pública. Es solo una sugerencia: compárela con la ley de su país y corrija lo que esté mal. Los feriados de una región, estado o ciudad se registran a mano.',
+        'country_none' => 'No encontramos feriados de su país (o no hay internet). Regístrelos a mano.',
+        'country_done' => '{0} Ningún feriado nuevo.|{1} 1 feriado agregado. Revise la lista.|[2,*] :count feriados agregados. Revise la lista.',
         'no_national' => 'Para empresas fuera de Brasil, registre abajo los feriados de su país.',
         'national' => [
             'new_year' => 'Año Nuevo',

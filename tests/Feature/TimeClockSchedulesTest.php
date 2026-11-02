@@ -17,6 +17,7 @@ use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\Services\CityHolidays;
+use App\Modules\TimeClock\Services\CountryHolidays;
 use App\Modules\TimeClock\Services\HolidayCalendar;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\ScheduleService;
@@ -246,6 +247,29 @@ class TimeClockSchedulesTest extends TestCase
         Http::swap(new HttpFactory);
         Http::fake(['*' => Http::response('', 500)]);
         $this->assertSame([], $service->suggestions($campinas, 2026));
+    }
+
+    public function test_holidays_of_a_country_outside_brazil_come_as_a_suggestion(): void
+    {
+        TimeClockSetting::current()->update(['country' => 'PT']);
+        Http::swap(new HttpFactory);
+        Http::fake(['date.nager.at/*' => Http::response([
+            ['date' => '2026-12-25', 'localName' => 'Natal', 'name' => 'Christmas Day', 'global' => true],
+            ['date' => '2026-06-24', 'localName' => 'São João', 'name' => 'Saint John', 'global' => false],
+        ])]);
+
+        $service = app(CountryHolidays::class);
+        $this->assertSame(['2026-12-25' => 'Natal'], $service->suggestions('PT', 2026));
+        $this->assertSame(1, $service->import('PT', 2026));
+        $this->assertSame(0, $service->import('PT', 2026)); // does not duplicate
+        $this->assertSame('Natal', app(HolidayCalendar::class)->holidayOn(CarbonImmutable::parse('2026-12-25')));
+
+        Livewire::test(ManageHolidays::class)->assertActionVisible('countryHolidays');
+
+        // Without internet nothing breaks.
+        Http::swap(new HttpFactory);
+        Http::fake(['*' => Http::response('', 500)]);
+        $this->assertSame([], $service->suggestions('PT', 2027));
     }
 
     public function test_calculation_rules_follow_the_profile(): void
