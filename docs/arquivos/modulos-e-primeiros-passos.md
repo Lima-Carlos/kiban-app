@@ -85,3 +85,12 @@
   - `resources/views/filament/module-switcher.blade.php` (a fileira de ícones);
   - coluna `tenant_user.current_module`: `database/migrations/2026_10_26_100000_add_current_module_to_tenant_user.php`;
   - testes: `tests/Feature/ModuleSwitcherTest.php`.
+
+## Ordem nova dos Primeiros Passos da Empresa (02/11/2026, pedido do dono)
+O cadastro do colaborador pede o horário e o local (Ponto) e os veículos (Frota). Por isso a ordem agora é:
+1. **Empresa**: identidade e equipes (as equipes não esperam mais os colaboradores; o cadastro escolhe a equipe);
+2. **as configurações de cada sistema**: Ponto (regras, locais, horários), Frota (veículos, postos), Campo (ramo, tipos de serviço, clientes), Agenda (ramo, serviços);
+3. **Colaboradores**: o cadastro (só abre quando os locais, os horários e os veículos já existem; o passo diz o que falta), depois quem bate ponto, motoristas, quem atende na Agenda e os documentos;
+4. **Integrações**.
+As dependências são conferidas na lista inteira (um passo pode esperar outro de outro grupo). Regras em `CompanyFirstSteps::PEOPLE_STEPS` e `PEOPLE_NEEDS`.
+

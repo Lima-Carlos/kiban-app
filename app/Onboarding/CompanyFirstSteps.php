@@ -27,20 +27,29 @@ use Illuminate\Database\Eloquent\Builder;
  * "Company first steps": when the company has two or more systems, the start page shows ONE list that joins the
  * first steps of all of them, in the recommended order (the customer does not have to choose where to start):
  *
- * 1. Company and People (identity, people, teams, documents): the single register every system uses;
- * 2. Ponto (rules, workplaces and work schedules, used by the Campo/Agenda calendars);
- * 3. Frota (vehicles and drivers, which receive the km of the Campo);
- * 4. Campo and Agenda (they use people, schedules and vehicles);
+ * 1. Company (identity and teams);
+ * 2. the settings of each system, which the register of the employees needs: Ponto (rules, workplaces, work
+ *    schedules), Frota (vehicles, stations), Campo and Agenda (business and services);
+ * 3. Employees: the register itself (it asks for the schedule, the workplace and the vehicles, so it comes after
+ *    them), then who clocks in, the drivers, the Agenda professionals and the documents;
  * and, to finish, "See how your systems help each other" (done when the "Integrations" page was opened).
  *
- * The steps of each system are the module's own Step definitions (Module::steps(), with their dependencies);
- * nothing is repeated here. With one system, the start page keeps the module's list as before.
+ * The steps of each system are the module's own Step definitions (Module::steps(), with their dependencies); the
+ * ones about people (PEOPLE_STEPS) move to the "Employees" group. Every dependency is checked over the whole
+ * list, so a step is only open when what it needs is done, wherever it is. With one system, the start page keeps
+ * the module's list as before.
  * Only for owners and administrators (who set the whole company up); a system manager keeps their own list.
  */
 class CompanyFirstSteps
 {
     /** Order of the systems in the combined list; others (e.g. the demonstration) go after them. */
     public const ORDER = [TimeClockModule::KEY, FleetModule::KEY, FieldModule::KEY, AgendaModule::KEY];
+
+    /** Steps of the systems that are done through the employees' register: they go to the "Employees" group. */
+    public const PEOPLE_STEPS = [TimeClockModule::KEY.'.employees', FleetModule::KEY.'.driver', AgendaModule::KEY.'.professionals'];
+
+    /** What the employees' register asks for, when the company has that system (system => steps). */
+    public const PEOPLE_NEEDS = [TimeClockModule::KEY => ['workplace', 'schedule'], FleetModule::KEY => ['vehicle']];
 
     /** Optional video at the top of the list: public/videos/por-onde-comecar-<lang>.mp4 ("Where to start"). */
     public const VIDEO = 'videos/por-onde-comecar';
@@ -60,29 +69,76 @@ class CompanyFirstSteps
      */
     public function groups(Tenant $tenant, User $user): array
     {
-        $groups = [[
-            'key' => 'company',
-            'title' => __('app.first_steps.company'),
-            'icon' => 'heroicon-o-building-office',
-            'steps' => Step::progress($this->companySteps($tenant), $tenant),
-        ]];
+        // [group key, title, icon] in order, and the steps of each group with keys unique in the whole list.
+        $groups = ['company' => [__('app.first_steps.company'), 'heroicon-o-building-office', []]];
+        $later = [];
+        $needs = [];
+
+        foreach ($this->companySteps($tenant) as $step) {
+            $groups['company'][2][] = $this->scoped('company', $step);
+        }
 
         foreach ($this->orderedModules($tenant) as $module) {
             if (! $module->showsSetupTo($user) || $module->steps() === []) {
                 continue;
             }
 
-            $groups[] = ['key' => $module->key(), 'title' => $module->name(), 'icon' => $module->icon(), 'steps' => $module->progress($tenant)];
+            $groups[$module->key()] = [$module->name(), $module->icon(), []];
+
+            foreach ($module->steps() as $step) {
+                $scoped = $this->scoped($module->key(), $step);
+                in_array($scoped->key, self::PEOPLE_STEPS, true) ? $later[] = $scoped : $groups[$module->key()][2][] = $scoped;
+            }
+
+            foreach (self::PEOPLE_NEEDS[$module->key()] ?? [] as $need) {
+                $needs[] = $module->key().'.'.$need;
+            }
         }
 
-        $groups[] = [
-            'key' => 'together',
-            'title' => __('app.first_steps.together'),
-            'icon' => 'heroicon-o-puzzle-piece',
-            'steps' => Step::progress([$this->integrationsStep()], $tenant),
-        ];
+        $groups['people'] = [__('app.first_steps.people_group'), 'heroicon-o-users', [
+            $this->scoped('people', $this->peopleStep($tenant), $needs),
+            ...array_map(fn (Step $step): Step => $this->withRequirement($step, 'people.people'), $later),
+            $this->scoped('people', $this->documentsStep(), ['people.people']),
+        ]];
+        $groups['together'] = [__('app.first_steps.together'), 'heroicon-o-puzzle-piece', [$this->scoped('together', $this->integrationsStep())]];
 
-        return $groups;
+        // Progress over the whole list (a step may wait for a step of another group), then split again.
+        $all = array_merge(...array_map(fn (array $group): array => $group[2], array_values($groups)));
+        $progress = collect(Step::progress($all, $tenant))->keyBy('key');
+        $result = [];
+
+        foreach ($groups as $key => [$title, $icon, $steps]) {
+            if ($steps === []) {
+                continue;
+            }
+
+            $result[] = ['key' => $key, 'title' => $title, 'icon' => $icon, 'steps' => array_map(function (Step $step) use ($progress): array {
+                $item = $progress[$step->key];
+                $item['key'] = str_contains($step->key, '.') ? substr($step->key, strpos($step->key, '.') + 1) : $step->key;
+
+                return $item;
+            }, $steps)];
+        }
+
+        return $result;
+    }
+
+    /** The same step with a key unique in the whole list ("ponto.rules"); its requirements follow (plus extra ones). */
+    protected function scoped(string $prefix, Step $step, array $extra = []): Step
+    {
+        return new Step(
+            key: $prefix.'.'.$step->key,
+            labelKey: $step->labelKey,
+            done: $step->done,
+            requires: [...array_map(fn (string $key): string => $prefix.'.'.$key, $step->requires), ...$extra],
+            url: $step->url,
+            descriptionKey: $step->descriptionKey,
+        );
+    }
+
+    protected function withRequirement(Step $step, string $key): Step
+    {
+        return new Step(key: $step->key, labelKey: $step->labelKey, done: $step->done, requires: [...$step->requires, $key], url: $step->url, descriptionKey: $step->descriptionKey);
     }
 
     /**
@@ -106,7 +162,7 @@ class CompanyFirstSteps
     }
 
     /**
-     * Company and People: what every system uses.
+     * Company: identity and teams (teams no longer wait for the employees: the register can pick a team).
      *
      * @return array<int, Step>
      */
@@ -121,32 +177,38 @@ class CompanyFirstSteps
                 url: fn (): string => CompanyProfilePage::getUrl(),
             ),
             new Step(
-                key: 'people',
-                labelKey: 'app.first_steps.people',
-                descriptionKey: 'app.first_steps.people_help',
-                // Someone besides the owners (who sign up the company).
-                done: fn (Tenant $tenant): bool => Person::query()
-                    ->where(fn (Builder $query) => $query->whereNull('user_id')->orWhereNotIn('user_id', $tenant->users()->wherePivot('role', User::ROLE_OWNER)->pluck('users.id')))
-                    ->exists(),
-                url: fn (): string => PeoplePage::getUrl(),
-            ),
-            new Step(
                 key: 'teams',
                 labelKey: 'app.first_steps.teams',
                 descriptionKey: 'app.first_steps.teams_help',
-                requires: ['people'],
                 done: fn (): bool => Team::query()->exists(),
                 url: fn (): string => TeamsPage::getUrl(),
             ),
-            new Step(
-                key: 'documents',
-                labelKey: 'app.first_steps.documents',
-                descriptionKey: 'app.first_steps.documents_help',
-                requires: ['people'],
-                done: fn (): bool => PersonDocument::query()->exists(),
-                url: fn (): string => DocumentsPage::getUrl(),
-            ),
         ];
+    }
+
+    /** "Register the employees": someone besides the owners (who signed up the company). */
+    public function peopleStep(Tenant $tenant): Step
+    {
+        return new Step(
+            key: 'people',
+            labelKey: 'app.first_steps.people',
+            descriptionKey: 'app.first_steps.people_help',
+            done: fn (Tenant $tenant): bool => Person::query()
+                ->where(fn (Builder $query) => $query->whereNull('user_id')->orWhereNotIn('user_id', $tenant->users()->wherePivot('role', User::ROLE_OWNER)->pluck('users.id')))
+                ->exists(),
+            url: fn (): string => PeoplePage::getUrl(),
+        );
+    }
+
+    public function documentsStep(): Step
+    {
+        return new Step(
+            key: 'documents',
+            labelKey: 'app.first_steps.documents',
+            descriptionKey: 'app.first_steps.documents_help',
+            done: fn (): bool => PersonDocument::query()->exists(),
+            url: fn (): string => DocumentsPage::getUrl(),
+        );
     }
 
     /** "See how your systems help each other": done when someone of the company opened the "Integrations" page. */

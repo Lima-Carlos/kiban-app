@@ -6,12 +6,10 @@ return [
     'steps' => [
         'business' => 'Escolha o seu ramo',
         'business_help' => 'Escolha o ramo só para trazer serviços prontos. A Agenda serve para qualquer empresa que atende com hora marcada (você muda tudo depois). Escolher de novo só acrescenta o que falta.',
-        'business_note' => 'Descreva o que a sua empresa faz',
-        'business_note_help' => 'Ex.: instalação e manutenção de ar-condicionado. Fica só para você lembrar; o cliente não vê.',
         'services' => 'Confira os serviços',
         'services_help' => 'Ajuste o tempo e o preço de cada porte (P, M, G, GG).',
         'professionals' => 'Cadastre quem atende',
-        'professionals_help' => 'Banhistas e tosadores: na tela Colaboradores, marque "Atende na Agenda". Depois ajuste horários e comissão.',
+        'professionals_help' => 'Quem atende os clientes: na tela Colaboradores, marque "Atende na Agenda". Depois ajuste horários e comissão.',
     ],
 
     'enums' => [
@@ -69,7 +67,7 @@ return [
     ],
 
     'people' => [
-        'attends' => 'Atende na Agenda (banhista, tosador...)',
+        'attends' => 'Atende na Agenda',
         'attends_help' => 'Aparece na agenda e no link de agendamento. Não precisa de login. Conta no limite de profissionais do plano.',
         'role' => 'Acesso à Agenda',
         'role_help' => 'Recepção: marca, remarca, lembra e vende pacotes. Profissional com login vê a própria agenda sozinho.',
@@ -208,7 +206,7 @@ return [
     'professionals' => [
         'singular' => 'profissional', 'plural' => 'profissionais', 'plural_title' => 'Profissionais',
         'new' => 'Novo profissional',
-        'empty' => 'Nenhum profissional', 'empty_help' => 'Em Colaboradores, marque "Atende na Agenda" para banhistas e tosadores.',
+        'empty' => 'Nenhum profissional', 'empty_help' => 'Em Colaboradores, marque "Atende na Agenda" para quem atende os clientes.',
         'setup' => 'Horários, serviços e comissão',
         'saved' => 'Profissional salvo',
         'week' => 'Horário da semana',
@@ -272,7 +270,9 @@ return [
     'settings' => [
         'title' => 'Configurações da Agenda',
         'business' => 'Ramo',
-        'business_help' => 'Traz os serviços prontos (você muda tudo depois). Escolher de novo só acrescenta o que falta.',
+        'business_help' => 'Escolha o ramo só para trazer serviços prontos. A Agenda serve para qualquer empresa que atende com hora marcada (você muda tudo depois). Escolher de novo só acrescenta o que falta.',
+        'business_note' => 'Descreva o que a sua empresa faz',
+        'business_note_help' => 'Ex.: instalação e manutenção de ar-condicionado. Fica só para você lembrar; o cliente não vê.',
         'online' => 'Link de agendamento',
         'online_help' => 'O cliente marca sozinho, pelo celular, nos horários livres.',
         'online_booking' => 'Aceitar agendamentos pelo link',

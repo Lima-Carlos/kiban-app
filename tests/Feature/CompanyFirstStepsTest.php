@@ -40,15 +40,23 @@ class CompanyFirstStepsTest extends TestCase
 
         $this->assertTrue($service->applies($tenant, $owner));
         $groups = $service->groups($tenant, $owner);
-        $this->assertSame(['company', 'ponto', 'frota', 'campo', 'agenda', 'together'], array_column($groups, 'key'));
-        $this->assertSame(['identity', 'people', 'teams', 'documents'], array_column($groups[0]['steps'], 'key'));
-        $this->assertSame(['integrations'], array_column($groups[5]['steps'], 'key'));
+        // Settings of every system first, then the employees (the register asks for schedule, workplace, vehicles).
+        $this->assertSame(['company', 'ponto', 'frota', 'campo', 'agenda', 'people', 'together'], array_column($groups, 'key'));
+        $this->assertSame(['identity', 'teams'], array_column($groups[0]['steps'], 'key'));
+        $this->assertSame(['people', 'employees', 'driver', 'professionals', 'documents'], array_column($groups[5]['steps'], 'key'));
+        $this->assertSame(['integrations'], array_column($groups[6]['steps'], 'key'));
 
         // The steps of each system are the module's own (with their dependencies): the Ponto's workplace waits for the rules.
         $clock = collect($groups[1]['steps'])->keyBy('key');
-        $this->assertSame(['rules', 'workplace', 'schedule', 'employees'], $clock->keys()->all());
+        $this->assertSame(['rules', 'workplace', 'schedule'], $clock->keys()->all());
         $this->assertFalse($clock['workplace']['available']);
-        $this->assertFalse(collect($groups[0]['steps'])->keyBy('key')['teams']['available']);
+        $this->assertTrue(collect($groups[0]['steps'])->keyBy('key')['teams']['available']);
+
+        // The register waits for what its form needs, even from other groups, and says what is missing.
+        $people = collect($groups[5]['steps'])->keyBy('key');
+        $this->assertFalse($people['people']['available']);
+        $this->assertEqualsCanonicalizing([__('timeclock.steps.workplace'), __('timeclock.steps.schedule'), __('fleet.steps.vehicle')], $people['people']['missing']);
+        $this->assertSame([__('app.first_steps.people')], $people['documents']['missing']);
 
         // One list on the start page, whatever system is chosen at the top, and no separate list of the system.
         $total = collect($groups)->sum(fn (array $group): int => count($group['steps']));
@@ -61,6 +69,7 @@ class CompanyFirstStepsTest extends TestCase
                 'data-steps-group="frota"', __('fleet.steps.vehicle'),
                 'data-steps-group="campo"', __('field.steps.business'),
                 'data-steps-group="agenda"', __('agenda.steps.business'),
+                'data-steps-group="people"', __('app.first_steps.people'),
                 'data-steps-group="together"', __('app.first_steps.integrations'),
             ], false)
             ->assertDontSee('data-company-steps-video', false);
@@ -132,7 +141,7 @@ class CompanyFirstStepsTest extends TestCase
         foreach (['pt_BR', 'en', 'es'] as $locale) {
             app()->setLocale($locale);
 
-            foreach (['title', 'help', 'video', 'company', 'together', 'identity', 'identity_help', 'people', 'people_help', 'teams', 'teams_help', 'documents', 'documents_help', 'integrations', 'integrations_help', 'guide', 'back', 'next'] as $key) {
+            foreach (['title', 'help', 'video', 'company', 'together', 'identity', 'identity_help', 'people', 'people_help', 'teams', 'teams_help', 'documents', 'documents_help', 'integrations', 'integrations_help', 'guide', 'back', 'next', 'people_group'] as $key) {
                 $this->assertNotSame('app.first_steps.'.$key, __('app.first_steps.'.$key));
             }
         }

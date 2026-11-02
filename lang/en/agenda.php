@@ -6,12 +6,10 @@ return [
     'steps' => [
         'business' => 'Choose your type of business',
         'business_help' => 'Pick the business only to bring ready services. Appointments works for any company that serves by appointment (you change everything later). Choosing again only adds what is missing.',
-        'business_note' => 'Describe what your company does',
-        'business_note_help' => 'E.g. air-conditioning installation and maintenance. Only for your own reference; clients do not see it.',
         'services' => 'Check your services',
         'services_help' => 'Adjust the time and price for each size (S, M, L, XL).',
         'professionals' => 'Add the people who work with pets',
-        'professionals_help' => 'Bathers and groomers: on the Employees screen, check "Works in Appointments". Then set their hours and commission.',
+        'professionals_help' => 'Who serves the clients: on the Employees screen, check "Works in Appointments". Then set their hours and commission.',
     ],
 
     'enums' => [
@@ -69,7 +67,7 @@ return [
     ],
 
     'people' => [
-        'attends' => 'Works in Appointments (bather, groomer...)',
+        'attends' => 'Works in Appointments',
         'attends_help' => 'Shown on the schedule and the booking link. No login needed. Counts toward your plan\'s limit of professionals.',
         'role' => 'Access to Appointments',
         'role_help' => 'Front desk: books, reschedules, sends reminders and sells packages. A professional with a login sees only their own schedule.',
@@ -208,7 +206,7 @@ return [
     'professionals' => [
         'singular' => 'professional', 'plural' => 'professionals', 'plural_title' => 'Professionals',
         'new' => 'New professional',
-        'empty' => 'No professionals', 'empty_help' => 'In Employees, check "Works in Appointments" for bathers and groomers.',
+        'empty' => 'No professionals', 'empty_help' => 'In Employees, check "Works in Appointments" for who serves the clients.',
         'setup' => 'Hours, services and commission',
         'saved' => 'Professional saved',
         'week' => 'Weekly hours',
@@ -272,7 +270,9 @@ return [
     'settings' => [
         'title' => 'Appointments Settings',
         'business' => 'Type of business',
-        'business_help' => 'Brings in ready-made services (you can change everything later). Choosing again only adds what is missing.',
+        'business_help' => 'Pick the business only to bring ready services. Appointments works for any company that serves by appointment (you change everything later). Choosing again only adds what is missing.',
+        'business_note' => 'Describe what your company does',
+        'business_note_help' => 'E.g. air-conditioning installation and maintenance. Only for your own reference; clients do not see it.',
         'online' => 'Booking link',
         'online_help' => 'Clients book on their own, from their phone, in the free times.',
         'online_booking' => 'Accept bookings through the link',

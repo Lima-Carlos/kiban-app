@@ -6,12 +6,10 @@ return [
     'steps' => [
         'business' => 'Elige tu rubro',
         'business_help' => 'Elija el rubro solo para traer servicios listos. La Agenda sirve para cualquier empresa que atiende con cita (usted cambia todo después). Elegir de nuevo solo agrega lo que falta.',
-        'business_note' => 'Describa a qué se dedica su empresa',
-        'business_note_help' => 'Ej.: instalación y mantenimiento de aire acondicionado. Solo para su referencia; el cliente no lo ve.',
         'services' => 'Revisa los servicios',
         'services_help' => 'Ajusta el tiempo y el precio de cada tamaño (P, M, G, GG).',
         'professionals' => 'Registra a quienes atienden',
-        'professionals_help' => 'Bañadores y peluqueros: en la pantalla Empleados, marca "Atiende en la Agenda". Luego ajusta horarios y comisión.',
+        'professionals_help' => 'Quien atiende a los clientes: en la pantalla Empleados, marca "Atiende en la Agenda". Luego ajusta horarios y comisión.',
     ],
 
     'enums' => [
@@ -69,7 +67,7 @@ return [
     ],
 
     'people' => [
-        'attends' => 'Atiende en la Agenda (bañador, peluquero...)',
+        'attends' => 'Atiende en la Agenda',
         'attends_help' => 'Aparece en la agenda y en el enlace de reservas. No necesita usuario. Cuenta en el límite de profesionales del plan.',
         'role' => 'Acceso a la Agenda',
         'role_help' => 'Recepción: agenda, reprograma, recuerda y vende paquetes. El profesional con usuario ve solo su propia agenda.',
@@ -208,7 +206,7 @@ return [
     'professionals' => [
         'singular' => 'profesional', 'plural' => 'profesionales', 'plural_title' => 'Profesionales',
         'new' => 'Nuevo profesional',
-        'empty' => 'Ningún profesional', 'empty_help' => 'En Empleados, marca "Atiende en la Agenda" para bañadores y peluqueros.',
+        'empty' => 'Ningún profesional', 'empty_help' => 'En Empleados, marca "Atiende en la Agenda" para quien atiende a los clientes.',
         'setup' => 'Horarios, servicios y comisión',
         'saved' => 'Profesional guardado',
         'week' => 'Horario de la semana',
@@ -272,7 +270,9 @@ return [
     'settings' => [
         'title' => 'Configuración de la agenda',
         'business' => 'Rubro',
-        'business_help' => 'Trae los servicios listos (puedes cambiar todo después). Elegir de nuevo solo agrega lo que falta.',
+        'business_help' => 'Elija el rubro solo para traer servicios listos. La Agenda sirve para cualquier empresa que atiende con cita (usted cambia todo después). Elegir de nuevo solo agrega lo que falta.',
+        'business_note' => 'Describa a qué se dedica su empresa',
+        'business_note_help' => 'Ej.: instalación y mantenimiento de aire acondicionado. Solo para su referencia; el cliente no lo ve.',
         'online' => 'Enlace de reservas',
         'online_help' => 'El cliente agenda solo, desde el celular, en los horarios libres.',
         'online_booking' => 'Aceptar reservas por el enlace',

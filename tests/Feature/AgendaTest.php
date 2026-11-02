@@ -138,6 +138,8 @@ class AgendaTest extends TestCase
 
         Livewire::test(AgendaSettingsPage::class)
             ->fillForm(['business' => 'none', 'business_note' => 'Instalação de ar-condicionado'])
+            // The field shows its text, never the translation key.
+            ->assertSee(__('agenda.settings.business_note'))->assertDontSee('agenda.settings.business_note')
             ->call('save')->assertHasNoErrors();
         $this->assertSame('Instalação de ar-condicionado', AgendaSetting::current()->business_note);
 
