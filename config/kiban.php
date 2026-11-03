@@ -2,6 +2,7 @@
 
 use App\Modules\Agenda\AgendaModule;
 use App\Modules\Demo\DemoModule;
+use App\Modules\Pmoc\PmocModule;
 use App\Modules\Rotina\RotinaModule;
 use App\Modules\Field\FieldModule;
 use App\Modules\Fleet\FleetModule;
@@ -49,6 +50,7 @@ return [
         FieldModule::class,
         AgendaModule::class,
         RotinaModule::class,
+        PmocModule::class,
     ],
 
     /*

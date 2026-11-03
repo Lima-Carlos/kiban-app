@@ -25,6 +25,9 @@ class WorkOrder extends Model
 
     public const QUOTE = 'quote';
 
+    /** Opened by a preventive maintenance plan (Kiban Core PMOC). */
+    public const PMOC = 'pmoc';
+
     protected $table = 'fd_orders';
 
     protected $guarded = ['*'];

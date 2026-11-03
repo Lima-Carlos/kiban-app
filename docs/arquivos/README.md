@@ -20,3 +20,4 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [cursos.md](cursos.md): cursos e treinamentos (parte dos documentos): quem precisa de cada curso, "falta fazer", a tabela pessoas × cursos, próximas renovações, lançar turma e o comprovante de cursos em PDF.
 - [epi.md](epi.md): EPI e ferramentas das pessoas (catálogo com CA, vida útil e estoque, entrega assinada com o dedo no celular, devolução e troca, ficha da NR-6 em PDF, avisos no sino e a ligação com o Campo).
 - [rotina.md](rotina.md): o módulo Kiban Core Rotina (tarefas do dia e horas por projeto).
+- [pmoc.md](pmoc.md): o Kiban Core PMOC (planos de manutenção preventiva, visitas que viram OS e o documento em PDF).

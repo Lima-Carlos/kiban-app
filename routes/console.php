@@ -26,3 +26,6 @@ Schedule::command('kiban:documents')->dailyAt('10:00')->withoutOverlapping();
 
 // PPE and tools: replacements, CA, deliveries waiting for the signature and low stock (07:10 in Brasília).
 Schedule::command('kiban:epi')->dailyAt('10:10')->withoutOverlapping();
+
+// PMOC: opens the work orders of the preventive maintenance visits that are due.
+Schedule::command('kiban:pmoc')->dailyAt('06:15')->withoutOverlapping();
