@@ -69,3 +69,8 @@ O comando `kiban:video-demo` marca todas as conexões como vistas para as contas
 ## Vídeo com play (02/11/2026)
 O cartão da integração mostra a imagem de capa com o selo do par de sistemas (ex.: "Campo + Frota") e um botão de play. Ao clicar, o vídeo abre numa janela grande no meio da tela, com som, sem repetir, e com "Ver no YouTube" quando houver o link do vídeo de treinamento (`config/kiban.php` → `connection_youtube`: chave da integração → idioma → link; preencher quando cada vídeo for publicado). Peças: `resources/views/filament/connection-media.blade.php` e `Connection::youtubeUrl()`.
 
+## Ligações novas (03/11/2026)
+- **Campo + Estoque** (`stock_field`): o material lançado na OS sai do estoque do carro do técnico.
+- **Campo + PMOC** (`pmoc_field`): as visitas dos planos viram OS sozinhas, com as tarefas do período.
+- **Rotina + Ponto** (`rotina_clock`): a jornada do Ponto ao lado das horas por projeto no resumo do mês.
+

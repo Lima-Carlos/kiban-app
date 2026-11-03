@@ -29,6 +29,18 @@ return [
         'plans' => 'Conhecer o :system e os planos',
     ],
     'items' => [
+        'stock_field' => [
+            'title' => 'O material da OS sai do carro do técnico',
+            'body' => 'O que o técnico lança na ordem de serviço sai sozinho do estoque do carro dele. Se o material for tirado da OS, volta. O almoxarifado vê o que cada técnico tem e o que está acabando.',
+        ],
+        'pmoc_field' => [
+            'title' => 'As visitas do PMOC viram ordens de serviço sozinhas',
+            'body' => 'Alguns dias antes de cada visita do plano, a OS aparece no Campo com as tarefas do mês, do trimestre, do semestre ou do ano. O técnico faz pelo celular e o histórico vai para o documento do PMOC.',
+        ],
+        'rotina_clock' => [
+            'title' => 'Jornada do Ponto ao lado das horas por projeto',
+            'body' => 'No resumo do mês da Rotina, cada colaborador que bate ponto mostra a jornada do Ponto e quanto dela foi lançado em projetos.',
+        ],
         'punch_reminder' => [
             'title' => 'Lembrete do ponto na primeira e na última OS',
             'body' => 'Ao tocar em "Cheguei" na primeira OS do dia sem ter batido a entrada, o técnico vê "Bater a entrada agora?". Ao concluir a última OS, vem o lembrete da saída. A batida continua sendo do funcionário, com selfie e local.',

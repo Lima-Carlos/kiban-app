@@ -19,6 +19,13 @@ use App\Modules\Fleet\Filament\Inspections\InspectionResource;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Module;
+use App\Modules\Pmoc\Filament\Plans\PlanResource;
+use App\Modules\Pmoc\PmocModule;
+use App\Modules\Rotina\Filament\SummaryPage;
+use App\Modules\Rotina\RotinaModule;
+use App\Modules\Stock\Filament\Balances\BalanceResource;
+use App\Modules\Stock\Filament\MyStockPage;
+use App\Modules\Stock\StockModule;
 use App\Modules\ModuleArrivals;
 use App\Modules\ModuleRegistry;
 use App\Modules\TimeClock\Filament\Punches\PunchResource;
@@ -70,6 +77,9 @@ class ConnectionCatalog
         $fleet = FleetModule::KEY;
         $clock = TimeClockModule::KEY;
         $agenda = AgendaModule::KEY;
+        $stock = StockModule::KEY;
+        $pmoc = PmocModule::KEY;
+        $rotina = RotinaModule::KEY;
 
         $list = [
             // Campo + Ponto (O7): "you have not clocked in yet" at the first order, "clock out" after the last one.
@@ -126,6 +136,21 @@ class ConnectionCatalog
             new Connection('agenda_clock', [$agenda, $clock], 'heroicon-o-finger-print',
                 audience: fn (User $user): bool => $this->is($user, $agenda, 'manager', 'desk') || $this->is($user, $clock, 'manager'),
                 url: fn (User $user): string => $this->is($user, $agenda, 'manager', 'desk') ? CalendarPage::getUrl() : PunchResource::getUrl('index'),
+            ),
+            // Campo + Estoque: a material written down on a work order leaves the technician's own stock.
+            new Connection('stock_field', [$field, $stock], 'heroicon-o-archive-box',
+                audience: fn (User $user): bool => $this->is($user, $stock, 'manager', 'technician') || $this->is($user, $field, 'manager'),
+                url: fn (User $user): string => $this->is($user, $stock, 'technician') && MyStockPage::canAccess() ? MyStockPage::getUrl() : BalanceResource::getUrl('index'),
+            ),
+            // Campo + PMOC: the visits of the maintenance plans become work orders by themselves, with the period's tasks.
+            new Connection('pmoc_field', [$field, $pmoc], 'heroicon-o-clipboard-document-list',
+                audience: fn (User $user): bool => $this->is($user, $pmoc, 'manager') || $this->is($user, $field, 'manager', 'dispatcher'),
+                url: fn (): string => PlanResource::getUrl('index'),
+            ),
+            // Rotina + Ponto: the hours clocked next to the hours logged on projects, in the month summary.
+            new Connection('rotina_clock', [$rotina, $clock], 'heroicon-o-clock',
+                audience: fn (User $user): bool => $this->is($user, $rotina, 'manager') || $this->is($user, $clock, 'manager'),
+                url: fn (): string => SummaryPage::getUrl(),
             ),
             // Any pair: one register of people, one login, profiles that give two systems at once.
             new Connection('one_person', [$fleet, $clock, $field, $agenda], 'heroicon-o-users',

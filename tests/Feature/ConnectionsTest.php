@@ -212,9 +212,12 @@ class ConnectionsTest extends TestCase
 
         $this->assertSame(['documents_training', 'epi_field', 'one_person', 'punch_reminder', 'utilization'], $this->sortedKeys($catalog->active()));
 
-        // With the Frota, four more would start working by themselves; with the Agenda, two.
+        // With the Frota, four more would start working by themselves; with the Agenda, two; Rotina, PMOC, Estoque, one each.
         $potential = $catalog->potential();
-        $this->assertSame(['frota', 'agenda'], array_keys($potential));
+        $this->assertSame(['frota', 'agenda', 'rotina', 'pmoc', 'estoque'], array_keys($potential));
+        $this->assertSame(['pmoc_field'], $this->sortedKeys($potential['pmoc']['connections']));
+        $this->assertSame(['stock_field'], $this->sortedKeys($potential['estoque']['connections']));
+        $this->assertSame(['rotina_clock'], $this->sortedKeys($potential['rotina']['connections']));
         $this->assertSame(['agenda_clock', 'agenda_pickup'], $this->sortedKeys($potential['agenda']['connections']));
         $this->assertSame(['documents_license', 'field_km_to_fleet', 'inspection_after_punch', 'travel_cost'], $this->sortedKeys($potential['frota']['connections']));
 

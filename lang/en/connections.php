@@ -29,6 +29,18 @@ return [
         'plans' => 'Learn about :system and the plans',
     ],
     'items' => [
+        'stock_field' => [
+            'title' => 'Work order materials leave the technician\'s vehicle',
+            'body' => 'What the technician writes down on the work order leaves their own stock by itself. If the material is removed from the order, it comes back. The warehouse sees what each technician has and what is running out.',
+        ],
+        'pmoc_field' => [
+            'title' => 'Maintenance plan visits become work orders by themselves',
+            'body' => 'Some days before each visit of the plan, the work order shows up in the Field with the tasks of the month, quarter, half-year or year. The technician does it on the phone and the history goes into the plan document.',
+        ],
+        'rotina_clock' => [
+            'title' => 'Clocked hours next to the hours per project',
+            'body' => 'In the Daily Log month summary, each employee who clocks in shows the hours from Time Clock and how much of it was logged on projects.',
+        ],
         'punch_reminder' => [
             'title' => 'Time clock reminder at the first and the last work order',
             'body' => 'When tapping "I arrived" at the first work order of the day without clocking in, the technician sees "Clock in now?". After finishing the last work order, the reminder to clock out shows up. Clocking in is still done by the employee, with the selfie and the location.',

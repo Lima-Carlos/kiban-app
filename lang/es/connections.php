@@ -29,6 +29,18 @@ return [
         'plans' => 'Conocer :system y los planes',
     ],
     'items' => [
+        'stock_field' => [
+            'title' => 'El material de la orden sale del vehículo del técnico',
+            'body' => 'Lo que el técnico registra en la orden de servicio sale solo de su inventario. Si el material se quita de la orden, vuelve. El almacén ve lo que tiene cada técnico y lo que se está acabando.',
+        ],
+        'pmoc_field' => [
+            'title' => 'Las visitas del plan de mantenimiento se vuelven órdenes solas',
+            'body' => 'Unos días antes de cada visita del plan, la orden aparece en Campo con las tareas del mes, trimestre, semestre o año. El técnico la hace en el celular y el historial va al documento del plan.',
+        ],
+        'rotina_clock' => [
+            'title' => 'Jornada de Control Horario junto a las horas por proyecto',
+            'body' => 'En el resumen del mes del Registro Diario, cada empleado que marca horario muestra la jornada de Control Horario y cuánto de ella se registró en proyectos.',
+        ],
         'punch_reminder' => [
             'title' => 'Recordatorio de la marcación en la primera y la última orden',
             'body' => 'Al tocar "Llegué" en la primera orden del día sin haber marcado la entrada, el técnico ve "¿Marcar la entrada ahora?". Al terminar la última orden, aparece el recordatorio de la salida. La marcación la sigue haciendo el empleado, con selfie y ubicación.',
