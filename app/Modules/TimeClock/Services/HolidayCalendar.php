@@ -48,6 +48,10 @@ class HolidayCalendar
     {
         $settings ??= TimeClockSetting::current();
 
+        if (strtoupper((string) $settings->country) === 'MX') {
+            return $this->mexico($year);
+        }
+
         if (strtoupper((string) $settings->country) !== 'BR') {
             return [];
         }
@@ -74,6 +78,36 @@ class HolidayCalendar
         ksort($days);
 
         return $days;
+    }
+
+    /**
+     * Mexico's mandatory days off (Ley Federal del Trabajo, art. 74): fixed dates, three Mondays and, every six
+     * years, the 1st of October of the presidential inauguration (2024, 2030...). Election days are set by the
+     * electoral calendar: the company registers them.
+     *
+     * @return array<string, string>
+     */
+    public function mexico(int $year): array
+    {
+        $monday = fn (int $month, int $nth): string => CarbonImmutable::create($year, $month, 1)->modify('first monday of this month')->addWeeks($nth - 1)->toDateString();
+
+        $days = [
+            sprintf('%04d-01-01', $year) => 'mx_new_year',
+            $monday(2, 1) => 'mx_constitution',
+            $monday(3, 3) => 'mx_juarez',
+            sprintf('%04d-05-01', $year) => 'mx_labor_day',
+            sprintf('%04d-09-16', $year) => 'mx_independence',
+            $monday(11, 3) => 'mx_revolution',
+            sprintf('%04d-12-25', $year) => 'mx_christmas',
+        ];
+
+        if ($year >= 2024 && ($year - 2024) % 6 === 0) {
+            $days[sprintf('%04d-10-01', $year)] = 'mx_inauguration';
+        }
+
+        ksort($days);
+
+        return array_map(fn (string $key): string => __('timeclock.holidays.national.'.$key), $days);
     }
 
     /**

@@ -23,7 +23,7 @@ class ManageHolidays extends ModuleRecordsPage
                 ->label(__('timeclock.holidays.country_bring'))
                 ->icon(Heroicon::OutlinedGlobeAlt)
                 ->color('gray')
-                ->visible(fn (): bool => strtoupper((string) TimeClockSetting::current()->country) !== 'BR')
+                ->visible(fn (): bool => ! in_array(strtoupper((string) TimeClockSetting::current()->country), ['BR', 'MX'], true))
                 ->authorize(fn (): bool => auth()->user()?->can('create', Holiday::class) ?? false)
                 ->requiresConfirmation()
                 ->modalDescription(__('timeclock.holidays.country_help'))

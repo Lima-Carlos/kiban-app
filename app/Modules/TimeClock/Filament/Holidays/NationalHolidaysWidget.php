@@ -42,7 +42,14 @@ class NationalHolidaysWidget extends Widget
         return app(HolidayCalendar::class)->national($this->year);
     }
 
+    /** Countries whose national holidays are calculated (nothing to register). */
     public function isBrazil(): bool
+    {
+        return in_array(strtoupper((string) TimeClockSetting::current()->country), ['BR', 'MX'], true);
+    }
+
+    /** Only Brazil has optional days off (Carnival, Good Friday, Corpus Christi). */
+    public function hasOptional(): bool
     {
         return strtoupper((string) TimeClockSetting::current()->country) === 'BR';
     }

@@ -19,10 +19,12 @@
                 @endforeach
             </div>
             {{-- A real button (readable on the dark theme too), not a small dark-blue link at the bottom. --}}
+            @if ($this->hasOptional())
             <div data-optional-holidays style="margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid rgba(127,127,127,.3);display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center">
                 <span style="flex:1 1 260px;font-size:14px;line-height:1.45">{{ __('timeclock.holidays.optional_help') }}</span>
                 <x-filament::button tag="a" :href="$this->settingsUrl()" icon="heroicon-m-adjustments-horizontal" size="md">{{ __('timeclock.holidays.optional_button') }}</x-filament::button>
             </div>
+            @endif
         @else
             <p style="opacity:.8">{{ __('timeclock.holidays.no_national') }}</p>
         @endif

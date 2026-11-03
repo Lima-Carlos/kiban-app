@@ -469,3 +469,12 @@ O campo "Cidade dos feriados" (local de trabalho, colaborador e feriado) busca q
 ## Foto na batida: a empresa escolhe (02/11/2026)
 Em Configurações do Ponto → Fotos e privacidade: "Foto (selfie) ao bater pelo celular" e "Foto ao bater no tablet da empresa", separados (ligados por padrão). Desligado, a batida vale só com a hora e o local (celular) ou com o código (tablet): não abre a câmera, não mostra o aviso de privacidade e não marca "sem foto". Regra em `PhotoNoticeService::photosOn()`; migração `2026_11_11_100000_add_punch_photo_choices_to_tc_settings.php`.
 
+## Perfil México (03/11/2026)
+Empresa no México (país MX) ganha o perfil **"México (Lei Federal do Trabalho)"** (`LaborProfile::MexicoLft`):
+- horas extras com no mínimo **100%** (pagas em dobro) e dia de descanso ou feriado trabalhado com no mínimo **200%** (LFT arts. 67, 73 e 75); a empresa pode melhorar, nunca ficar abaixo;
+- horário noturno fixo das **20h às 6h** (art. 60), sem hora noturna reduzida;
+- **sem banco de horas** (no México toda hora extra é paga);
+- **feriados obrigatórios calculados** (art. 74): 1/1, 1ª segunda de fevereiro, 3ª segunda de março, 1/5, 16/9, 3ª segunda de novembro, 25/12 e, a cada 6 anos, 1/10 (posse presidencial: 2024, 2030...). Dias de eleição a empresa cadastra.
+
+**Ainda não calculado (anotado para o advogado e o contador do México):** a partir da 10ª hora extra na semana o pagamento é triplo (art. 68); a prima dominical de 25% para quem trabalha no domingo (art. 71); a redução gradual da jornada para 40 horas e as regras exatas do registro eletrônico da jornada que começa em 2027. O texto do perfil avisa sobre a hora extra tripla.
+

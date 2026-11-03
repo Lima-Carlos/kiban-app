@@ -67,12 +67,14 @@ class TimeClockSetting extends Model
     {
         $country = Country::current();
 
+        $profile = LaborProfile::forCountry($country);
+
         return static::query()->first() ?? static::create([
             'country' => $country,
-            'labor_profile' => LaborProfile::forCountry($country),
+            'labor_profile' => $profile,
             // The 52m30s night hour is Brazilian.
             'night_reduced_hour' => Country::isBrazil($country),
-        ]);
+        ] + $profile->defaults());
     }
 
     /** Brazilian rules: CPF and PIS required, official files, CLT values. */

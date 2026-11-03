@@ -122,16 +122,22 @@ class TimeClockSettingsPage extends Page
                             ->options(collect(LaborProfile::cases())->mapWithKeys(fn (LaborProfile $profile): array => [$profile->value => $profile->getLabel()])->all())
                             ->descriptions(collect(LaborProfile::cases())->mapWithKeys(fn (LaborProfile $profile): array => [$profile->value => __('timeclock.enums.labor_profile_help.'.$profile->value)])->all())
                             ->required()
-                            ->live(),
+                            ->live()
+                            // Choosing a country's profile fills in the law's values (the company may then improve them).
+                            ->afterStateUpdated(function (?string $state, $set): void {
+                                foreach (LaborProfile::tryFrom((string) $state)?->defaults() ?? [] as $field => $value) {
+                                    $set($field, $value);
+                                }
+                            }),
                     ]),
                 Section::make(__('timeclock.settings.calculation'))
-                    ->description(fn (Get $get): string => $this->isBrazil($get) ? __('timeclock.settings.calculation_help_br') : __('timeclock.settings.calculation_help'))
+                    ->description(fn (Get $get): string => match ($this->profile($get)) { LaborProfile::BrazilClt => __('timeclock.settings.calculation_help_br'), LaborProfile::MexicoLft => __('timeclock.settings.calculation_help_mx'), default => __('timeclock.settings.calculation_help') })
                     ->columns(['default' => 1, 'sm' => 2])
                     ->components([
                         $this->percent('overtime_percent', 'overtime_percent'),
                         $this->percent('rest_day_overtime_percent', 'rest_day_overtime_percent'),
-                        TimeInput::make('night_start')->label(__('timeclock.settings.night_start'))->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
-                        TimeInput::make('night_end')->label(__('timeclock.settings.night_end'))->required()->disabled(fn (Get $get): bool => $this->isBrazil($get)),
+                        TimeInput::make('night_start')->label(__('timeclock.settings.night_start'))->required()->disabled(fn (Get $get): bool => $this->profile($get)->fixedNight()),
+                        TimeInput::make('night_end')->label(__('timeclock.settings.night_end'))->required()->disabled(fn (Get $get): bool => $this->profile($get)->fixedNight()),
                         $this->percent('night_percent', 'night_percent'),
                         Toggle::make('night_reduced_hour')
                             ->label(__('timeclock.settings.night_reduced_hour'))
@@ -148,12 +154,13 @@ class TimeClockSettingsPage extends Page
                         Toggle::make('hour_bank')
                             ->label(__('timeclock.settings.hour_bank'))
                             ->helperText(__('timeclock.settings.hour_bank_help'))
+                            ->visible(fn (Get $get): bool => $this->profile($get)->allowsHourBank())
                             ->live(),
                         Select::make('hour_bank_months')
                             ->label(__('timeclock.settings.hour_bank_months'))
                             ->options(fn (Get $get): array => collect($this->isBrazil($get) ? [6, 12] : range(1, 12))->mapWithKeys(fn (int $months): array => [$months => trans_choice('timeclock.settings.months', $months, ['count' => $months])])->all())
                             ->helperText(fn (Get $get): ?string => $this->isBrazil($get) ? __('timeclock.settings.hour_bank_months_help_br') : null)
-                            ->visible(fn (Get $get): bool => (bool) $get('hour_bank'))
+                            ->visible(fn (Get $get): bool => (bool) $get('hour_bank') && $this->profile($get)->allowsHourBank())
                             ->required(),
                     ]),
                 Section::make(__('timeclock.settings.optional_holidays'))
@@ -213,13 +220,18 @@ class TimeClockSettingsPage extends Page
             ->suffix('%')
             ->required()
             ->maxValue(400)
-            ->minValue(fn (Get $get): int => $this->isBrazil($get) ? TimeClockSetting::LEGAL[$field] : 0)
-            ->helperText(fn (Get $get): ?string => $this->isBrazil($get) ? __('timeclock.settings.legal_minimum', ['value' => TimeClockSetting::LEGAL[$field]]) : null);
+            ->minValue(fn (Get $get): int => (int) ($this->profile($get)->legal()[$field] ?? 0))
+            ->helperText(fn (Get $get): ?string => isset($this->profile($get)->legal()[$field]) ? __('timeclock.settings.legal_minimum', ['value' => $this->profile($get)->legal()[$field]]) : null);
     }
 
     protected function isBrazil(Get $get): bool
     {
         return $get('labor_profile') === LaborProfile::BrazilClt->value;
+    }
+
+    protected function profile(Get $get): LaborProfile
+    {
+        return LaborProfile::tryFrom((string) $get('labor_profile')) ?? LaborProfile::Custom;
     }
 
     public function content(Schema $schema): Schema
@@ -246,9 +258,16 @@ class TimeClockSettingsPage extends Page
         $settings = TimeClockSetting::current();
         $rules = collect($state)->only(static::RULE_FIELDS)->all();
 
-        // Brazil (CLT): night hours and the reduced hour are the law's.
-        if ($state['labor_profile'] === LaborProfile::BrazilClt->value) {
-            $rules = ['night_start' => TimeClockSetting::LEGAL['night_start'], 'night_end' => TimeClockSetting::LEGAL['night_end'], 'night_reduced_hour' => true] + $rules;
+        // Brazil (CLT) and Mexico (LFT): night hours are the law's; Brazil has the reduced hour, Mexico no hour bank.
+        $profile = LaborProfile::from($state['labor_profile']);
+
+        if ($profile->fixedNight()) {
+            $legal = $profile->legal();
+            $rules = ['night_start' => $legal['night_start'], 'night_end' => $legal['night_end'], 'night_reduced_hour' => $profile === LaborProfile::BrazilClt] + $rules;
+        }
+
+        if (! $profile->allowsHourBank()) {
+            $rules = ['hour_bank' => false] + $rules;
         }
 
         $settings->fill($rules + [
