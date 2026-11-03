@@ -4,6 +4,7 @@ use App\Modules\Agenda\AgendaModule;
 use App\Modules\Demo\DemoModule;
 use App\Modules\Pmoc\PmocModule;
 use App\Modules\Rotina\RotinaModule;
+use App\Modules\Stock\StockModule;
 use App\Modules\Field\FieldModule;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\TimeClock\TimeClockModule;
@@ -51,6 +52,7 @@ return [
         AgendaModule::class,
         RotinaModule::class,
         PmocModule::class,
+        StockModule::class,
     ],
 
     /*

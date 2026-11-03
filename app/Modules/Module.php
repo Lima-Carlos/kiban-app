@@ -215,6 +215,9 @@ abstract class Module
         return [];
     }
 
+    /** Runs once when the app starts: a module may listen to events of other modules here (e.g. the Estoque to the Campo). */
+    public function boot(): void {}
+
     /**
      * @return array<int, array{key: string, label: string, done: bool, available: bool, missing: array<int, string>, url: ?string, description: ?string}>
      */

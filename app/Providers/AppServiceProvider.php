@@ -49,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Access rules of each module (license, read-only, first steps, limits).
         foreach (app(ModuleRegistry::class)->all() as $module) {
+            $module->boot();
+
             foreach ($module->policies() as $model => $policy) {
                 Gate::policy($model, $policy);
             }
