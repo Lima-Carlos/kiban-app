@@ -18,5 +18,11 @@ O dono, os administradores e quem recebeu a função "Gestor" veem tudo. Os dema
 - `database/migrations/2026_11_10_100000_create_rotina_tables.php` (`ro_projects`, `ro_tasks`, `ro_entries`).
 - Textos: `lang/{pt_BR,en,es}/rotina.php`. Testes: `tests/Feature/RotinaTest.php`.
 
+## Com o Ponto (03/11/2026)
+Se a empresa também tem o Ponto, o "Resumo do mês" mostra, para cada colaborador que bate ponto, a **jornada no Ponto** e a parte dela que foi lançada **em projetos** (ex.: 75%). A planilha leva as duas colunas. A Rotina continua não sendo controle de jornada.
+
+## Limite do plano (03/11/2026)
+Pessoas usando a Rotina (com tarefas ou horas): uma pessoa nova só entra enquanto houver vaga (`RotinaPolicy::create`). Projetos não contam.
+
 ## Falta (próximas versões)
-Limite de pessoas do plano, ligação com o Ponto (jornada batida ao lado das horas por projeto), reaproveitar os clientes do Campo, vídeos e a página do produto no site.
+Reaproveitar os clientes do Campo nos projetos e os vídeos.

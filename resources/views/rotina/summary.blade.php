@@ -45,6 +45,10 @@
                             <th style="{{ $cell }}">{{ __('rotina.fields.person') }}</th>
                             <th style="{{ $cell }};text-align:right">{{ __('rotina.reports.hours') }}</th>
                             <th style="{{ $cell }};text-align:right">{{ __('rotina.reports.tasks_done') }}</th>
+                            @if ($data['with_ponto'])
+                                <th style="{{ $cell }};text-align:right">{{ __('rotina.reports.clocked') }}</th>
+                                <th style="{{ $cell }};text-align:right">{{ __('rotina.reports.share') }}</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -53,6 +57,10 @@
                                 <td style="{{ $cell }};font-weight:600">{{ $row['name'] }}</td>
                                 <td style="{{ $cell }};text-align:right">{{ Entry::format($row['minutes']) }}</td>
                                 <td style="{{ $cell }};text-align:right">{{ $row['tasks_done'] }}</td>
+                                @if ($data['with_ponto'])
+                                    <td style="{{ $cell }};text-align:right">{{ $row['clocked'] === null ? '—' : Entry::format($row['clocked']) }}</td>
+                                    <td style="{{ $cell }};text-align:right" data-rotina="share">{{ ($share = \App\Modules\Rotina\Services\RotinaReports::share($row['minutes'], $row['clocked'])) === null ? '—' : $share.'%' }}</td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -61,5 +69,8 @@
         @endif
     </x-filament::section>
 
+    @if ($data['with_ponto'])
+        <p style="font-size:13px;opacity:.7;margin:0">{{ __('rotina.reports.share_help') }}</p>
+    @endif
     <p style="font-size:13px;opacity:.7;margin:0">{{ __('rotina.reports.not_timeclock') }}</p>
 </x-filament-panels::page>

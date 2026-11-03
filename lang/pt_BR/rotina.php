@@ -33,7 +33,7 @@ return [
         'start' => 'Iniciar cronômetro',
         'stop' => 'Parar',
     ],
-    'denied' => ['manager' => 'Só o gestor cadastra e muda os projetos.', 'not_yours' => 'Isto é de outro colaborador.'],
+    'denied' => ['manager' => 'Só o gestor cadastra e muda os projetos.', 'not_yours' => 'Isto é de outro colaborador.', 'limit' => 'O seu plano permite :limit pessoas usando a Rotina. Aumente o plano para incluir mais.'],
     'reports' => [
         'title' => 'Resumo do mês',
         'help' => 'Horas lançadas por projeto ou cliente (cronômetros ainda em andamento não entram).',
@@ -41,6 +41,9 @@ return [
         'by_person' => 'Por colaborador',
         'hours' => 'Horas',
         'tasks_done' => 'Tarefas feitas',
+        'clocked' => 'Jornada no Ponto',
+        'share' => 'Em projetos',
+        'share_help' => '"Em projetos" é a parte da jornada batida no Ponto que foi lançada em projetos. Não é controle de jornada: a jornada é a do Ponto.',
         'total' => 'Total',
         'none' => 'Nenhuma hora lançada neste mês.',
         'no_project' => 'Sem projeto',

@@ -33,7 +33,7 @@ return [
         'start' => 'Iniciar cronómetro',
         'stop' => 'Detener',
     ],
-    'denied' => ['manager' => 'Solo el gestor registra y cambia los proyectos.', 'not_yours' => 'Esto es de otro empleado.'],
+    'denied' => ['manager' => 'Solo el gestor registra y cambia los proyectos.', 'not_yours' => 'Esto es de otro empleado.', 'limit' => 'Su plan permite :limit personas usando el Registro Diario. Amplíe el plan para incluir más.'],
     'reports' => [
         'title' => 'Resumen del mes',
         'help' => 'Horas registradas por proyecto o cliente (los cronómetros en curso no cuentan).',
@@ -41,6 +41,9 @@ return [
         'by_person' => 'Por empleado',
         'hours' => 'Horas',
         'tasks_done' => 'Tareas hechas',
+        'clocked' => 'Jornada en Control Horario',
+        'share' => 'En proyectos',
+        'share_help' => '"En proyectos" es la parte de la jornada marcada en Control Horario que se registró en proyectos. No es control de jornada: la jornada es la de Control Horario.',
         'total' => 'Total',
         'none' => 'Ninguna hora registrada este mes.',
         'no_project' => 'Sin proyecto',

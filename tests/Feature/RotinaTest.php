@@ -83,6 +83,36 @@ class RotinaTest extends TestCase
         $this->assertFalse($member->can('update', Task::query()->where('user_id', $owner->getKey())->first()));
     }
 
+    public function test_with_the_ponto_the_summary_shows_the_hours_clocked(): void
+    {
+        $tenant = $this->tenant('agencia', ['rotina' => [], 'ponto' => []]);
+        $owner = $this->signIn($tenant);
+        Entry::query()->create(['user_id' => $owner->getKey(), 'worked_on' => now()->toDateString(), 'minutes' => 90]);
+
+        $report = app(RotinaReports::class)->month(CarbonImmutable::now());
+        $this->assertTrue($report['with_ponto']);
+        // The owner does not clock in: no hours of the Ponto, no share.
+        $this->assertNull($report['people'][0]['clocked']);
+        $this->assertSame(75, RotinaReports::share(90, 120));
+        $this->assertNull(RotinaReports::share(90, null));
+        Livewire::test(SummaryPage::class)->assertSee(__('rotina.reports.clocked'))->assertSee(__('rotina.reports.share_help'));
+    }
+
+    public function test_the_plan_limits_the_people_using_the_rotina(): void
+    {
+        $tenant = $this->tenant('agencia', ['rotina' => ['limits' => ['people' => 1]]]);
+        $owner = $this->signIn($tenant);
+        Task::query()->create(['user_id' => $owner->getKey(), 'title' => 'Primeira']);
+
+        // The owner keeps working; a second person is over the limit; projects never count.
+        $this->assertTrue($owner->can('create', Task::class));
+        $this->assertTrue($owner->can('create', Project::class));
+        $member = User::factory()->memberOf($tenant, 'member')->create();
+        $this->coreMember($tenant, $member);
+        $this->actingAs($member);
+        $this->assertFalse($member->can('create', Task::class));
+    }
+
     public function test_companies_never_see_each_others_rotina(): void
     {
         $a = $this->tenant('alfa', ['rotina' => []]);

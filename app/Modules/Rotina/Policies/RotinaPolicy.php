@@ -4,6 +4,8 @@ namespace App\Modules\Rotina\Policies;
 
 use App\Models\User;
 use App\Modules\ModulePolicy;
+use App\Modules\Rotina\Models\Entry;
+use App\Modules\Rotina\Models\Task;
 use App\Modules\Rotina\RotinaModule;
 use App\Modules\Rotina\Services\RotinaAccess;
 use Illuminate\Auth\Access\Response;
@@ -15,6 +17,30 @@ use Illuminate\Database\Eloquent\Model;
 class RotinaPolicy extends ModulePolicy
 {
     protected string $module = RotinaModule::KEY;
+
+    /** The plan limits how many people use the Rotina: a person new to it only while there is room. */
+    public function create(User $user): Response
+    {
+        $access = parent::create($user);
+
+        if ($access->denied()) {
+            return $access;
+        }
+
+        $max = $this->license()->limitWithTolerance(RotinaModule::KEY, RotinaModule::LIMIT_PEOPLE);
+
+        if ($max === null) {
+            return $access;
+        }
+
+        $people = Task::query()->distinct()->pluck('user_id')->merge(Entry::query()->distinct()->pluck('user_id'))->unique();
+
+        if (! $people->contains($user->getKey()) && $people->count() >= $max) {
+            return Response::deny(__('rotina.denied.limit', ['limit' => $this->license()->limit(RotinaModule::KEY, RotinaModule::LIMIT_PEOPLE)]));
+        }
+
+        return $access;
+    }
 
     public function update(User $user, Model $record): Response
     {

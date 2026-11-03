@@ -31,6 +31,9 @@ class RotinaModule extends Module
 
     public const MEMBER = 'member';
 
+    /** Plan limit in the Core: people using the Rotina (with tasks or hours). */
+    public const LIMIT_PEOPLE = 'people';
+
     public function key(): string
     {
         return self::KEY;

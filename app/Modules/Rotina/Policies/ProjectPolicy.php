@@ -3,6 +3,7 @@
 namespace App\Modules\Rotina\Policies;
 
 use App\Models\User;
+use App\Modules\ModulePolicy;
 use App\Modules\Rotina\Services\RotinaAccess;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,8 @@ class ProjectPolicy extends RotinaPolicy
 {
     public function create(User $user): Response
     {
-        return $this->manager(parent::create($user));
+        // Projects do not count people: only the module's own rules (not the people limit of tasks and hours).
+        return $this->manager(ModulePolicy::create($user));
     }
 
     public function update(User $user, Model $record): Response

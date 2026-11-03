@@ -33,7 +33,7 @@ return [
         'start' => 'Start stopwatch',
         'stop' => 'Stop',
     ],
-    'denied' => ['manager' => 'Only the manager registers and changes projects.', 'not_yours' => 'This belongs to another employee.'],
+    'denied' => ['manager' => 'Only the manager registers and changes projects.', 'not_yours' => 'This belongs to another employee.', 'limit' => 'Your plan allows :limit people using Daily Log. Upgrade the plan to add more.'],
     'reports' => [
         'title' => 'Month summary',
         'help' => 'Hours logged per project or client (stopwatches still running are left out).',
@@ -41,6 +41,9 @@ return [
         'by_person' => 'By employee',
         'hours' => 'Hours',
         'tasks_done' => 'Tasks done',
+        'clocked' => 'Clocked in Time Clock',
+        'share' => 'On projects',
+        'share_help' => '"On projects" is the share of the hours clocked in Time Clock that was logged on projects. This is not work-hours control: the work hours are Time Clock\'s.',
         'total' => 'Total',
         'none' => 'No hours logged this month.',
         'no_project' => 'No project',
