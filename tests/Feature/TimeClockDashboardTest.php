@@ -44,6 +44,8 @@ class TimeClockDashboardTest extends TestCase
     {
         parent::setUp();
 
+        // A fixed day before every moment the tests travel to (the test licenses start at this moment).
+        $this->travelTo(CarbonImmutable::parse('2026-11-01 08:00', self::TZ));
         $this->company = $this->tenant('instaladora', ['ponto' => []]);
         $this->owner = $this->signIn($this->company);
         $this->office = Workplace::create(['name' => 'Escritório', 'timezone' => self::TZ]);
