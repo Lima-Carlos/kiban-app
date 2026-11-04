@@ -24,6 +24,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -78,8 +79,15 @@ class ClaimResource extends ModuleResource
                 DatePicker::make('spent_on')->label(__('expenses.fields.spent_on'))->default(now()->toDateString())->maxDate(now())->required(),
                 Select::make('category_id')->label(__('expenses.fields.category'))
                     ->options(fn (): array => Category::query()->active()->orderBy('sort')->pluck('name', 'id')->all())
+                    ->live()
                     ->required(),
-                TextInput::make('amount')->label(__('expenses.fields.amount'))->numeric()->minValue(0.01)->step(0.01)->prefix(fn (): string => Country::currency())->required(),
+                TextInput::make('amount')->label(__('expenses.fields.amount'))->numeric()->minValue(0.01)->step(0.01)->prefix(fn (): string => Country::currency())
+                    ->required(fn (Get $get): bool => ! static::mileage($get('category_id')))
+                    ->hidden(fn (Get $get): bool => static::mileage($get('category_id'))),
+                TextInput::make('km')->label(__('expenses.fields.km'))->numeric()->minValue(0.1)->step(0.1)->suffix('km')
+                    ->helperText(fn (Get $get): ?string => ($rate = Category::query()->find($get('category_id'))?->per_km_cents) ? __('expenses.helpers.km', ['value' => app(ExpenseService::class)->money($rate)]) : null)
+                    ->required(fn (Get $get): bool => static::mileage($get('category_id')))
+                    ->visible(fn (Get $get): bool => static::mileage($get('category_id'))),
                 TextInput::make('description')->label(__('expenses.fields.description'))->placeholder(__('expenses.helpers.description'))->required()->maxLength(255),
                 FileUpload::make('receipt_path')->label(__('expenses.fields.receipt'))->helperText(__('expenses.helpers.receipt'))
                     ->disk('local')->visibility('private')
@@ -99,6 +107,11 @@ class ClaimResource extends ModuleResource
             ]);
     }
 
+    public static function mileage(mixed $category): bool
+    {
+        return filled($category) && (Category::query()->find($category)?->isMileage() ?? false);
+    }
+
     public static function table(Table $table): Table
     {
         $manager = fn (): bool => app(ExpenseAccess::class)->isManager();
@@ -114,7 +127,7 @@ class ClaimResource extends ModuleResource
                 TextColumn::make('amount_cents')->label(__('expenses.fields.amount'))
                     ->formatStateUsing(fn (int $state, Claim $record): string => app(ExpenseService::class)->money($state, $record->currency))
                     ->color(fn (Claim $record): ?string => $record->overLimit() ? 'warning' : null)
-                    ->description(fn (Claim $record): ?string => $record->overLimit() ? __('expenses.claims.over_limit') : null),
+                    ->description(fn (Claim $record): ?string => $record->overLimit() ? __('expenses.claims.over_limit') : ($record->km ? number_format($record->km, 1, ',', '.').' km' : null)),
                 TextColumn::make('status')->label(__('expenses.fields.status'))->badge()
                     ->formatStateUsing(fn (string $state): string => __('expenses.statuses.'.$state))
                     ->color(fn (string $state): string => match ($state) { Claim::PENDING => 'warning', Claim::APPROVED => 'info', Claim::PAID => 'success', default => 'danger' })

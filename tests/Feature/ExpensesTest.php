@@ -59,7 +59,7 @@ class ExpensesTest extends TestCase
     public function test_claim_approve_reject_and_pay_back(): void
     {
         $lucas = $this->member();
-        $this->assertCount(8, Category::all());
+        $this->assertCount(9, Category::all());
 
         // The receipt is required by the category; never in the future; never zero.
         $toll = ['category_id' => $this->category('toll')->getKey(), 'spent_on' => '2026-11-02', 'amount_cents' => 1890, 'description' => 'Pedágio Dutra'];
@@ -99,6 +99,32 @@ class ExpensesTest extends TestCase
         $claim = $this->expenses->submit($this->owner, ['category_id' => $meal->getKey(), 'spent_on' => '2026-11-03', 'amount_cents' => 5500, 'description' => 'Jantar na viagem']);
 
         $this->assertTrue($claim->overLimit());
+    }
+
+    public function test_mileage_with_ones_own_vehicle(): void
+    {
+        $mileage = $this->category('mileage');
+        $claim = ['category_id' => $mileage->getKey(), 'spent_on' => '2026-11-03', 'km' => 42.5, 'description' => 'Ida e volta ao cliente em Jundiaí'];
+
+        // Without the value per km set by the manager, it is refused with the reason.
+        $this->assertThrows(fn () => $this->expenses->submit($this->owner, $claim), ExpenseException::class);
+
+        $mileage->update(['per_km_cents' => 120]);
+        $this->assertThrows(fn () => $this->expenses->submit($this->owner, ['km' => 0] + $claim), ExpenseException::class);
+        $saved = $this->expenses->submit($this->owner, $claim);
+        $this->assertSame([5100, 42.5], [$saved->amount_cents, $saved->km]);
+
+        // From the screen: km instead of the value.
+        Livewire::test(ManageClaims::class)
+            ->callAction('create', ['spent_on' => '2026-11-03', 'category_id' => $mileage->getKey(), 'km' => '10', 'description' => 'Visita técnica'])
+            ->assertHasNoActionErrors();
+        $this->assertSame(1200, Claim::query()->where('description', 'Visita técnica')->sole()->amount_cents);
+
+        // A ready category added later reaches a company already using it, once.
+        $this->category('lodging')->delete();
+        $this->expenses->ensureCategories();
+        $this->expenses->ensureCategories();
+        $this->assertSame(1, Category::query()->where('key', 'lodging')->count());
     }
 
     public function test_an_approved_toll_of_a_vehicle_goes_to_the_frota(): void

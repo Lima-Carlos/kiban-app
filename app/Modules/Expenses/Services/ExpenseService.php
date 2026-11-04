@@ -30,23 +30,41 @@ class ExpenseService
     /** The ready categories, created once, in the language of who opens the screen first. */
     public function ensureCategories(): void
     {
-        if (Category::query()->exists()) {
-            return;
-        }
-
-        $sort = 0;
+        // Only the missing ones: a ready category added in a new version also reaches companies already using it.
+        $existing = Category::query()->pluck('key')->filter()->all();
+        $sort = (int) Category::query()->max('sort');
 
         foreach (Category::DEFAULTS as $key => [$receipt, $fleet]) {
-            Category::query()->create(['key' => $key, 'name' => __('expenses.defaults.'.$key), 'receipt_required' => $receipt, 'fleet_category' => $fleet, 'sort' => ++$sort]);
+            if (! in_array($key, $existing, true)) {
+                Category::query()->create(['key' => $key, 'name' => __('expenses.defaults.'.$key), 'receipt_required' => $receipt, 'fleet_category' => $fleet, 'sort' => ++$sort]);
+            }
         }
     }
 
     /**
-     * @param  array{category_id: int, spent_on: mixed, amount_cents: int, description: string, receipt_path?: ?string, work_order_id?: ?int, vehicle_id?: ?int}  $data
+     * Mileage (category with the value per km): send `km` instead of `amount_cents`.
+     *
+     * @param  array{category_id: int, spent_on: mixed, amount_cents?: int, km?: float|string|null, description: string, receipt_path?: ?string, work_order_id?: ?int, vehicle_id?: ?int}  $data
      */
     public function submit(User $user, array $data): Claim
     {
         $category = Category::query()->active()->find($data['category_id'] ?? null) ?? throw new ExpenseException(__('expenses.errors.category'));
+
+        $km = null;
+
+        if ($category->isMileage()) {
+            $km = round((float) ($data['km'] ?? 0), 1);
+
+            if ($category->per_km_cents === null || $category->per_km_cents <= 0) {
+                throw new ExpenseException(__('expenses.errors.no_rate'));
+            }
+
+            if ($km <= 0) {
+                throw new ExpenseException(__('expenses.errors.km'));
+            }
+
+            $data['amount_cents'] = (int) round($km * $category->per_km_cents);
+        }
 
         if ((int) ($data['amount_cents'] ?? 0) <= 0) {
             throw new ExpenseException(__('expenses.errors.amount'));
@@ -69,6 +87,7 @@ class ExpenseService
             'receipt_path' => $data['receipt_path'] ?? null,
             'work_order_id' => $data['work_order_id'] ?? null,
             'vehicle_id' => $data['vehicle_id'] ?? null,
+            'km' => $km,
         ]);
         $claim->forceFill(['user_id' => $user->getKey()])->save();
 

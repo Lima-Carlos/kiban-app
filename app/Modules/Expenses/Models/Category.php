@@ -24,18 +24,25 @@ class Category extends Model
         'lodging' => [true, null],
         'ride' => [true, null],
         'material' => [true, null],
+        'mileage' => [false, null],
         'other' => [false, 'other'],
     ];
 
     protected $table = 'ex_categories';
 
-    protected $fillable = ['key', 'name', 'limit_cents', 'receipt_required', 'fleet_category', 'is_active', 'sort'];
+    protected $fillable = ['key', 'name', 'limit_cents', 'receipt_required', 'fleet_category', 'is_active', 'sort', 'per_km_cents'];
 
     protected $attributes = ['receipt_required' => true, 'is_active' => true, 'sort' => 0];
 
     protected function casts(): array
     {
-        return ['limit_cents' => 'integer', 'receipt_required' => 'boolean', 'is_active' => 'boolean', 'sort' => 'integer'];
+        return ['limit_cents' => 'integer', 'per_km_cents' => 'integer', 'receipt_required' => 'boolean', 'is_active' => 'boolean', 'sort' => 'integer'];
+    }
+
+    /** Mileage with one's own vehicle: the value is km × per_km_cents. */
+    public function isMileage(): bool
+    {
+        return $this->key === 'mileage';
     }
 
     /**

@@ -32,7 +32,7 @@ class Claim extends Model
 
     protected $table = 'ex_claims';
 
-    protected $fillable = ['user_id', 'category_id', 'spent_on', 'amount_cents', 'currency', 'description', 'receipt_path', 'work_order_id', 'vehicle_id'];
+    protected $fillable = ['user_id', 'category_id', 'spent_on', 'amount_cents', 'currency', 'description', 'receipt_path', 'work_order_id', 'vehicle_id', 'km'];
 
     protected $attributes = ['status' => self::PENDING];
 
@@ -41,6 +41,7 @@ class Claim extends Model
         return [
             'spent_on' => 'date',
             'amount_cents' => 'integer',
+            'km' => 'float',
             'decided_at' => 'datetime',
             'paid_at' => 'datetime',
         ];

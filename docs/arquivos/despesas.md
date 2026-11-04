@@ -4,10 +4,11 @@ Primeira versão (03/11/2026). Código do produto no Core: `despesas` (en: Expen
 
 ## O que tem
 - **Despesas**: cada pessoa lança o que pagou pela empresa (data, categoria, valor, o que foi) com a **foto do recibo**, tirada na hora pelo celular. Opcional: a OS do Campo e o veículo da Frota.
-- **Categorias** prontas: pedágio, estacionamento, combustível, alimentação, hospedagem, táxi/aplicativo, material comprado e outros. O gestor muda o nome, o **valor máximo** (acima dele a despesa aparece em destaque, mas não é bloqueada) e se o recibo é obrigatório.
+- **Categorias** prontas: pedágio, estacionamento, combustível, alimentação, hospedagem, táxi/aplicativo, material comprado, km com carro próprio e outros. O gestor muda o nome, o **valor máximo** (acima dele a despesa aparece em destaque, mas não é bloqueada) e se o recibo é obrigatório.
 - **Aprovar ou recusar**: só o gestor das despesas. A recusa pede o motivo, que a pessoa vê no sino.
 - **Reembolsos**: as despesas aprovadas somadas por pessoa. Depois do Pix, "Marcar como pago" e a pessoa recebe o aviso. Planilha do mês para o contador.
 - **Ligação com a Frota**: despesa aprovada com veículo, numa categoria ligada à Frota (pedágio, estacionamento, outros), entra nos gastos do veículo e no custo por km.
+- **Km com carro próprio**: o gestor define o valor por km na categoria; a pessoa digita os km rodados e o valor é calculado sozinho (km × valor). Sem recibo. Sem o valor definido, o sistema avisa.
 - **Atenção no Início**: despesas esperando aprovação, para o gestor.
 
 ## Quem usa

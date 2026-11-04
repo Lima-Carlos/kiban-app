@@ -29,7 +29,8 @@ class ManageClaims extends ModuleRecordsPage
                         return app(ExpenseService::class)->submit(auth()->user(), [
                             'category_id' => (int) $data['category_id'],
                             'spent_on' => $data['spent_on'],
-                            'amount_cents' => (int) round((float) $data['amount'] * 100),
+                            'amount_cents' => (int) round((float) ($data['amount'] ?? 0) * 100),
+                            'km' => $data['km'] ?? null,
                             'description' => (string) $data['description'],
                             'receipt_path' => $data['receipt_path'] ?? null,
                             'work_order_id' => filled($data['work_order_id'] ?? null) ? (int) $data['work_order_id'] : null,

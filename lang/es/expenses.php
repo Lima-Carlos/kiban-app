@@ -27,11 +27,15 @@ return [
         'rejected' => 'Gasto rechazado',
     ],
     'categories' => [
+        'per_km' => ':value por km',
+        'no_rate' => 'Defina el valor por km para usarla',
         'singular' => 'categoría',
         'plural' => 'categorías',
         'new' => 'Nueva categoría',
     ],
     'fields' => [
+        'km' => 'Km recorridos',
+        'per_km' => 'Valor por km',
         'name' => 'Nombre',
         'limit' => 'Valor máximo por gasto',
         'receipt_required' => 'Comprobante obligatorio',
@@ -49,6 +53,8 @@ return [
         'reason' => 'Motivo',
     ],
     'helpers' => [
+        'per_km' => 'Cuánto paga la empresa por km recorrido con el vehículo de la propia persona (combustible y desgaste).',
+        'km' => 'A :value por km: el valor se calcula solo.',
         'limit' => 'Por encima de este valor el gasto aparece destacado para el gestor (no se bloquea). Déjelo vacío para no tener límite.',
         'fleet_category' => 'Un gasto aprobado con vehículo entra en sus costos en la Flota (y en el costo por km).',
         'description' => 'Ej.: peaje de la autopista camino al cliente',
@@ -70,9 +76,12 @@ return [
         'lodging' => 'Hospedaje',
         'ride' => 'Taxi y aplicaciones',
         'material' => 'Material comprado',
+        'mileage' => 'Km con vehículo propio',
         'other' => 'Otros',
     ],
     'errors' => [
+        'no_rate' => 'El gestor aún no definió el valor por km de esta categoría.',
+        'km' => 'Ingrese los km recorridos.',
         'category' => 'Elija una categoría activa.',
         'amount' => 'Ingrese un valor mayor que cero.',
         'receipt' => 'Esta categoría pide la foto del comprobante.',

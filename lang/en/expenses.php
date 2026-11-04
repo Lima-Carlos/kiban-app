@@ -27,11 +27,15 @@ return [
         'rejected' => 'Expense refused',
     ],
     'categories' => [
+        'per_km' => ':value per km',
+        'no_rate' => 'Set the value per km to use it',
         'singular' => 'category',
         'plural' => 'categories',
         'new' => 'New category',
     ],
     'fields' => [
+        'km' => 'Distance (km)',
+        'per_km' => 'Value per km',
         'name' => 'Name',
         'limit' => 'Maximum per expense',
         'receipt_required' => 'Receipt required',
@@ -49,6 +53,8 @@ return [
         'reason' => 'Reason',
     ],
     'helpers' => [
+        'per_km' => 'How much the company pays per km driven with the person\'s own vehicle (fuel and wear).',
+        'km' => ':value per km: the amount is calculated by itself.',
         'limit' => 'Above this value the expense is highlighted for the manager (it is not blocked). Leave empty for no limit.',
         'fleet_category' => 'An approved expense with a vehicle goes into its costs in the Fleet (and the cost per km).',
         'description' => 'E.g.: highway toll on the way to the customer',
@@ -70,9 +76,12 @@ return [
         'lodging' => 'Lodging',
         'ride' => 'Taxi and ride apps',
         'material' => 'Material bought',
+        'mileage' => 'Mileage (own vehicle)',
         'other' => 'Other',
     ],
     'errors' => [
+        'no_rate' => 'The manager has not set the value per km of this category yet.',
+        'km' => 'Enter the distance driven.',
         'category' => 'Choose an active category.',
         'amount' => 'Enter an amount greater than zero.',
         'receipt' => 'This category requires the receipt photo.',

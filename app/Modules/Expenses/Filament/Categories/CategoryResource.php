@@ -56,6 +56,11 @@ class CategoryResource extends ModuleResource
                     ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Country::currency())
                     ->afterStateHydrated(fn (TextInput $component, ?Category $record) => $component->state($record?->limit_cents !== null ? $record->limit_cents / 100 : null))
                     ->dehydrated(false),
+                TextInput::make('per_km')->label(__('expenses.fields.per_km'))->helperText(__('expenses.helpers.per_km'))
+                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Country::currency())
+                    ->visible(fn (?Category $record): bool => $record?->isMileage() ?? false)
+                    ->afterStateHydrated(fn (TextInput $component, ?Category $record) => $component->state($record?->per_km_cents !== null ? $record->per_km_cents / 100 : null))
+                    ->dehydrated(false),
                 Toggle::make('receipt_required')->label(__('expenses.fields.receipt_required'))->default(true)->inline(false),
                 Select::make('fleet_category')->label(__('expenses.fields.fleet_category'))->helperText(__('expenses.helpers.fleet_category'))
                     ->options(collect(ExpenseCategory::cases())->mapWithKeys(fn (ExpenseCategory $category): array => [$category->value => $category->getLabel()])->all())
@@ -74,6 +79,10 @@ class CategoryResource extends ModuleResource
         $limit = $state['limit'] ?? null;
         $data['limit_cents'] = filled($limit) ? (int) round((float) $limit * 100) : null;
 
+        if (array_key_exists('per_km', $state)) {
+            $data['per_km_cents'] = filled($state['per_km']) ? (int) round((float) $state['per_km'] * 100) : null;
+        }
+
         return $data;
     }
 
@@ -83,7 +92,8 @@ class CategoryResource extends ModuleResource
             ->defaultSort('sort')
             ->columns([
                 TextColumn::make('name')->label(__('expenses.fields.name'))->weight('bold'),
-                TextColumn::make('limit_cents')->label(__('expenses.fields.limit'))->formatStateUsing(fn (?int $state): string => $state === null ? '—' : app(ExpenseService::class)->money($state))->placeholder('—'),
+                TextColumn::make('limit_cents')->label(__('expenses.fields.limit'))->formatStateUsing(fn (?int $state): string => $state === null ? '—' : app(ExpenseService::class)->money($state))->placeholder('—')
+                    ->description(fn (Category $record): ?string => $record->isMileage() ? ($record->per_km_cents ? __('expenses.categories.per_km', ['value' => app(ExpenseService::class)->money($record->per_km_cents)]) : __('expenses.categories.no_rate')) : null),
                 IconColumn::make('receipt_required')->label(__('expenses.fields.receipt_required'))->boolean(),
                 IconColumn::make('is_active')->label(__('expenses.fields.active'))->boolean(),
             ])

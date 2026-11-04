@@ -27,11 +27,15 @@ return [
         'rejected' => 'Despesa recusada',
     ],
     'categories' => [
+        'per_km' => ':value por km',
+        'no_rate' => 'Defina o valor por km para usar',
         'singular' => 'categoria',
         'plural' => 'categorias',
         'new' => 'Nova categoria',
     ],
     'fields' => [
+        'km' => 'Km rodados',
+        'per_km' => 'Valor por km',
         'name' => 'Nome',
         'limit' => 'Valor máximo por despesa',
         'receipt_required' => 'Recibo obrigatório',
@@ -49,6 +53,8 @@ return [
         'reason' => 'Motivo',
     ],
     'helpers' => [
+        'per_km' => 'Quanto a empresa paga por km rodado com o carro da própria pessoa (combustível e desgaste).',
+        'km' => 'A :value por km: o valor é calculado sozinho.',
         'limit' => 'Acima deste valor a despesa aparece em destaque para o gestor (não é bloqueada). Deixe vazio para não ter limite.',
         'fleet_category' => 'Despesa aprovada com veículo entra nos gastos dele na Frota (e no custo por km).',
         'description' => 'Ex.: pedágio da Dutra na ida ao cliente',
@@ -70,9 +76,12 @@ return [
         'lodging' => 'Hospedagem',
         'ride' => 'Táxi e aplicativo',
         'material' => 'Material comprado',
+        'mileage' => 'Km com carro próprio',
         'other' => 'Outros',
     ],
     'errors' => [
+        'no_rate' => 'O gestor ainda não definiu o valor por km desta categoria.',
+        'km' => 'Informe os km rodados.',
         'category' => 'Escolha uma categoria ativa.',
         'amount' => 'Informe um valor maior que zero.',
         'receipt' => 'Esta categoria pede a foto do recibo.',
