@@ -114,6 +114,23 @@ class TimeClockEmployeesTest extends TestCase
         $this->assertSame(TimeClockRole::Employee, app(TimeClockAccess::class)->role($person->user));
     }
 
+    public function test_schedule_and_workplace_created_from_the_register(): void
+    {
+        $people = app(\App\Modules\TimeClock\Services\TimeClockPeople::class);
+
+        // "+" next to the schedule: a ready model, with its own name or the model's.
+        $office = Schedule::query()->findOrFail($people->quickSchedule(['preset' => 'office']));
+        $this->assertSame([__('timeclock.schedules.presets.office'), 'weekly'], [$office->name, $office->type]);
+        $rotation = Schedule::query()->findOrFail($people->quickSchedule(['preset' => '12x36_day', 'name' => 'Portaria 12x36']));
+        $this->assertSame(['Portaria 12x36', 'cycle', 1, 1], [$rotation->name, $rotation->type, (int) $rotation->work_days, (int) $rotation->off_days]);
+        $this->assertNotNull($rotation->anchor_date);
+
+        // The register shows the "+" to who may create them (the owner).
+        $this->get(PeoplePage::getUrl())->assertOk();
+        $this->assertTrue($this->owner->can('create', Schedule::class));
+        $this->assertTrue($this->owner->can('create', Workplace::class));
+    }
+
     public function test_cpf_rules_in_brazil(): void
     {
         // Invalid CPF.

@@ -478,3 +478,6 @@ Empresa no México (país MX) ganha o perfil **"México (Lei Federal do Trabalho
 
 **Ainda não calculado (anotado para o advogado e o contador do México):** a partir da 10ª hora extra na semana o pagamento é triplo (art. 68); a prima dominical de 25% para quem trabalha no domingo (art. 71); a redução gradual da jornada para 40 horas e as regras exatas do registro eletrônico da jornada que começa em 2027. O texto do perfil avisa sobre a hora extra tripla.
 
+## Criar horário e local no cadastro do colaborador (03/11/2026)
+No cadastro do colaborador (parte do Ponto), os campos "Horário de trabalho" e "Local de trabalho" têm um **+**: cria ali mesmo um horário a partir de um modelo pronto (comercial, 12x36, 6x1...) ou um local (nome, cidade e estado; o ponto no mapa pode vir depois). Só aparece para quem pode criar horários e locais. Regra em `TimeClockPeople::quickSchedule()`.
+

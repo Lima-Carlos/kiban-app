@@ -11,15 +11,18 @@ use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Services\ScheduleService;
 use App\Modules\TimeClock\TimeClockModule;
 use App\People\PeopleForm;
 use App\People\Person;
 use Carbon\CarbonImmutable;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
+use Filament\Support\Facades\FilamentTimezone;
 use Filament\Schemas\Components\Utilities\Get;
 
 /**
@@ -72,7 +75,17 @@ class TimeClockPeople
                         ->label(__('timeclock.fields.schedule'))
                         ->options(fn (): array => Schedule::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all())
                         ->required($clocksIn)
-                        ->helperText(fn (): ?string => Schedule::query()->exists() ? null : __('timeclock.helpers.no_schedule')),
+                        ->helperText(fn (): ?string => Schedule::query()->exists() ? null : __('timeclock.helpers.no_schedule'))
+                        // "+": a schedule from a ready model, right here (no need to leave the register).
+                        ->createOptionForm([
+                            Select::make('preset')->label(__('timeclock.schedules.preset'))
+                                ->options(collect(array_keys(ScheduleService::presets()))->mapWithKeys(fn (string $key): array => [$key => __('timeclock.schedules.presets.'.$key)])->all())
+                                ->helperText(__('timeclock.helpers.quick_schedule'))
+                                ->required(),
+                            TextInput::make('name')->label(__('timeclock.fields.name'))->placeholder(__('timeclock.helpers.quick_schedule_name'))->maxLength(120),
+                        ])
+                        ->createOptionUsing(fn (array $data): int => $this->quickSchedule($data))
+                        ->createOptionAction(fn (Action $action) => $action->modalHeading(__('timeclock.helpers.quick_schedule_title'))->visible(fn (): bool => auth()->user()?->can('create', Schedule::class) ?? false)),
                     DatePicker::make('schedule_from')
                         ->label(__('timeclock.fields.schedule_from'))
                         ->helperText(__('timeclock.helpers.schedule_from')),
@@ -82,6 +95,16 @@ class TimeClockPeople
                         ->visible(fn (Get $get): bool => ! $get('is_external'))
                         ->required(fn (Get $get): bool => (bool) $get('clocks_in') && ! $get('is_external'))
                         ->helperText(fn (): ?string => Workplace::query()->exists() ? null : __('timeclock.helpers.no_workplace'))
+                        // "+": a workplace right here (name and city; the point on the map can come later).
+                        ->createOptionForm([
+                            TextInput::make('name')->label(__('timeclock.fields.name'))->placeholder(__('timeclock.helpers.workplace_name'))->required()->maxLength(255),
+                            Grid::make(['default' => 1, 'sm' => 2])->components([
+                                TextInput::make('city')->label(__('timeclock.fields.city'))->maxLength(80),
+                                TextInput::make('state')->label(__('timeclock.fields.state'))->maxLength(40),
+                            ]),
+                        ])
+                        ->createOptionUsing(fn (array $data): int => Workplace::query()->create($data + ['timezone' => FilamentTimezone::get()])->getKey())
+                        ->createOptionAction(fn (Action $action) => $action->modalHeading(__('timeclock.helpers.quick_workplace_title'))->visible(fn (): bool => auth()->user()?->can('create', Workplace::class) ?? false))
                         ->columnSpanFull(),
                     HolidayCitySelect::make('city_id')
                         ->label(__('timeclock.cities.employee_city'))
@@ -166,5 +189,18 @@ class TimeClockPeople
         }
 
         return Employee::query()->active()->where('person_id', $person->getKey())->exists() ? TimeClockRole::Employee->getLabel() : null;
+    }
+
+    /**
+     * A schedule from a ready model (the "+" next to the schedule on the register).
+     *
+     * @param  array{preset: string, name?: ?string}  $data
+     */
+    public function quickSchedule(array $data): int
+    {
+        $preset = ScheduleService::presets()[$data['preset']] ?? throw new \InvalidArgumentException('Unknown schedule model.');
+        $name = filled($data['name'] ?? null) ? trim((string) $data['name']) : __('timeclock.schedules.presets.'.$data['preset']);
+
+        return Schedule::query()->create(['name' => $name] + $preset + ($preset['type'] === Schedule::CYCLE ? ['anchor_date' => today()->toDateString()] : []))->getKey();
     }
 }
