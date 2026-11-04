@@ -9,6 +9,7 @@ use App\Modules\Rotina\Filament\SummaryPage;
 use App\Modules\Rotina\Filament\Tasks\Pages\ManageTasks;
 use App\Modules\Rotina\Models\Entry;
 use App\Modules\Rotina\Models\Project;
+use App\Modules\Rotina\Models\Rate;
 use App\Modules\Rotina\Models\Task;
 use App\Modules\Rotina\Services\RotinaReports;
 use App\Tenancy\TenantContext;
@@ -98,6 +99,38 @@ class RotinaTest extends TestCase
         Livewire::test(SummaryPage::class)->assertSee(__('rotina.reports.clocked'))->assertSee(__('rotina.reports.share_help'));
     }
 
+    public function test_cost_revenue_and_margin_per_project(): void
+    {
+        $tenant = $this->tenant('agencia', ['rotina' => []]);
+        $owner = $this->signIn($tenant);
+        $designer = User::factory()->memberOf($tenant, 'member')->create();
+        $site = Project::query()->create(['name' => 'Site novo', 'client_name' => 'Padaria Sol', 'billable' => true, 'hour_price_cents' => 15000]);
+        $internal = Project::query()->create(['name' => 'Interno']);
+        Entry::query()->create(['user_id' => $owner->getKey(), 'project_id' => $site->getKey(), 'worked_on' => now()->toDateString(), 'minutes' => 120]);
+        Entry::query()->create(['user_id' => $designer->getKey(), 'project_id' => $site->getKey(), 'worked_on' => now()->toDateString(), 'minutes' => 90]);
+        Entry::query()->create(['user_id' => $designer->getKey(), 'project_id' => $internal->getKey(), 'worked_on' => now()->toDateString(), 'minutes' => 60]);
+
+        // Without values, no cost column.
+        $report = app(RotinaReports::class)->month(CarbonImmutable::now());
+        $this->assertFalse($report['with_costs']);
+        $this->assertTrue($report['with_revenue']);
+
+        // Owner R$ 80/h, designer R$ 40/h; the site is charged R$ 150/h.
+        Livewire::test(SummaryPage::class)
+            ->callAction('rates', ['rates' => ['u'.$owner->getKey() => '80', 'u'.$designer->getKey() => '40']])
+            ->assertHasNoActionErrors();
+
+        $report = app(RotinaReports::class)->month(CarbonImmutable::now());
+        $rows = collect($report['projects'])->keyBy('name');
+        $this->assertSame([16000 + 6000, 52500, 52500 - 22000], [$rows['Site novo']['cost'], $rows['Site novo']['revenue'], $rows['Site novo']['margin']]);
+        $this->assertSame([4000, null], [$rows['Interno']['cost'], $rows['Interno']['revenue']]);
+        Livewire::test(SummaryPage::class)->assertSee('data-rotina="margin"', false)->assertSee('305,00');
+
+        // Emptying a value removes it.
+        app(RotinaReports::class)->setRates([$designer->getKey() => '']);
+        $this->assertSame(1, Rate::query()->count());
+    }
+
     public function test_the_plan_limits_the_people_using_the_rotina(): void
     {
         $tenant = $this->tenant('agencia', ['rotina' => ['limits' => ['people' => 1]]]);
@@ -127,7 +160,7 @@ class RotinaTest extends TestCase
         foreach (['pt_BR', 'en', 'es'] as $locale) {
             app()->setLocale($locale);
 
-            foreach (['module', 'steps.project', 'tasks.empty', 'projects.empty', 'entries.running', 'fields.hours', 'actions.start', 'reports.title', 'reports.not_timeclock'] as $key) {
+            foreach (['module', 'steps.project', 'tasks.empty', 'projects.empty', 'entries.running', 'fields.hours', 'actions.start', 'reports.title', 'reports.not_timeclock', 'reports.margin', 'rates.help', 'helpers.hour_price', 'fields.billable'] as $key) {
                 $this->assertNotSame('rotina.'.$key, __('rotina.'.$key));
             }
         }

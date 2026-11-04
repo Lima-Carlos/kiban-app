@@ -12,6 +12,8 @@ return [
     'projects' => ['singular' => 'projeto', 'plural' => 'projetos', 'empty' => 'Nenhum projeto', 'empty_help' => 'Cadastre os projetos ou clientes em que a equipe trabalha.'],
     'entries' => ['singular' => 'lançamento de horas', 'plural' => 'horas', 'running' => 'Em andamento...', 'empty' => 'Nenhuma hora lançada', 'empty_help' => 'Use "Iniciar cronômetro" ao começar ou lance o tempo depois.'],
     'fields' => [
+        'billable' => 'Cobrado do cliente',
+        'hour_price' => 'Preço da hora para o cliente',
         'task' => 'Tarefa',
         'project' => 'Projeto',
         'client' => 'Cliente',
@@ -25,7 +27,7 @@ return [
         'time' => 'Tempo',
         'note' => 'O que foi feito',
     ],
-    'helpers' => ['client' => 'Opcional. Aparece nos resumos e na planilha.'],
+    'helpers' => ['billable' => 'Ligue se as horas deste projeto são cobradas do cliente: o resumo mostra quanto ele rendeu.', 'hour_price' => 'Quanto o cliente paga por hora. O resumo do mês calcula a receita e a margem (receita − custo das horas).', 'client' => 'Opcional. Aparece nos resumos e na planilha.'],
     'actions' => [
         'done' => 'Marcar como feita',
         'reopen' => 'Reabrir',
@@ -34,7 +36,17 @@ return [
         'stop' => 'Parar',
     ],
     'denied' => ['manager' => 'Só o gestor cadastra e muda os projetos.', 'not_yours' => 'Isto é de outro colaborador.', 'limit' => 'O seu plano permite :limit pessoas usando a Rotina. Aumente o plano para incluir mais.'],
+    'rates' => [
+        'action' => 'Valor da hora',
+        'help' => 'Quanto custa uma hora de cada pessoa para a empresa (salário e encargos ÷ horas do mês). Só o gestor vê. Com isso, o resumo mostra o custo de cada projeto e cliente. Deixe vazio para não contar.',
+        'per_hour' => '/h',
+        'saved' => 'Valores da hora salvos.',
+        'hint' => 'Dica: em "Valor da hora", informe quanto custa a hora de cada pessoa para ver o custo de cada projeto e cliente.',
+    ],
     'reports' => [
+        'cost' => 'Custo',
+        'revenue' => 'Receita',
+        'margin' => 'Margem',
         'title' => 'Resumo do mês',
         'help' => 'Horas lançadas por projeto ou cliente (cronômetros ainda em andamento não entram).',
         'by_project' => 'Por projeto',

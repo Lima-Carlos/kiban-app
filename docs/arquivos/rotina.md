@@ -26,3 +26,9 @@ Pessoas usando a Rotina (com tarefas ou horas): uma pessoa nova só entra enquan
 
 ## Falta (próximas versões)
 Reaproveitar os clientes do Campo nos projetos e os vídeos.
+
+## Custo e margem por projeto (03/11/2026, pela pesquisa de concorrentes)
+- **Valor da hora** (botão no Resumo do mês, só o gestor): quanto custa uma hora de cada pessoa para a empresa (salário e encargos ÷ horas do mês). Fica na tabela `ro_rates` e ninguém além do gestor vê.
+- No projeto: **"Cobrado do cliente"** e o **preço da hora** para o cliente.
+- O Resumo do mês ganha as colunas **Custo** (horas × valor da hora de quem trabalhou), **Receita** (horas × preço da hora) e **Margem** (receita − custo, em vermelho quando negativa). Sem os valores, as colunas não aparecem. A planilha leva as mesmas colunas.
+- Peças: `App\Modules\Rotina\Models\Rate`, `RotinaReports::month()/setRates()`, a ação `rates` em `SummaryPage`, migração `2026_11_15_130000_add_costs_to_rotina.php`.

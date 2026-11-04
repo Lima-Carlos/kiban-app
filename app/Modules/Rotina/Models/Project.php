@@ -17,13 +17,15 @@ class Project extends Model
 
     protected $table = 'ro_projects';
 
-    protected $fillable = ['name', 'client_name', 'is_active'];
+    protected $fillable = ['billable', 'hour_price_cents', 'name', 'client_name', 'is_active'];
 
     protected $attributes = ['is_active' => true];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'billable' => 'boolean',
+            'hour_price_cents' => 'integer','is_active' => 'boolean'];
     }
 
     public function label(): string

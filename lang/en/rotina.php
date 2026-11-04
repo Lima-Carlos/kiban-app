@@ -12,6 +12,8 @@ return [
     'projects' => ['singular' => 'project', 'plural' => 'projects', 'empty' => 'No projects', 'empty_help' => 'Register the projects or clients the team works on.'],
     'entries' => ['singular' => 'time entry', 'plural' => 'hours', 'running' => 'Running...', 'empty' => 'No hours logged', 'empty_help' => 'Use "Start stopwatch" when you begin, or log the time afterwards.'],
     'fields' => [
+        'billable' => 'Billed to the client',
+        'hour_price' => 'Hourly price for the client',
         'task' => 'Task',
         'project' => 'Project',
         'client' => 'Client',
@@ -25,7 +27,7 @@ return [
         'time' => 'Time',
         'note' => 'What was done',
     ],
-    'helpers' => ['client' => 'Optional. Shows in the summaries and the spreadsheet.'],
+    'helpers' => ['billable' => 'Turn on if the hours of this project are billed to the client: the summary shows what it earned.', 'hour_price' => 'How much the client pays per hour. The month summary calculates the revenue and the margin (revenue − cost of the hours).', 'client' => 'Optional. Shows in the summaries and the spreadsheet.'],
     'actions' => [
         'done' => 'Mark as done',
         'reopen' => 'Reopen',
@@ -34,7 +36,17 @@ return [
         'stop' => 'Stop',
     ],
     'denied' => ['manager' => 'Only the manager registers and changes projects.', 'not_yours' => 'This belongs to another employee.', 'limit' => 'Your plan allows :limit people using Daily Log. Upgrade the plan to add more.'],
+    'rates' => [
+        'action' => 'Hourly cost',
+        'help' => 'How much one hour of each person costs the company (salary and charges ÷ hours of the month). Only the manager sees it. With it, the summary shows the cost of each project and client. Leave empty to not count.',
+        'per_hour' => '/h',
+        'saved' => 'Hourly costs saved.',
+        'hint' => 'Tip: in "Hourly cost", enter what one hour of each person costs to see the cost of each project and client.',
+    ],
     'reports' => [
+        'cost' => 'Cost',
+        'revenue' => 'Revenue',
+        'margin' => 'Margin',
         'title' => 'Month summary',
         'help' => 'Hours logged per project or client (stopwatches still running are left out).',
         'by_project' => 'By project',

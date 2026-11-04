@@ -51,6 +51,12 @@ class ProjectResource extends ModuleResource
             ->components([
                 TextInput::make('name')->label(__('rotina.fields.project'))->required()->maxLength(160),
                 TextInput::make('client_name')->label(__('rotina.fields.client'))->helperText(__('rotina.helpers.client'))->maxLength(160),
+                Toggle::make('billable')->label(__('rotina.fields.billable'))->helperText(__('rotina.helpers.billable'))->live(),
+                TextInput::make('hour_price_cents')->label(__('rotina.fields.hour_price'))->helperText(__('rotina.helpers.hour_price'))
+                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => \App\Support\Country::currency())
+                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('billable'))
+                    ->formatStateUsing(fn ($state) => $state !== null ? $state / 100 : null)
+                    ->dehydrateStateUsing(fn ($state): ?int => filled($state) ? (int) round((float) $state * 100) : null),
                 Toggle::make('is_active')->label(__('rotina.fields.active'))->default(true),
             ]);
     }
@@ -62,6 +68,7 @@ class ProjectResource extends ModuleResource
             ->columns([
                 TextColumn::make('name')->label(__('rotina.fields.project'))->weight('bold')->searchable(),
                 TextColumn::make('client_name')->label(__('rotina.fields.client'))->searchable()->placeholder('—'),
+                IconColumn::make('billable')->label(__('rotina.fields.billable'))->boolean(),
                 IconColumn::make('is_active')->label(__('rotina.fields.active'))->boolean(),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()])

@@ -4,6 +4,9 @@ namespace App\Modules\Rotina\Services;
 
 use App\Models\User;
 use App\Modules\Rotina\Models\Entry;
+use App\Modules\Rotina\Models\Rate;
+use App\Support\Country;
+use Illuminate\Support\Number;
 use App\Modules\Rotina\Models\Task;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\Services\TimesheetDocument;
@@ -13,23 +16,37 @@ use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 
 /**
- * Hours of the month for the manager: per project (and client) and per person, plus the tasks done.
+ * Hours of the month for the manager: per project (and client) and per person, plus the tasks done. With the
+ * value of the hour of each person, the cost of each project; with a price per hour for the client, the revenue
+ * and the margin.
  */
 class RotinaReports
 {
     /**
-     * @return array{projects: array<int, array{name: string, client: ?string, minutes: int}>, people: array<int, array{name: string, minutes: int, tasks_done: int, clocked: ?int}>, total: int, with_ponto: bool}
+     * @return array{projects: array<int, array{name: string, client: ?string, minutes: int, cost: int, revenue: ?int, margin: ?int}>, people: array<int, array{name: string, minutes: int, tasks_done: int, clocked: ?int}>, total: int, with_ponto: bool, with_costs: bool, with_revenue: bool, cost: int, revenue: int}
      */
     public function month(CarbonImmutable $month): array
     {
         $entries = Entry::query()->with(['project', 'user'])->whereNull('started_at')
             ->whereBetween('worked_on', [$month->startOfMonth()->toDateString(), $month->endOfMonth()->toDateString()])->get();
 
-        $projects = $entries->groupBy(fn (Entry $entry): int => (int) $entry->project_id)->map(fn ($group): array => [
-            'name' => $group->first()->project?->name ?? __('rotina.reports.no_project'),
-            'client' => $group->first()->project?->client_name,
-            'minutes' => (int) $group->sum('minutes'),
-        ])->sortByDesc('minutes')->values()->all();
+        $rates = Rate::query()->pluck('hour_cents', 'user_id');
+        $cost = fn ($group): int => (int) round($group->sum(fn (Entry $entry): float => $entry->minutes * (int) ($rates[$entry->user_id] ?? 0) / 60));
+
+        $projects = $entries->groupBy(fn (Entry $entry): int => (int) $entry->project_id)->map(function ($group) use ($cost): array {
+            $project = $group->first()->project;
+            $minutes = (int) $group->sum('minutes');
+            $revenue = $project?->billable && $project->hour_price_cents ? (int) round($minutes * $project->hour_price_cents / 60) : null;
+
+            return [
+                'name' => $project?->name ?? __('rotina.reports.no_project'),
+                'client' => $project?->client_name,
+                'minutes' => $minutes,
+                'cost' => $cost($group),
+                'revenue' => $revenue,
+                'margin' => $revenue === null ? null : $revenue - $cost($group),
+            ];
+        })->sortByDesc('minutes')->values()->all();
 
         $done = Task::query()->whereBetween('done_at', [$month->startOfMonth(), $month->endOfMonth()])->get()->groupBy('user_id')->map->count();
 
@@ -43,7 +60,14 @@ class RotinaReports
             'clocked' => $withPonto && $group->first()->user ? $this->clocked($group->first()->user, $month) : null,
         ])->sortByDesc('minutes')->values()->all();
 
-        return ['projects' => $projects, 'people' => $people, 'total' => (int) $entries->sum('minutes'), 'with_ponto' => $withPonto];
+        return [
+            'projects' => $projects, 'people' => $people, 'total' => (int) $entries->sum('minutes'), 'with_ponto' => $withPonto,
+            // Money columns only when the company filled in the values.
+            'with_costs' => $rates->isNotEmpty(),
+            'with_revenue' => collect($projects)->contains(fn (array $row): bool => $row['revenue'] !== null),
+            'cost' => (int) collect($projects)->sum('cost'),
+            'revenue' => (int) collect($projects)->sum('revenue'),
+        ];
     }
 
     /** The company also has the Ponto (Kiban Core Ponto): the summary shows the hours clocked. */
@@ -66,14 +90,38 @@ class RotinaReports
         return $clocked ? (int) round($minutes * 100 / $clocked) : null;
     }
 
+    public static function money(?int $cents): string
+    {
+        return $cents === null ? '—' : (string) Number::currency($cents / 100, Country::currency(), str_replace('_', '-', app()->getLocale()));
+    }
+
+    /**
+     * Sets the value of the hour of each person (empty removes it).
+     *
+     * @param  array<int|string, mixed>  $values  user id => value in money (e.g. "45.50")
+     */
+    public function setRates(array $values): void
+    {
+        foreach ($values as $userId => $value) {
+            if (blank($value)) {
+                Rate::query()->where('user_id', $userId)->delete();
+
+                continue;
+            }
+
+            Rate::query()->updateOrCreate(['user_id' => (int) $userId], ['hour_cents' => (int) round((float) $value * 100)]);
+        }
+    }
+
     public function export(CarbonImmutable $month): string
     {
         $data = $this->month($month);
         $hours = fn (int $minutes): float => round($minutes / 60, 2);
 
-        $projects = [[__('rotina.fields.project'), __('rotina.fields.client'), __('rotina.reports.hours')]];
+        $money = fn (?int $cents): ?float => $cents === null ? null : round($cents / 100, 2);
+        $projects = [[__('rotina.fields.project'), __('rotina.fields.client'), __('rotina.reports.hours'), ...($data['with_costs'] ? [__('rotina.reports.cost')] : []), ...($data['with_revenue'] ? [__('rotina.reports.revenue'), __('rotina.reports.margin')] : [])]];
         foreach ($data['projects'] as $row) {
-            $projects[] = [$row['name'], $row['client'], $hours($row['minutes'])];
+            $projects[] = [$row['name'], $row['client'], $hours($row['minutes']), ...($data['with_costs'] ? [$money($row['cost'])] : []), ...($data['with_revenue'] ? [$money($row['revenue']), $money($row['margin'])] : [])];
         }
         $projects[] = ['__bold__', __('rotina.reports.total'), '', $hours($data['total'])];
 
