@@ -106,6 +106,12 @@ class StockTest extends TestCase
         $line->delete();
         $this->assertSame(10.0, $this->stock->balance($item, $van));
 
+        // Synced without a session (the phone's queue): the movement still says who used it.
+        auth()->forgetGuards();
+        $line = OrderMaterial::create(['order_id' => $order->getKey(), 'material_id' => $connector->getKey(), 'description' => 'Conector', 'unit' => 'un', 'quantity' => 1, 'client_id' => (string) Str::uuid()]);
+        $this->assertSame($lucas->getKey(), Movement::query()->where('kind', 'use')->latest('id')->first()->user_id);
+        $line->delete();
+
         // The technician sees only his own stock.
         $this->actingAs($lucas);
         app(AccessManager::class)->forget();

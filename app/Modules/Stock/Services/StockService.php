@@ -197,7 +197,10 @@ class StockService
             return null;
         }
 
-        return $this->consume($item, $location, (float) $material->quantity, $order, $material, null, true);
+        // Who used it: the person logged in, or (in a sync without a session) the technician of the order.
+        $by = auth()->user() ?? User::query()->find($order->technician_id);
+
+        return $this->consume($item, $location, (float) $material->quantity, $order, $material, $by, true);
     }
 
     /** Campo: a material removed from a work order goes back to where it left. */
