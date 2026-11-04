@@ -61,6 +61,10 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::post('/orcamento/{token}', [QuoteLinkController::class, 'answer'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:10,1')->name('field.quote.answer');
 
     // Agenda: the company's public booking page and the client's link (confirm, reschedule, cancel). No login; few tries per minute.
+    // PMOC: the page of the QR label stuck on the equipment (no login; long random link).
+    Route::get('/pmoc/{token}', [\App\Http\Controllers\Pmoc\EquipmentPublicController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('pmoc.public');
+    Route::post('/pmoc/{token}', [\App\Http\Controllers\Pmoc\EquipmentPublicController::class, 'ask'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:5,10')->name('pmoc.public.ask');
+
     Route::get('/agendar', [BookingController::class, 'show'])->name('agenda.booking');
     Route::post('/agendar', [BookingController::class, 'store'])->middleware('throttle:6,1')->name('agenda.booking.store');
     Route::get('/agendar/{token}', [BookingController::class, 'manage'])->where('token', '[A-Za-z0-9]{48}')->name('agenda.manage');

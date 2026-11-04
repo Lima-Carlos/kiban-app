@@ -28,6 +28,9 @@ class WorkOrder extends Model
     /** Opened by a preventive maintenance plan (Kiban Core PMOC). */
     public const PMOC = 'pmoc';
 
+    /** Asked by the customer on the page of the PMOC QR label. */
+    public const QR = 'qr';
+
     protected $table = 'fd_orders';
 
     protected $guarded = ['*'];

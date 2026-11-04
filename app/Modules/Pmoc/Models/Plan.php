@@ -25,7 +25,7 @@ class Plan extends Model
 
     protected $table = 'pm_plans';
 
-    protected $fillable = ['customer_id', 'site_id', 'name', 'responsible_name', 'responsible_registration', 'area_m2', 'occupants', 'service_type_id', 'frequency_months', 'lead_days', 'starts_on', 'next_due_on', 'notes', 'is_active'];
+    protected $fillable = ['customer_id', 'site_id', 'name', 'responsible_name', 'responsible_registration', 'area_m2', 'occupants', 'service_type_id', 'frequency_months', 'lead_days', 'starts_on', 'next_due_on', 'notes', 'is_active', 'art_number', 'art_path'];
 
     protected $attributes = ['frequency_months' => 1, 'lead_days' => 7, 'is_active' => true];
 

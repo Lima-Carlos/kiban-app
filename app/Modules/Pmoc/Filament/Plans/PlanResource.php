@@ -15,6 +15,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -101,6 +102,12 @@ class PlanResource extends ModuleResource
                         TextInput::make('responsible_registration')->label(__('pmoc.fields.responsible_registration'))->helperText(__('pmoc.helpers.registration'))->maxLength(60),
                         TextInput::make('area_m2')->label(__('pmoc.fields.area_m2'))->numeric()->integer()->minValue(0)->suffix('m²'),
                         TextInput::make('occupants')->label(__('pmoc.fields.occupants'))->numeric()->integer()->minValue(0),
+                        TextInput::make('art_number')->label(__('pmoc.fields.art_number'))->helperText(__('pmoc.helpers.art_number'))->maxLength(60),
+                        FileUpload::make('art_path')->label(__('pmoc.fields.art_file'))
+                            ->disk('local')->visibility('private')
+                            ->directory(fn (): string => 'tenants/'.app(\App\Tenancy\TenantContext::class)->get()->getKey().'/pmoc')
+                            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(8192)->openable()->downloadable(),
                     ]),
                 Section::make(__('pmoc.plans.visits'))
                     ->description(__('pmoc.plans.visits_help'))

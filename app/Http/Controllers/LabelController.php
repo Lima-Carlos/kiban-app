@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompanyProfile;
-use App\Modules\Pmoc\Filament\EquipmentPage;
 use App\Modules\Pmoc\Models\Plan;
 use App\Modules\Stock\Filament\UnitPage;
 use App\Modules\Stock\Models\Unit;
@@ -12,8 +11,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 /**
- * Sheets of labels to print (A4, 3 × 7, the usual sticker sheets): a QR code that opens the equipment's card in
- * the system (sign-in required), the company's name and the tag or serial number. The browser prints or saves as PDF.
+ * Sheets of labels to print (A4, 3 × 7, the usual sticker sheets): a QR code that opens the equipment's page (PMOC:
+ * public, with "ask for service"; comodato: the card in the system, sign-in required), the company's name and the tag or serial number. The browser prints or saves as PDF.
  */
 class LabelController extends Controller
 {
@@ -24,7 +23,7 @@ class LabelController extends Controller
         abort_unless($request->user()?->can('viewAny', Plan::class), 403);
 
         $labels = $plan->equipment->where('is_active', true)->sortBy('tag')->map(fn ($item): array => [
-            'qr' => QrCode::svg(EquipmentPage::getUrl(['equipamento' => $item->getKey()])),
+            'qr' => QrCode::svg($item->publicUrl()),
             'title' => $item->tag,
             'lines' => [$item->room, collect([$item->brand, $item->model])->filter()->implode(' '), $item->serial ? __('pmoc.visit.serial', ['serial' => $item->serial]) : null],
         ])->values();

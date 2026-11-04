@@ -51,7 +51,7 @@
             <tr>
                 <td><div class="label">{{ __('pmoc.document.company') }}</div>{{ $company }}@if ($companyDocument) · {{ $companyDocument }}@endif</td>
                 <td><div class="label">{{ __('pmoc.fields.responsible_name') }}</div>{{ $plan->responsible_name ?: '—' }}</td>
-                <td><div class="label">{{ __('pmoc.fields.responsible_registration') }}</div>{{ $plan->responsible_registration ?: '—' }}</td>
+                <td><div class="label">{{ __('pmoc.fields.responsible_registration') }}</div>{{ $plan->responsible_registration ?: '—' }}@if ($plan->art_number)<br>{{ __('pmoc.fields.art_number') }}: {{ $plan->art_number }}@endif</td>
             </tr>
             <tr>
                 <td><div class="label">{{ __('pmoc.fields.frequency') }}</div>{{ trans_choice('pmoc.frequency', $plan->frequency_months, ['count' => $plan->frequency_months]) }}</td>

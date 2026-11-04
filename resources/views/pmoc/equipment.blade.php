@@ -19,5 +19,7 @@
         </dl>
     </x-filament::section>
 
+    <p style="margin:0;font-size:13px;opacity:.75">{{ __('pmoc.public.link_help') }} <a href="{{ $item->publicUrl() }}" target="_blank" style="text-decoration:underline">{{ __('pmoc.public.open_link') }}</a></p>
+
     @include('pmoc.visits', ['visits' => $plan->visits->take(12)])
 </x-filament-panels::page>
