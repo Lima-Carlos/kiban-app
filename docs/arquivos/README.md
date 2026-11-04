@@ -22,3 +22,4 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [rotina.md](rotina.md): o módulo Kiban Core Rotina (tarefas do dia e horas por projeto).
 - [pmoc.md](pmoc.md): o Kiban Core PMOC (planos de manutenção preventiva, visitas que viram OS e o documento em PDF).
 - [estoque.md](estoque.md): o Kiban Core Estoque (materiais, estoque do técnico ligado ao Campo e comodato por número de série).
+- [despesas.md](despesas.md): o Kiban Core Despesas (reembolso de gastos com foto do recibo, aprovação, pagamento por pessoa e a ligação com a Frota).
