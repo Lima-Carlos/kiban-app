@@ -43,6 +43,53 @@ class StockService
         });
     }
 
+    /**
+     * The entry of a whole invoice (NF-e): each checked line goes into the place, into the chosen item or a new one
+     * created with the invoice's code, description and unit. The note keeps the number, supplier and access key,
+     * so the same invoice is not entered twice.
+     *
+     * @param  array{number: string, supplier: string, key: string}  $invoice
+     * @param  array<int, array{code: string, description: string, unit: string, quantity: float|string, item_id: int|string|null}>  $lines
+     * @return int how many lines went in
+     */
+    public function receiveInvoice(array $invoice, array $lines, Location $location, ?User $by = null): int
+    {
+        if ($invoice['key'] !== '' && Movement::query()->where('note', 'like', '%'.$invoice['key'].'%')->exists()) {
+            throw new StockException(__('stock.invoice.errors.already'));
+        }
+
+        $note = __('stock.invoice.note', ['number' => $invoice['number'], 'supplier' => $invoice['supplier'], 'key' => $invoice['key']]);
+
+        return DB::transaction(function () use ($lines, $location, $note, $by): int {
+            $count = 0;
+
+            foreach ($lines as $line) {
+                $quantity = (float) $line['quantity'];
+
+                if ($quantity <= 0 || blank($line['item_id'] ?? null) || $line['item_id'] === 'skip') {
+                    continue;
+                }
+
+                $item = $line['item_id'] === 'new'
+                    ? Item::query()->create(['name' => $line['description'], 'sku' => $line['code'] ?: null, 'unit' => $line['unit'] ?: 'un'])
+                    : Item::query()->findOrFail($line['item_id']);
+
+                if ($item->sku === null && filled($line['code'])) {
+                    $item->update(['sku' => $line['code']]);
+                }
+
+                $this->receive($item, $location, $quantity, mb_substr($note, 0, 255), $by);
+                $count++;
+            }
+
+            if ($count === 0) {
+                throw new StockException(__('stock.invoice.errors.nothing'));
+            }
+
+            return $count;
+        });
+    }
+
     /** From one place to another (e.g. the warehouse fills a technician's vehicle). Never more than there is. */
     public function transfer(Item $item, Location $from, Location $to, float $quantity, ?User $by = null): Movement
     {

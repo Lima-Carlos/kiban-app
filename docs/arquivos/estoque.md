@@ -27,3 +27,9 @@ Locais ativos (`locations`): almoxarifados e técnicos juntos.
 
 ## Etiquetas com QR (03/11/2026)
 Em Comodato, **"Imprimir etiquetas"** abre a folha (A4, 3 × 7) com os equipamentos em estoque (respeita os filtros de item e local). O QR abre a **ficha do equipamento** (`UnitPage`, precisa de login): situação, onde está (local ou cliente), desde quando e o histórico. Técnicos também abrem.
+
+## Entrada pela nota fiscal (XML da NF-e) (03/11/2026, pela pesquisa de concorrentes)
+Em Estoque, o botão **"Entrada pela nota (XML)"** recebe o arquivo XML que o fornecedor manda por e-mail e o local de entrada. Na segunda tela aparecem os produtos da nota: o sistema sugere o item do estoque (mesmo código ou código de barras, ou o mesmo nome) ou "Criar item novo" (com o código, a descrição e a unidade da nota); dá para mudar a quantidade ou marcar "Não lançar". A mesma nota não entra duas vezes (a chave fica na observação da movimentação).
+- Itens com número de série (comodato) não entram por aqui: use "Cadastrar números de série".
+- Segurança: o leitor nunca busca nada na internet a partir do XML.
+- Peças: `App\Modules\Stock\Services\InvoiceReader`, `StockService::receiveInvoice()`, as ações `invoice` e `invoiceLines` em `ManageBalances`, `tests/Feature/StockInvoiceTest.php`.
