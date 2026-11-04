@@ -6,6 +6,7 @@ return [
     'time_format' => 'g:i A',
     'time_with_seconds_format' => 'g:i:s A',
     'time_invalid' => 'Type the time with 4 numbers, for example 0800 for 08:00.',
+    'labels' => ['help' => '{0} No labels.|{1} 1 label. Use A4 sticker sheets (3 × 7, 63.5 × 38.1 mm). Each QR opens the card in the system (sign-in required).|[2,*] :count labels. Use A4 sticker sheets (3 × 7, 63.5 × 38.1 mm). Each QR opens the card in the system (sign-in required).', 'print' => 'Print', 'empty' => 'Nothing to print.'],
     'menu' => [
         'account' => 'My Kiban account',
         'privacy' => 'Privacy',

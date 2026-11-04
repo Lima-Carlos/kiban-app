@@ -149,6 +149,10 @@ return [
         'customer' => 'Choose the customer.',
         'status' => 'Invalid status.',
     ],
+    'labels' => [
+        'title' => 'Equipment labels',
+        'print' => 'Print labels',
+    ],
     'denied' => [
         'manager' => 'Only the inventory manager does this.',
     ],

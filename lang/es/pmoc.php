@@ -145,6 +145,10 @@ return [
         'manager' => 'Solo el gestor cambia los planes de mantenimiento.',
         'limit' => 'Su plan permite :limit equipos activos. Desactive algunos o amplíe el plan.',
     ],
+    'labels' => [
+        'title' => 'Etiquetas del plan :plan',
+        'print' => 'Etiquetas',
+    ],
     'console' => [
         'ran' => 'Mantenimiento: :visits visita(s) abierta(s).',
     ],

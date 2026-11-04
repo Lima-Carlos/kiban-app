@@ -9,6 +9,7 @@ use App\Http\Controllers\Field\OrderReportController;
 use App\Http\Controllers\Field\OrderSyncController;
 use App\Http\Controllers\Field\QuoteLinkController;
 use App\Http\Controllers\Fleet\StationCheckController;
+use App\Http\Controllers\LabelController;
 use App\Http\Controllers\LicenseRefreshController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManifestController;
@@ -72,6 +73,10 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
 
         // Alerts on the person's phone (web push): the phone is kept when the person allows it.
         // A part contracted elsewhere shows up when the person comes back to the tab (see license-sync).
+        // Sheets of QR labels to print (PMOC equipment and serialized units): each QR opens the item's card.
+        Route::get('/etiquetas/pmoc/{plan}', [LabelController::class, 'pmoc'])->whereNumber('plan')->name('labels.pmoc');
+        Route::get('/etiquetas/comodato', [LabelController::class, 'units'])->name('labels.units');
+
         Route::post('/licenca/atualizar', LicenseRefreshController::class)->middleware('throttle:20,1')->name('license.sync');
 
         Route::post('/avisos/celular', PhoneAlertController::class)->middleware('throttle:20,1')->name('phone-alerts.subscribe');

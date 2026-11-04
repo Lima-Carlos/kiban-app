@@ -184,6 +184,13 @@ class PlanResource extends ModuleResource
                     ->color('gray')
                     ->authorize('view')
                     ->action(fn (Plan $record): StreamedResponse => response()->streamDownload(fn () => print (app(PmocService::class)->pdf($record)), app(PmocService::class)->fileName($record), ['Content-Type' => 'application/pdf'])),
+                Action::make('labels')
+                    ->label(__('pmoc.labels.print'))
+                    ->icon(Heroicon::OutlinedQrCode)
+                    ->color('gray')
+                    ->authorize('view')
+                    ->url(fn (Plan $record): string => route('labels.pmoc', ['plan' => $record->getKey()]))
+                    ->openUrlInNewTab(),
                 Action::make('openVisit')
                     ->label(__('pmoc.visit.open_now'))
                     ->icon(Heroicon::OutlinedCalendarDays)

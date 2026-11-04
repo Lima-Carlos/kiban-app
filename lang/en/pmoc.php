@@ -145,6 +145,10 @@ return [
         'manager' => 'Only the manager changes the maintenance plans.',
         'limit' => 'Your plan allows :limit active units. Turn some off or upgrade the plan.',
     ],
+    'labels' => [
+        'title' => 'Labels of the plan :plan',
+        'print' => 'Labels',
+    ],
     'console' => [
         'ran' => 'Maintenance plans: :visits visit(s) opened.',
     ],

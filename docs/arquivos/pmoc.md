@@ -26,3 +26,6 @@ Equipamentos ativos (`equipment`). Salvar um plano que passe do limite é bloque
 
 ## Para o advogado/engenheiro conferir
 A lista de tarefas segue a rotina usual (Portaria 3.523/1998 e ABNT NBR 13971), mas o responsável técnico é quem confere e assina o plano. O documento diz isso no rodapé.
+
+## Etiquetas com QR (03/11/2026)
+Na lista de planos, **"Etiquetas"** abre uma folha para imprimir (A4, 3 × 7 etiquetas adesivas de 63,5 × 38,1 mm) com uma etiqueta por equipamento ativo: QR, nome da empresa, etiqueta (ex.: EV-01), local, marca/modelo e número de série. O QR abre a **ficha do equipamento** no sistema (`EquipmentPage`, precisa de login): dados, plano, próxima visita e as últimas visitas. Os técnicos do Campo também abrem. Peças: `App\Http\Controllers\LabelController`, `resources/views/labels/sheet.blade.php`, `App\Support\QrCode`.

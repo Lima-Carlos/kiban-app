@@ -6,6 +6,7 @@ return [
     'time_format' => 'H:i',
     'time_with_seconds_format' => 'H:i:s',
     'time_invalid' => 'Digite a hora com 4 números, por exemplo 0800 para 08:00.',
+    'labels' => ['help' => '{0} Nenhuma etiqueta.|{1} 1 etiqueta. Use folhas A4 de etiquetas adesivas (3 × 7, 63,5 × 38,1 mm). Cada QR abre a ficha no sistema (precisa de login).|[2,*] :count etiquetas. Use folhas A4 de etiquetas adesivas (3 × 7, 63,5 × 38,1 mm). Cada QR abre a ficha no sistema (precisa de login).', 'print' => 'Imprimir', 'empty' => 'Nada para imprimir.'],
     'menu' => [
         'account' => 'Minha conta Kiban',
         'privacy' => 'Privacidade',

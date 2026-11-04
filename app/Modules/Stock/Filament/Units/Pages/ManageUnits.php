@@ -21,6 +21,12 @@ class ManageUnits extends ModuleRecordsPage
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('labels')
+                ->label(__('stock.labels.print'))
+                ->icon(Heroicon::OutlinedPrinter)
+                ->color('gray')
+                ->url(fn (): string => route('labels.units', array_filter(['item' => $this->tableFilters['item_id']['value'] ?? null, 'location' => $this->tableFilters['location_id']['value'] ?? null])))
+                ->openUrlInNewTab(),
             // Many at once: one serial number per line (or read by a barcode reader, which types and presses Enter).
             Action::make('addUnits')
                 ->label(__('stock.units.add'))

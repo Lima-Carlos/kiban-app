@@ -81,6 +81,11 @@ class PmocModule extends Module
         return [PlanResource::class];
     }
 
+    public function pages(): array
+    {
+        return [Filament\EquipmentPage::class];
+    }
+
     public function roles(): array
     {
         return [self::MANAGER => __('pmoc.roles.manager'), self::VIEWER => __('pmoc.roles.viewer')];

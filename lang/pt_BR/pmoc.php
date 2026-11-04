@@ -145,6 +145,10 @@ return [
         'manager' => 'Só o gestor muda os planos de manutenção.',
         'limit' => 'O seu plano permite :limit equipamentos ativos. Desative alguns ou aumente o plano.',
     ],
+    'labels' => [
+        'title' => 'Etiquetas do plano :plan',
+        'print' => 'Etiquetas',
+    ],
     'console' => [
         'ran' => 'PMOC: :visits visita(s) aberta(s).',
     ],

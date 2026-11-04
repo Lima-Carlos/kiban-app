@@ -24,3 +24,6 @@ Locais ativos (`locations`): almoxarifados e técnicos juntos.
 - `Filament/` (Estoque, Comodato, Itens, Locais, Movimentações, Meu estoque) e `resources/views/stock/my-stock.blade.php`.
 - Migração `2026_11_14_100000_create_stock_tables.php`; textos em `lang/*/stock.php`; testes em `tests/Feature/StockTest.php`.
 - `app/Modules/Module.php` ganhou `boot()`: um módulo pode ouvir eventos de outro (chamado no `AppServiceProvider`).
+
+## Etiquetas com QR (03/11/2026)
+Em Comodato, **"Imprimir etiquetas"** abre a folha (A4, 3 × 7) com os equipamentos em estoque (respeita os filtros de item e local). O QR abre a **ficha do equipamento** (`UnitPage`, precisa de login): situação, onde está (local ou cliente), desde quando e o histórico. Técnicos também abrem.

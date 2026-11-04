@@ -95,7 +95,7 @@ class StockModule extends Module
 
     public function pages(): array
     {
-        return [MyStockPage::class];
+        return [MyStockPage::class, Filament\UnitPage::class];
     }
 
     public function roles(): array

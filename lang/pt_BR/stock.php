@@ -149,6 +149,10 @@ return [
         'customer' => 'Escolha o cliente.',
         'status' => 'Situação inválida.',
     ],
+    'labels' => [
+        'title' => 'Etiquetas do comodato',
+        'print' => 'Imprimir etiquetas',
+    ],
     'denied' => [
         'manager' => 'Só o gestor do estoque faz isso.',
     ],
