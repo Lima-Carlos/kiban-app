@@ -38,6 +38,7 @@ return [
         'created' => '{0} Every technician already has a place.|{1} 1 place created.|[2,*] :count places created.',
     ],
     'balances' => [
+        'value_title' => 'Value kept per place', 'value_help' => 'Quantity × average cost (only items with a cost).',
         'singular' => 'balance',
         'plural' => 'inventory',
         'empty' => 'Nothing in stock',
@@ -85,6 +86,8 @@ return [
         'written_off' => 'Unit status updated.',
     ],
     'fields' => [
+        'unit_cost' => 'Cost per unit',
+        'value' => 'Value in stock',
         'item' => 'Item',
         'location' => 'Place',
         'quantity' => 'Quantity',
@@ -113,6 +116,7 @@ return [
         'customer' => 'Customer',
     ],
     'helpers' => [
+        'unit_cost' => 'Optional. With the cost, the system calculates the item\'s average cost and the value kept in each place. From the invoice (XML), the cost comes by itself.',
         'min_quantity' => 'Below this, the item shows in "Attention" on the start page.',
         'serialized' => 'Each unit with its own serial number (equipment lent to customers).',
         'material' => 'What the technician writes down with this material on a work order leaves their stock.',
@@ -157,6 +161,7 @@ return [
         'help' => 'What you write down on work orders leaves from here by itself. Missing something? Ask the warehouse.',
     ],
     'attention' => [
+        'buy' => 'buy :quantity (missing to the minimum + use in the last 30 days)',
         'low' => 'Low stock: :item (:total; minimum :min)',
     ],
     'errors' => [

@@ -135,7 +135,8 @@ class StockModule extends Module
         }
 
         return app(StockService::class)->lowStock()->take(5)->map(fn (array $low): array => [
-            'text' => __('stock.attention.low', ['item' => $low['item']->name, 'total' => StockFormat::quantity($low['total'], $low['item']->unit), 'min' => StockFormat::quantity($low['item']->min_quantity, $low['item']->unit)]),
+            'text' => __('stock.attention.low', ['item' => $low['item']->name, 'total' => StockFormat::quantity($low['total'], $low['item']->unit), 'min' => StockFormat::quantity($low['item']->min_quantity, $low['item']->unit)])
+                .($low['buy'] > 0 ? ' · '.__('stock.attention.buy', ['quantity' => StockFormat::quantity($low['buy'], $low['item']->unit)]) : ''),
             'url' => BalanceResource::getUrl('index'),
             'color' => 'warning',
         ])->all();

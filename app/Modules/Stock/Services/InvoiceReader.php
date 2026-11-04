@@ -14,7 +14,7 @@ use App\Modules\Stock\Models\Movement;
 class InvoiceReader
 {
     /**
-     * @return array{number: string, supplier: string, key: string, already: bool, lines: array<int, array{code: string, ean: ?string, description: string, unit: string, quantity: float, item_id: int|string|null}>}
+     * @return array{number: string, supplier: string, key: string, already: bool, lines: array<int, array{code: string, ean: ?string, description: string, unit: string, quantity: float, unit_cost: ?float, item_id: int|string|null}>}
      */
     public function read(string $xml): array
     {
@@ -49,6 +49,7 @@ class InvoiceReader
                 'description' => mb_substr($value('xProd'), 0, 120),
                 'unit' => $this->unit($value('uCom')),
                 'quantity' => round((float) $value('qCom'), 3),
+                'unit_cost' => is_numeric($value('vUnCom')) ? round((float) $value('vUnCom'), 4) : null,
             ];
             $line['item_id'] = $this->match($line)?->getKey();
             $lines[] = $line;

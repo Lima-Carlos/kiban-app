@@ -31,16 +31,47 @@ class StockService
     }
 
     /** Items bought or received into a place. */
-    public function receive(Item $item, Location $location, float $quantity, ?string $note = null, ?User $by = null): Movement
+    public function receive(Item $item, Location $location, float $quantity, ?string $note = null, ?User $by = null, ?int $unitCostCents = null): Movement
     {
         $this->positive($quantity);
         $this->notSerialized($item);
 
-        return DB::transaction(function () use ($item, $location, $quantity, $note, $by): Movement {
+        return DB::transaction(function () use ($item, $location, $quantity, $note, $by, $unitCostCents): Movement {
+            if ($unitCostCents !== null && $unitCostCents >= 0) {
+                $this->averageCost($item, $quantity, $unitCostCents);
+            }
+
             $this->change($item, $location, $quantity);
 
-            return $this->record($item, 'entry', $quantity, null, $location, $by, ['note' => $note]);
+            return $this->record($item, 'entry', $quantity, null, $location, $by, ['note' => $note, 'unit_cost_cents' => $unitCostCents]);
         });
+    }
+
+    /**
+     * Weighted average cost: what was there at the old average plus what arrived at its cost. With nothing (or less
+     * than nothing) in stock before, the new cost is the average.
+     */
+    protected function averageCost(Item $item, float $quantity, int $unitCostCents): void
+    {
+        $before = max(0.0, (float) Balance::query()->where('item_id', $item->getKey())->sum('quantity'));
+        $average = $item->avg_cost_cents === null || $before <= 0
+            ? $unitCostCents
+            : (int) round(($before * $item->avg_cost_cents + $quantity * $unitCostCents) / ($before + $quantity));
+
+        $item->forceFill(['avg_cost_cents' => $average])->save();
+    }
+
+    /** Value kept in stock (quantity × average cost), per place; items without cost do not count. */
+    public function valueByLocation(): Collection
+    {
+        return Balance::query()->with(['item', 'location'])->where('quantity', '>', 0)->get()
+            ->filter(fn (Balance $balance): bool => $balance->item?->avg_cost_cents !== null)
+            ->groupBy('location_id')
+            ->map(fn (Collection $balances): array => [
+                'location' => $balances->first()->location,
+                'value' => (int) round($balances->sum(fn (Balance $balance): float => (float) $balance->quantity * $balance->item->avg_cost_cents)),
+            ])
+            ->sortByDesc('value')->values();
     }
 
     /**
@@ -78,7 +109,8 @@ class StockService
                     $item->update(['sku' => $line['code']]);
                 }
 
-                $this->receive($item, $location, $quantity, mb_substr($note, 0, 255), $by);
+                $cost = isset($line['unit_cost']) && is_numeric($line['unit_cost']) ? (int) round((float) $line['unit_cost'] * 100) : null;
+                $this->receive($item, $location, $quantity, mb_substr($note, 0, 255), $by, $cost);
                 $count++;
             }
 
@@ -300,8 +332,19 @@ class StockService
     {
         return Item::query()->active()->where('min_quantity', '>', 0)->withSum('balances', 'quantity')->orderBy('name')->get()
             ->filter(fn (Item $item): bool => (float) $item->balances_sum_quantity < $item->min_quantity)
-            ->map(fn (Item $item): array => ['item' => $item, 'total' => (float) $item->balances_sum_quantity])
+            ->map(fn (Item $item): array => ['item' => $item, 'total' => (float) $item->balances_sum_quantity, 'buy' => $this->suggestedPurchase($item, (float) $item->balances_sum_quantity)])
             ->values();
+    }
+
+    /**
+     * How much to buy: what is missing to reach the minimum plus what was used in the last 30 days (so the stock
+     * lasts another month), rounded up.
+     */
+    public function suggestedPurchase(Item $item, float $total): float
+    {
+        $used = (float) Movement::query()->where('item_id', $item->getKey())->where('kind', 'use')->where('moved_at', '>=', now()->subDays(30))->sum('quantity');
+
+        return (float) ceil(max(0.0, (float) $item->min_quantity - $total) + $used);
     }
 
     public function enabled(): bool

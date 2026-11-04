@@ -35,9 +35,9 @@ class ManageBalances extends ModuleRecordsPage
                 ->label(__('stock.actions.entry'))
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->visible($can)
-                ->schema([StockForms::item(), StockForms::location(), StockForms::quantity(), TextInput::make('note')->label(__('stock.fields.note'))->placeholder(__('stock.helpers.entry_note'))->maxLength(255)])
+                ->schema([StockForms::item(), StockForms::location(), StockForms::quantity(), TextInput::make('unit_cost')->label(__('stock.fields.unit_cost'))->helperText(__('stock.helpers.unit_cost'))->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => \App\Support\Country::currency()), TextInput::make('note')->label(__('stock.fields.note'))->placeholder(__('stock.helpers.entry_note'))->maxLength(255)])
                 ->action(fn (array $data, Action $action) => StockForms::run(
-                    fn () => app(StockService::class)->receive(Item::query()->findOrFail($data['item_id']), Location::query()->findOrFail($data['location_id']), (float) $data['quantity'], $data['note'] ?? null),
+                    fn () => app(StockService::class)->receive(Item::query()->findOrFail($data['item_id']), Location::query()->findOrFail($data['location_id']), (float) $data['quantity'], $data['note'] ?? null, null, filled($data['unit_cost'] ?? null) ? (int) round((float) $data['unit_cost'] * 100) : null),
                     __('stock.actions.entry_done'), $action)),
             // NF-e: send the XML the supplier emailed, check each line (item suggested or a new one) and it all goes in.
             Action::make('invoice')
@@ -118,6 +118,7 @@ class ManageBalances extends ModuleRecordsPage
                         Hidden::make('code'),
                         Hidden::make('description'),
                         Hidden::make('unit'),
+                        Hidden::make('unit_cost'),
                         Grid::make(['default' => 1, 'sm' => 3])->components([
                             Select::make('item_id')->label(__('stock.invoice.item'))->options($itemOptions)->searchable()->required()->columnSpan(['sm' => 2]),
                             StockForms::quantity()->suffix(fn ($get): string => (string) $get('unit')),
@@ -126,7 +127,7 @@ class ManageBalances extends ModuleRecordsPage
             ])
             ->action(function (array $data, array $arguments, Action $action): void {
                 $invoice = $arguments['invoice'] ?? [];
-                $lines = collect($data['lines'] ?? [])->values()->map(fn (array $line, int $index): array => $line + ['code' => $invoice['lines'][$index]['code'] ?? '', 'description' => $invoice['lines'][$index]['description'] ?? '', 'unit' => $invoice['lines'][$index]['unit'] ?? 'un'])->all();
+                $lines = collect($data['lines'] ?? [])->values()->map(fn (array $line, int $index): array => $line + ['code' => $invoice['lines'][$index]['code'] ?? '', 'description' => $invoice['lines'][$index]['description'] ?? '', 'unit' => $invoice['lines'][$index]['unit'] ?? 'un', 'unit_cost' => $invoice['lines'][$index]['unit_cost'] ?? null])->all();
 
                 StockForms::run(function () use ($invoice, $lines, $arguments): void {
                     $count = app(StockService::class)->receiveInvoice($invoice, $lines, Location::query()->findOrFail($arguments['location_id']));

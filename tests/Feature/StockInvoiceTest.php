@@ -76,6 +76,37 @@ XML;
         $this->assertThrows(fn () => app(StockService::class)->receiveInvoice($invoice, $lines, $warehouse), StockException::class);
     }
 
+    public function test_average_cost_value_kept_and_purchase_suggestion(): void
+    {
+        $warehouse = Location::create(['name' => 'Almoxarifado']);
+        $van = Location::create(['name' => 'Carro do Lucas', 'kind' => Location::TECHNICIAN]);
+        $stock = app(StockService::class);
+
+        // From the invoice the cost comes by itself: R$ 0,85 per metre.
+        $invoice = app(InvoiceReader::class)->read(self::xml());
+        $lines = $invoice['lines'];
+        $lines[1]['item_id'] = 'skip';
+        $lines[2]['item_id'] = 'skip';
+        $lines[0]['item_id'] = 'new';
+        $stock->receiveInvoice($invoice, $lines, $warehouse);
+        $cable = Item::query()->where('sku', 'CB-DROP')->sole();
+        $this->assertSame(85, $cable->avg_cost_cents);
+
+        // 1000 m at 0,85 + 1000 m at 1,15 = average 1,00; a transfer does not change the value.
+        $stock->receive($cable, $warehouse, 1000, null, null, 115);
+        $this->assertSame(100, $cable->refresh()->avg_cost_cents);
+        $stock->transfer($cable, $warehouse, $van, 500);
+        $values = $stock->valueByLocation()->mapWithKeys(fn (array $row): array => [$row['location']->name => $row['value']]);
+        $this->assertSame(['Almoxarifado' => 150000, 'Carro do Lucas' => 50000], $values->all());
+
+        // Below the minimum: what is missing plus the use of the last 30 days.
+        $cable->update(['min_quantity' => 2500]);
+        $stock->consume($cable, $van, 300);
+        $low = $stock->lowStock()->first();
+        $this->assertSame((2500.0 - 1700.0) + 300.0, $low['buy']);
+        $this->assertStringContainsString(__('stock.attention.buy', ['quantity' => '1.100 m']), app(\App\Modules\Stock\StockModule::class)->attention(auth()->user())[0]['text']);
+    }
+
     public function test_files_that_are_not_an_nfe_are_refused(): void
     {
         $this->assertThrows(fn () => app(InvoiceReader::class)->read('%PDF-1.4 not xml'), StockException::class);

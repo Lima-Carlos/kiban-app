@@ -33,3 +33,9 @@ Em Estoque, o botão **"Entrada pela nota (XML)"** recebe o arquivo XML que o fo
 - Itens com número de série (comodato) não entram por aqui: use "Cadastrar números de série".
 - Segurança: o leitor nunca busca nada na internet a partir do XML.
 - Peças: `App\Modules\Stock\Services\InvoiceReader`, `StockService::receiveInvoice()`, as ações `invoice` e `invoiceLines` em `ManageBalances`, `tests/Feature/StockInvoiceTest.php`.
+
+## Custo médio, valor guardado e sugestão de compra (03/11/2026)
+- A **Entrada** aceita o **custo por unidade** (opcional); pela nota (XML), o custo vem sozinho. O sistema guarda o **custo médio** de cada item (média ponderada: o que havia pelo custo antigo + o que chegou pelo novo).
+- Em Estoque, a coluna **"Valor em estoque"** (quantidade × custo médio) e, no topo, o **valor guardado por local** (almoxarifado e cada carro).
+- O aviso de **estoque baixo** no Início diz **quanto comprar**: o que falta para o mínimo + o que foi usado nos últimos 30 dias.
+- Peças: `StockService::receive()` (custo), `averageCost()`, `valueByLocation()`, `suggestedPurchase()`; migração `2026_11_15_140000_add_costs_to_stock.php`.

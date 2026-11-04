@@ -20,7 +20,7 @@ class Movement extends Model
 
     protected $table = 'es_movements';
 
-    protected $fillable = ['item_id', 'kind', 'quantity', 'from_location_id', 'to_location_id', 'unit_id', 'work_order_id', 'order_material_id', 'customer_name', 'note', 'user_id', 'moved_at'];
+    protected $fillable = ['item_id', 'kind', 'quantity', 'from_location_id', 'to_location_id', 'unit_id', 'work_order_id', 'order_material_id', 'customer_name', 'note', 'user_id', 'moved_at', 'unit_cost_cents'];
 
     protected function casts(): array
     {

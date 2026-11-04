@@ -38,6 +38,7 @@ return [
         'created' => '{0} Todos os técnicos já têm local.|{1} 1 local criado.|[2,*] :count locais criados.',
     ],
     'balances' => [
+        'value_title' => 'Valor guardado por local', 'value_help' => 'Quantidade × custo médio (só itens com custo informado).',
         'singular' => 'saldo',
         'plural' => 'estoque',
         'empty' => 'Nada em estoque',
@@ -85,6 +86,8 @@ return [
         'written_off' => 'Situação do equipamento atualizada.',
     ],
     'fields' => [
+        'unit_cost' => 'Custo por unidade',
+        'value' => 'Valor em estoque',
         'item' => 'Item',
         'location' => 'Local',
         'quantity' => 'Quantidade',
@@ -113,6 +116,7 @@ return [
         'customer' => 'Cliente',
     ],
     'helpers' => [
+        'unit_cost' => 'Opcional. Com o custo, o sistema calcula o custo médio do item e o valor guardado em cada local. Pela nota (XML), o custo vem sozinho.',
         'min_quantity' => 'Abaixo disso, o item aparece em "Atenção" no Início.',
         'serialized' => 'Cada unidade com o seu número de série (equipamentos de comodato).',
         'material' => 'O que o técnico lançar com este material na ordem de serviço sai do estoque dele.',
@@ -157,6 +161,7 @@ return [
         'help' => 'O que você lança nas ordens de serviço sai daqui sozinho. Faltou algo? Peça ao almoxarifado.',
     ],
     'attention' => [
+        'buy' => 'comprar :quantity (falta para o mínimo + uso dos últimos 30 dias)',
         'low' => 'Estoque baixo: :item (:total; mínimo :min)',
     ],
     'errors' => [

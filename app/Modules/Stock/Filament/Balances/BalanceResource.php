@@ -56,12 +56,23 @@ class BalanceResource extends ModuleResource
     {
         return $table
             ->defaultSort('item_id')
+            // Value kept per place (quantity x average cost), when the costs are known.
+            ->description(function (): ?string {
+                $values = app(\App\Modules\Stock\Services\StockService::class)->valueByLocation();
+
+                return $values->isEmpty() ? null : __('stock.balances.value_title').': '.$values->map(fn (array $row): string => $row['location']?->name.' '.StockFormat::money($row['value']))->implode(' · ').' ('.__('stock.balances.value_help').')';
+            })
             ->columns([
                 TextColumn::make('item.name')->label(__('stock.fields.item'))->weight('bold')->searchable(),
                 TextColumn::make('location.name')->label(__('stock.fields.location'))->searchable(),
                 TextColumn::make('quantity')->label(__('stock.fields.quantity'))
                     ->formatStateUsing(fn ($state, Balance $record): string => StockFormat::quantity((float) $state, $record->item->unit))
                     ->color(fn ($state): ?string => (float) $state < 0 ? 'danger' : null),
+                TextColumn::make('value')->label(__('stock.fields.value'))
+                    ->state(fn (Balance $record): ?int => $record->item->avg_cost_cents === null ? null : (int) round(max(0, (float) $record->quantity) * $record->item->avg_cost_cents))
+                    ->formatStateUsing(fn (?int $state): string => StockFormat::money($state))
+                    ->placeholder('—')
+                    ->alignEnd(),
             ])
             ->filters([
                 SelectFilter::make('location_id')->label(__('stock.fields.location'))->options(fn (): array => Location::options()),

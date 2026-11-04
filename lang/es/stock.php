@@ -38,6 +38,7 @@ return [
         'created' => '{0} Todos los técnicos ya tienen lugar.|{1} 1 lugar creado.|[2,*] :count lugares creados.',
     ],
     'balances' => [
+        'value_title' => 'Valor guardado por lugar', 'value_help' => 'Cantidad × costo promedio (solo ítems con costo).',
         'singular' => 'saldo',
         'plural' => 'inventario',
         'empty' => 'Nada en inventario',
@@ -85,6 +86,8 @@ return [
         'written_off' => 'Estado del equipo actualizado.',
     ],
     'fields' => [
+        'unit_cost' => 'Costo por unidad',
+        'value' => 'Valor en inventario',
         'item' => 'Artículo',
         'location' => 'Lugar',
         'quantity' => 'Cantidad',
@@ -113,6 +116,7 @@ return [
         'customer' => 'Cliente',
     ],
     'helpers' => [
+        'unit_cost' => 'Opcional. Con el costo, el sistema calcula el costo promedio del ítem y el valor guardado en cada lugar. Por la factura (XML), el costo viene solo.',
         'min_quantity' => 'Por debajo de esto, el artículo aparece en "Atención" en el Inicio.',
         'serialized' => 'Cada unidad con su número de serie (equipos en comodato).',
         'material' => 'Lo que el técnico registre con este material en la orden de servicio sale de su inventario.',
@@ -157,6 +161,7 @@ return [
         'help' => 'Lo que registra en las órdenes de servicio sale de aquí solo. ¿Falta algo? Pida al almacén.',
     ],
     'attention' => [
+        'buy' => 'comprar :quantity (falta para el mínimo + uso de los últimos 30 días)',
         'low' => 'Inventario bajo: :item (:total; mínimo :min)',
     ],
     'errors' => [

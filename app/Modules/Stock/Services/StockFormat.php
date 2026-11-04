@@ -13,4 +13,9 @@ class StockFormat
 
         return $text.' '.$unit;
     }
+
+    public static function money(?int $cents): string
+    {
+        return $cents === null ? '—' : (string) \Illuminate\Support\Number::currency($cents / 100, \App\Support\Country::currency(), str_replace('_', '-', app()->getLocale()));
+    }
 }

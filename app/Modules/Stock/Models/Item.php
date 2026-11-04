@@ -20,7 +20,7 @@ class Item extends Model
 
     protected $table = 'es_items';
 
-    protected $fillable = ['name', 'sku', 'unit', 'min_quantity', 'serialized', 'material_id', 'is_active'];
+    protected $fillable = ['name', 'sku', 'unit', 'min_quantity', 'serialized', 'material_id', 'is_active', 'avg_cost_cents'];
 
     protected $attributes = ['unit' => 'un', 'min_quantity' => 0, 'serialized' => false, 'is_active' => true];
 
