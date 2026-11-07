@@ -1,6 +1,6 @@
 # Kiban Core Agenda (em inglês, Kiban Core Appointments)
 
-Agenda online para empresas que atendem com hora marcada. **Primeiro ramo: pet shop** (banho e tosa, com leva e traz). O código do produto no Core é `agenda`, e o limite do plano é o número de **profissionais ativos** (3 no plano; preço provisório R$ 119/mês + R$ 20 por profissional extra, a confirmar pelo dono). Primeira versão: 01/11/2026.
+Agenda online para empresas que atendem com hora marcada. **Primeiro ramo: pet shop** (banho e tosa, com leva e traz). O código do produto no Core é `agenda`, e o limite do plano é o número de **profissionais ativos** (3 no plano; R$ 79/mês + R$ 20 por profissional extra, aprovado pelo dono em 04/11/2026). Primeira versão: 01/11/2026.
 
 Posicionamento (pesquisa `kiban-core/docs/planejamento/pesquisa-agenda.md`): "a agenda da empresa que tem equipe de verdade" — o cliente marca sozinho pelo link, o lembrete vai pelo WhatsApp sem taxa e a mesma empresa usa o Ponto (equipe CLT) e o Campo (leva e traz).
 

@@ -1,6 +1,6 @@
 # Kiban Core PMOC (manutenção preventiva)
 
-Primeira versão (03/11/2026). Complemento do Kiban Core Campo para quem faz manutenção de ar-condicionado (ou de outros equipamentos com manutenção preventiva). No Brasil, a Lei 13.589/2018 obriga prédios de uso coletivo climatizados a ter o PMOC, e órgãos públicos pedem o documento nos editais: quem emite é a empresa que faz a manutenção. Código do produto no Core: `pmoc`. Preço **provisório** (a confirmar pelo dono): R$ 99 com 100 equipamentos.
+Primeira versão (03/11/2026). Complemento do Kiban Core Campo para quem faz manutenção de ar-condicionado (ou de outros equipamentos com manutenção preventiva). No Brasil, a Lei 13.589/2018 obriga prédios de uso coletivo climatizados a ter o PMOC, e órgãos públicos pedem o documento nos editais: quem emite é a empresa que faz a manutenção. Código do produto no Core: `pmoc`. Preço aprovado pelo dono (07/11/2026): R$ 99 com 100 equipamentos.
 
 ## Como funciona
 - **Plano de manutenção** (PMOC → Planos): um por endereço do cliente do Campo. Tem o responsável técnico e o registro (CREA, CFT...), a área climatizada, os ocupantes, de quanto em quanto tempo são as visitas (todo mês, a cada 2, 3, 6 ou 12 meses), a data da primeira visita e quantos dias antes a ordem de serviço deve abrir.

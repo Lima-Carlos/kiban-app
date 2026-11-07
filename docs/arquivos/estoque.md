@@ -1,6 +1,6 @@
 # Kiban Core Estoque (materiais e comodato)
 
-Primeira versão (03/11/2026). Código do produto no Core: `estoque` (en: Inventory, es: Inventario). Preço **provisório** (a confirmar pelo dono): R$ 79 com 5 locais + R$ 10 por local extra.
+Primeira versão (03/11/2026). Código do produto no Core: `estoque` (en: Inventory, es: Inventario). Preço aprovado pelo dono (07/11/2026): R$ 79 com 5 locais + R$ 10 por local extra.
 
 ## O que tem
 - **Itens**: o que a empresa guarda (cabo, conector, roteador...), com unidade, código, estoque mínimo e, com o Campo, qual material do Campo ele é. Marcando "Controlar por número de série", cada unidade tem o seu número (equipamentos de comodato).

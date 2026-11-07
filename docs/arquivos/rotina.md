@@ -1,6 +1,6 @@
 # Kiban Core Rotina (Daily Log / Registro Diario)
 
-Primeira versão (02/11/2026). Tarefas do dia e horas por projeto ou cliente, para equipes pequenas (escritório, home office, campo). **Não é controle de jornada**: isso é o Kiban Core Ponto, e a própria tela de resumo avisa. Código do produto no Core: `rotina`. Preço provisório (a confirmar pelo dono): R$ 49 com 5 pessoas + R$ 8 por pessoa extra (US$ 10 + 1,5).
+Primeira versão (02/11/2026). Tarefas do dia e horas por projeto ou cliente, para equipes pequenas (escritório, home office, campo). **Não é controle de jornada**: isso é o Kiban Core Ponto, e a própria tela de resumo avisa. Código do produto no Core: `rotina`. Preço aprovado pelo dono (07/11/2026): R$ 49 com 5 pessoas + R$ 8 por pessoa extra (US$ 10 + 1,5).
 
 ## O que tem
 - **Tarefas** (Minhas tarefas): cada colaborador monta a sua lista, marca como feita, passa para amanhã. O gestor vê as de todos.

@@ -1,6 +1,6 @@
 # Kiban Core Despesas (reembolso de gastos)
 
-Primeira versão (03/11/2026). Código do produto no Core: `despesas` (en: Expenses, es: Gastos). Preço **provisório** (a confirmar pelo dono): R$ 79 com 10 pessoas + R$ 6 por pessoa extra (US$ 15 + 1). A pesquisa de mercado mostrou que o VExpenses cobra cerca de R$ 21 por pessoa, então mesmo assim fica bem mais barato.
+Primeira versão (03/11/2026). Código do produto no Core: `despesas` (en: Expenses, es: Gastos). Preço aprovado pelo dono (07/11/2026): R$ 79 com 10 pessoas + R$ 6 por pessoa extra (US$ 15 + 1). A pesquisa de mercado mostrou que o VExpenses cobra cerca de R$ 21 por pessoa, então mesmo assim fica bem mais barato.
 
 ## O que tem
 - **Despesas**: cada pessoa lança o que pagou pela empresa (data, categoria, valor, o que foi) com a **foto do recibo**, tirada na hora pelo celular. Opcional: a OS do Campo e o veículo da Frota.
