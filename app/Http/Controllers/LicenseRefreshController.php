@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Licensing\LicenseManager;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * "A new part appears right away": when the person comes back to the tab (e.g. after contracting or testing another
@@ -19,13 +18,7 @@ class LicenseRefreshController extends Controller
         $tenant = $context->get();
         $before = array_keys($tenant->license()->modules());
 
-        // Many tabs or quick comebacks: only one real refresh every 15 seconds.
-        if (Cache::add('kiban:license-sync:'.$tenant->getKey(), 1, 15)) {
-            $licenses->refresh($tenant);
-        }
-
-        $tenant->refresh();
-        $tenant->forgetLicense();
+        $licenses->refreshNow($tenant);
         $after = array_keys($tenant->license()->modules());
 
         sort($before);

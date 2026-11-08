@@ -296,6 +296,19 @@ class ConnectionsTest extends TestCase
         $this->assertTrue($this->company->fresh()->license()->hasModule('ponto'));
     }
 
+    public function test_the_cores_open_button_brings_the_new_part_at_once(): void
+    {
+        $this->company(['campo' => []]);
+        $this->get($this->company->url('/'))->assertOk();
+
+        // Tested Ponto in the Customer area and clicked "Open the systems" (?atualizar=1): the license comes now and
+        // the address loses the flag; the menu already has the new part.
+        $this->coreLicenses[$this->company->subdomain] = fn (): string => $this->licenseToken($this->company, ['campo' => [], 'ponto' => []]);
+        Cache::flush();
+        $this->get($this->company->url('/?atualizar=1'))->assertRedirect($this->company->url('/'));
+        $this->assertTrue($this->company->fresh()->license()->hasModule('ponto'));
+    }
+
     public function test_a_system_contracted_in_the_first_days_counts_as_started_together(): void
     {
         $this->company(['campo' => []]);

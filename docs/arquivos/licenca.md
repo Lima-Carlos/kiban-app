@@ -42,6 +42,8 @@
 ## Parte nova aparece na hora (02/11/2026)
 Quando a pessoa volta para a aba depois de ficar fora mais de 8 segundos (por exemplo, depois de contratar ou testar outra parte na Área do cliente), a página pede uma licença nova em `POST /licenca/atualizar` (`LicenseRefreshController`, no máximo uma renovação real a cada 15 s por empresa) e recarrega sozinha só se as partes mudaram. Peça do navegador: `resources/views/filament/license-sync.blade.php`. Sem internet, nada acontece (a licença é renovada de qualquer jeito a cada poucos minutos).
 
+O botão **"Abrir meus sistemas"** do Core (no Início da Área do cliente e na tela Sistemas, logo depois de começar um teste) abre o endereço com `?atualizar=1` (08/11/2026). A casca (`EnsureLicense`) busca a licença nova na mesma hora e mostra o endereço sem o `?atualizar=1`, então a parte nova já está no menu. Se a pessoa ainda não entrou, isso acontece antes do login. As duas formas usam `LicenseManager::refreshNow()`, que faz no máximo uma busca real a cada 15 segundos por empresa.
+
 ## Faixa de pagamento dentro dos sistemas (02/11/2026)
 A licença ganhou um campo opcional `billing` (`due_on`, `overdue`: a fatura em aberto mais antiga, montada pelo Core em `LicenseService::billing()`; casca antiga ignora). Para o dono e os administradores, a faixa "Sua fatura vence em N dias / hoje / está vencida · Ver faturas" aparece a partir de 3 dias antes do vencimento (`App\Licensing\PaymentBanner`, `resources/views/filament/payment-banner.blade.php`). Colaboradores nunca veem.
 

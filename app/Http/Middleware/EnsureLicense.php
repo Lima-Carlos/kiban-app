@@ -17,6 +17,9 @@ use function Illuminate\Support\defer;
  */
 class EnsureLicense
 {
+    /** The flag the Core adds to its links into the systems ("?atualizar=1"). */
+    public const REFRESH = 'atualizar';
+
     public function __construct(
         protected TenantContext $context,
         protected LicenseManager $licenses,
@@ -25,6 +28,14 @@ class EnsureLicense
     public function handle(Request $request, Closure $next): Response
     {
         $tenant = $this->context->get();
+
+        // The Core's "Open the systems" button (after contracting or testing a part) comes with ?atualizar=1: get the
+        // new license right now, so the new part is already in the menu, then show the address without the flag.
+        if ($request->isMethod('GET') && $request->query->has(self::REFRESH)) {
+            $this->licenses->refreshNow($tenant);
+
+            return redirect()->to($request->fullUrlWithoutQuery(self::REFRESH));
+        }
 
         if ($tenant->license()->isValid()) {
             // Fresh enough? If not, ask the Core after answering, so nobody waits for it.

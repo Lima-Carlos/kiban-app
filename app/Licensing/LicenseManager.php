@@ -99,6 +99,20 @@ class LicenseManager
     }
 
     /**
+     * "A new part appears right away": asks the Core now (coming back from the Customer area, or its "Open the
+     * systems" button). Many tabs or quick clicks: at most one real refresh every 15 seconds per company.
+     */
+    public function refreshNow(Tenant $tenant): void
+    {
+        if (Cache::add('kiban:license-sync:'.$tenant->getKey(), 1, 15)) {
+            $this->refresh($tenant);
+        }
+
+        $tenant->refresh();
+        $tenant->forgetLicense();
+    }
+
+    /**
      * Refreshes in the background of a request when the license is older than the refresh interval.
      * A recent failure waits a minute before trying again, so a Core outage does not slow every page.
      */
