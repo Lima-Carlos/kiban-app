@@ -12,6 +12,7 @@ use App\Modules\Fleet\Models\FuelStation;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Services\FleetException;
 use App\Modules\Fleet\Services\FuelService;
+use App\Support\Money;
 use Carbon\CarbonImmutable;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -80,7 +81,7 @@ class CreateFuelUp extends CreateRecord
                     ->numeric()
                     ->minValue(0.01)
                     ->step(0.01)
-                    ->prefix($settings->currency)
+                    ->prefix(Money::symbol($settings->currency))
                     ->required(),
                 Toggle::make('full_tank')
                     ->label(__('fleet.fields.full_tank'))

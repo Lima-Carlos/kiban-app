@@ -4,8 +4,8 @@ namespace App\Modules\Agenda\Services;
 
 use App\Modules\Agenda\Models\AgendaSetting;
 use App\Modules\Field\Services\FieldFormat;
+use App\Support\Money;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Number;
 
 /**
  * How the Agenda shows money, times and dates: the company's currency and time zone, the person's language.
@@ -18,7 +18,7 @@ class AgendaFormat
             return '—';
         }
 
-        return (string) Number::currency($cents / 100, AgendaSetting::current()->currency, str_replace('_', '-', app()->getLocale()));
+        return Money::format($cents, AgendaSetting::current()->currency);
     }
 
     /** "1 h 30 min" (the same as the Campo). */

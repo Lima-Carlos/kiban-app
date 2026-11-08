@@ -7,20 +7,21 @@ use App\Modules\Stock\Filament\Balances\BalanceResource;
 use App\Modules\Stock\Filament\StockForms;
 use App\Modules\Stock\Models\Item;
 use App\Modules\Stock\Models\Location;
-use App\Modules\Stock\Services\StockService;
 use App\Modules\Stock\Services\InvoiceReader;
 use App\Modules\Stock\Services\StockException;
+use App\Modules\Stock\Services\StockService;
+use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-use Filament\Forms\Components\TextInput;
-use Filament\Support\Icons\Heroicon;
 
 class ManageBalances extends ModuleRecordsPage
 {
@@ -35,7 +36,7 @@ class ManageBalances extends ModuleRecordsPage
                 ->label(__('stock.actions.entry'))
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->visible($can)
-                ->schema([StockForms::item(), StockForms::location(), StockForms::quantity(), TextInput::make('unit_cost')->label(__('stock.fields.unit_cost'))->helperText(__('stock.helpers.unit_cost'))->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => \App\Support\Country::currency()), TextInput::make('note')->label(__('stock.fields.note'))->placeholder(__('stock.helpers.entry_note'))->maxLength(255)])
+                ->schema([StockForms::item(), StockForms::location(), StockForms::quantity(), TextInput::make('unit_cost')->label(__('stock.fields.unit_cost'))->helperText(__('stock.helpers.unit_cost'))->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Money::symbol()), TextInput::make('note')->label(__('stock.fields.note'))->placeholder(__('stock.helpers.entry_note'))->maxLength(255)])
                 ->action(fn (array $data, Action $action) => StockForms::run(
                     fn () => app(StockService::class)->receive(Item::query()->findOrFail($data['item_id']), Location::query()->findOrFail($data['location_id']), (float) $data['quantity'], $data['note'] ?? null, null, filled($data['unit_cost'] ?? null) ? (int) round((float) $data['unit_cost'] * 100) : null),
                     __('stock.actions.entry_done'), $action)),

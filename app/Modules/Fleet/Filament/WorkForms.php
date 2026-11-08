@@ -12,6 +12,7 @@ use App\Modules\Fleet\Models\FleetSetting;
 use App\Modules\Fleet\Models\Vehicle;
 use App\Modules\Fleet\Models\Workshop;
 use App\Modules\Fleet\Services\FleetAccess;
+use App\Support\Money;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use Filament\Forms\Components\CheckboxList;
@@ -187,7 +188,7 @@ class WorkForms
             ->numeric()
             ->minValue(0)
             ->step(0.01)
-            ->prefix(FleetSetting::current()->currency);
+            ->prefix(Money::symbol(FleetSetting::current()->currency));
     }
 
     public static function cents(mixed $value): int

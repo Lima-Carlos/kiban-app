@@ -23,3 +23,4 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [pmoc.md](pmoc.md): o Kiban Core PMOC (planos de manutenção preventiva, visitas que viram OS e o documento em PDF).
 - [estoque.md](estoque.md): o Kiban Core Estoque (materiais, estoque do técnico ligado ao Campo e comodato por número de série).
 - [despesas.md](despesas.md): o Kiban Core Despesas (reembolso de gastos com foto do recibo, aprovação, pagamento por pessoa e a ligação com a Frota).
+- [dinheiro-e-idioma.md](dinheiro-e-idioma.md): valores em dinheiro iguais em todos os idiomas ("R$ 31,20") e o idioma das páginas sem login (segue o celular do cliente).

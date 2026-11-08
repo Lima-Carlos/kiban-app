@@ -6,11 +6,13 @@ use App\Filament\Support\ModuleResource;
 use App\Modules\Rotina\Filament\Projects\Pages\ManageProjects;
 use App\Modules\Rotina\Models\Project;
 use App\Modules\Rotina\RotinaModule;
+use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -53,8 +55,8 @@ class ProjectResource extends ModuleResource
                 TextInput::make('client_name')->label(__('rotina.fields.client'))->helperText(__('rotina.helpers.client'))->maxLength(160),
                 Toggle::make('billable')->label(__('rotina.fields.billable'))->helperText(__('rotina.helpers.billable'))->live(),
                 TextInput::make('hour_price_cents')->label(__('rotina.fields.hour_price'))->helperText(__('rotina.helpers.hour_price'))
-                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => \App\Support\Country::currency())
-                    ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => (bool) $get('billable'))
+                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Money::symbol())
+                    ->visible(fn (Get $get): bool => (bool) $get('billable'))
                     ->formatStateUsing(fn ($state) => $state !== null ? $state / 100 : null)
                     ->dehydrateStateUsing(fn ($state): ?int => filled($state) ? (int) round((float) $state * 100) : null),
                 Toggle::make('is_active')->label(__('rotina.fields.active'))->default(true),

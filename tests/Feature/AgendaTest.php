@@ -383,6 +383,16 @@ class AgendaTest extends TestCase
         $this->get(route('agenda.booking'))->assertOk()->assertSee(__('agenda.booking.closed'));
     }
 
+    public function test_public_booking_page_speaks_the_language_of_the_clients_phone(): void
+    {
+        auth()->logout();
+
+        $this->withHeader('Accept-Language', 'es-AR,es;q=0.9')->get(route('agenda.booking'))->assertOk()->assertSee('Cualquiera');
+        $this->withHeader('Accept-Language', 'en-US,en;q=0.9')->get(route('agenda.booking'))->assertOk()->assertSee('Anyone');
+        // A language we don't have: the company's language.
+        $this->withHeader('Accept-Language', 'de-DE')->get(route('agenda.booking'))->assertOk()->assertSee('Qualquer um');
+    }
+
     public function test_the_plan_limits_the_professionals(): void
     {
         $this->professional('Bia');

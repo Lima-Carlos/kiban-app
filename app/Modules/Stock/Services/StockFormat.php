@@ -2,6 +2,8 @@
 
 namespace App\Modules\Stock\Services;
 
+use App\Support\Money;
+
 /** Quantities as people read them: "12 un", "3,5 m", "1.250 m" (no trailing zeros). */
 class StockFormat
 {
@@ -16,6 +18,6 @@ class StockFormat
 
     public static function money(?int $cents): string
     {
-        return $cents === null ? '—' : (string) \Illuminate\Support\Number::currency($cents / 100, \App\Support\Country::currency(), str_replace('_', '-', app()->getLocale()));
+        return Money::format($cents);
     }
 }

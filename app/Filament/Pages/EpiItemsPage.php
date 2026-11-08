@@ -8,6 +8,7 @@ use App\People\Epi\EpiItem;
 use App\People\Epi\EpiKind;
 use App\People\Epi\EpiService;
 use App\Support\Country;
+use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -108,7 +109,7 @@ class EpiItemsPage extends Page implements HasActions, HasSchemas, HasTable
                     ->label(__('epi.fields.unit_cost'))
                     ->numeric()
                     ->minValue(0)
-                    ->prefix($currency),
+                    ->prefix(Money::symbol($currency)),
             ]),
             Section::make(__($brazil ? 'epi.items.ca_section' : 'epi.items.certificate_section'))
                 ->description(__($brazil ? 'epi.items.ca_help' : 'epi.items.certificate_help'))

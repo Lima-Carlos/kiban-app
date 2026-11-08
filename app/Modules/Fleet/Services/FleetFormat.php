@@ -3,6 +3,7 @@
 namespace App\Modules\Fleet\Services;
 
 use App\Modules\Fleet\Models\FleetSetting;
+use App\Support\Money;
 use Illuminate\Support\Number;
 
 /**
@@ -42,7 +43,7 @@ class FleetFormat
             return '—';
         }
 
-        return (string) Number::currency($cents / 100, ($settings ?? FleetSetting::current())->currency, str_replace('_', '-', app()->getLocale()));
+        return Money::format($cents, ($settings ?? FleetSetting::current())->currency);
     }
 
     /** "12,4 km/l". */

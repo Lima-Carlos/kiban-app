@@ -5,12 +5,11 @@ namespace App\Modules\Rotina\Services;
 use App\Models\User;
 use App\Modules\Rotina\Models\Entry;
 use App\Modules\Rotina\Models\Rate;
-use App\Support\Country;
-use Illuminate\Support\Number;
 use App\Modules\Rotina\Models\Task;
 use App\Modules\TimeClock\Services\TimeClockAccess;
 use App\Modules\TimeClock\Services\TimesheetDocument;
 use App\Modules\TimeClock\TimeClockModule;
+use App\Support\Money;
 use App\Support\Spreadsheet;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
@@ -92,7 +91,7 @@ class RotinaReports
 
     public static function money(?int $cents): string
     {
-        return $cents === null ? '—' : (string) Number::currency($cents / 100, Country::currency(), str_replace('_', '-', app()->getLocale()));
+        return Money::format($cents);
     }
 
     /**

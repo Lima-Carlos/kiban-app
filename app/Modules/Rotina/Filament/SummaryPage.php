@@ -2,22 +2,23 @@
 
 namespace App\Modules\Rotina\Filament;
 
+use App\Models\User;
 use App\Modules\Concerns\InModuleMenu;
+use App\Modules\Rotina\Models\Entry;
+use App\Modules\Rotina\Models\Rate;
 use App\Modules\Rotina\RotinaModule;
 use App\Modules\Rotina\Services\RotinaAccess;
 use App\Modules\Rotina\Services\RotinaReports;
+use App\Support\Money;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Carbon\CarbonImmutable;
-use App\Models\User;
-use App\Modules\Rotina\Models\Entry;
-use App\Modules\Rotina\Models\Rate;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use App\Support\Country;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -89,9 +90,9 @@ class SummaryPage extends Page
     /**
      * People who log hours (last 6 months) or already have a value.
      *
-     * @return \Illuminate\Support\Collection<int, User>
+     * @return Collection<int, User>
      */
-    public function people(): \Illuminate\Support\Collection
+    public function people(): Collection
     {
         $ids = Entry::query()->where('worked_on', '>=', now()->subMonths(6)->toDateString())->distinct()->pluck('user_id')
             ->merge(Rate::query()->pluck('user_id'))->unique();
@@ -110,7 +111,7 @@ class SummaryPage extends Page
                 ->modalDescription(__('rotina.rates.help'))
                 ->fillForm(fn (): array => ['rates' => Rate::query()->pluck('hour_cents', 'user_id')->map(fn (int $cents): float => $cents / 100)->mapWithKeys(fn ($value, $id): array => ['u'.$id => $value])->all()])
                 ->schema(fn (): array => $this->people()->map(fn (User $user): TextInput => TextInput::make('rates.u'.$user->getKey())
-                    ->label($user->name)->numeric()->minValue(0)->step(0.01)->prefix(Country::currency())->suffix(__('rotina.rates.per_hour')))->all())
+                    ->label($user->name)->numeric()->minValue(0)->step(0.01)->prefix(Money::symbol())->suffix(__('rotina.rates.per_hour')))->all())
                 ->action(function (array $data): void {
                     app(RotinaReports::class)->setRates(collect($data['rates'] ?? [])->mapWithKeys(fn ($value, string $key): array => [(int) substr($key, 1) => $value])->all());
                     Notification::make()->success()->title(__('rotina.rates.saved'))->send();

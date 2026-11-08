@@ -151,8 +151,9 @@ class AgendaDemoData extends Command
                     'starts_at' => $start,
                     'service_ids' => collect($keys)->map(fn (string $key): ?int => $services->get($key)?->getKey())->filter()->all(),
                     'pickup_address' => in_array('pickup', $keys, true) ? 'Rua das Acácias, 120' : null,
-                    'pickup_from' => in_array('pickup', $keys, true) ? '07:30' : null,
-                    'pickup_until' => in_array('pickup', $keys, true) ? '08:30' : null,
+                    // Pick the pet up in the hour before the appointment (14:00 → between 13:00 and 13:30).
+                    'pickup_from' => in_array('pickup', $keys, true) ? $start->subHour()->format('H:i') : null,
+                    'pickup_until' => in_array('pickup', $keys, true) ? $start->subMinutes(30)->format('H:i') : null,
                 ], null, $offset === 1 && $time === '09:00' ? Appointment::ONLINE : Appointment::DESK);
 
                 $this->walk($appointment, $status, $start);

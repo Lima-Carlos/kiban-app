@@ -12,11 +12,12 @@ use App\Modules\Fleet\Models\Expense as FleetExpense;
 use App\Notices\Notice;
 use App\Notices\Notifier;
 use App\Support\Country;
+use App\Support\Money;
 use App\Tenancy\TenantContext;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Number;
 
 /**
  * Every rule of the expense claims: the ready categories, claiming (receipt when the category asks, never in the
@@ -74,7 +75,7 @@ class ExpenseService
             throw new ExpenseException(__('expenses.errors.receipt'));
         }
 
-        if (\Carbon\CarbonImmutable::parse((string) $data['spent_on'])->isAfter(today())) {
+        if (CarbonImmutable::parse((string) $data['spent_on'])->isAfter(today())) {
             throw new ExpenseException(__('expenses.errors.future'));
         }
 
@@ -171,7 +172,7 @@ class ExpenseService
 
     public function money(int $cents, ?string $currency = null): string
     {
-        return (string) Number::currency($cents / 100, $currency ?? Country::currency(), str_replace('_', '-', app()->getLocale()));
+        return Money::format($cents, $currency);
     }
 
     /** Frota: the approved claim of a vehicle, in a category linked to the Frota, becomes an expense of the vehicle. */

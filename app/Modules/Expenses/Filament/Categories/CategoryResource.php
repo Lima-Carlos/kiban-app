@@ -8,7 +8,7 @@ use App\Modules\Expenses\Models\Category;
 use App\Modules\Expenses\Services\ExpenseService;
 use App\Modules\Fleet\Enums\ExpenseCategory;
 use App\Modules\Fleet\FleetModule;
-use App\Support\Country;
+use App\Support\Money;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -53,11 +53,11 @@ class CategoryResource extends ModuleResource
             ->components([
                 TextInput::make('name')->label(__('expenses.fields.name'))->required()->maxLength(80)->columnSpanFull(),
                 TextInput::make('limit')->label(__('expenses.fields.limit'))->helperText(__('expenses.helpers.limit'))
-                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Country::currency())
+                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Money::symbol())
                     ->afterStateHydrated(fn (TextInput $component, ?Category $record) => $component->state($record?->limit_cents !== null ? $record->limit_cents / 100 : null))
                     ->dehydrated(false),
                 TextInput::make('per_km')->label(__('expenses.fields.per_km'))->helperText(__('expenses.helpers.per_km'))
-                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Country::currency())
+                    ->numeric()->minValue(0)->step(0.01)->prefix(fn (): string => Money::symbol())
                     ->visible(fn (?Category $record): bool => $record?->isMileage() ?? false)
                     ->afterStateHydrated(fn (TextInput $component, ?Category $record) => $component->state($record?->per_km_cents !== null ? $record->per_km_cents / 100 : null))
                     ->dehydrated(false),

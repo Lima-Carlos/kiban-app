@@ -3,6 +3,7 @@
 namespace App\Modules\Agenda\Filament;
 
 use App\Modules\Agenda\Models\AgendaSetting;
+use App\Support\Money;
 use Filament\Forms\Components\TextInput;
 
 /**
@@ -18,7 +19,7 @@ class AgendaFields
             ->minValue(0)
             ->maxValue(9_999_999)
             ->step(0.01)
-            ->prefix(fn (): string => AgendaSetting::current()->currency)
+            ->prefix(fn (): string => Money::symbol(AgendaSetting::current()->currency))
             ->formatStateUsing(fn ($state): ?string => $state === null || $state === '' ? null : number_format(((int) $state) / 100, 2, '.', ''))
             ->dehydrateStateUsing(fn ($state): ?int => blank($state) ? null : (int) round((float) $state * 100));
     }

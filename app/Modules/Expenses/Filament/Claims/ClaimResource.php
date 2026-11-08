@@ -13,7 +13,7 @@ use App\Modules\Field\FieldModule;
 use App\Modules\Field\Models\WorkOrder;
 use App\Modules\Fleet\FleetModule;
 use App\Modules\Fleet\Models\Vehicle;
-use App\Support\Country;
+use App\Support\Money;
 use App\Tenancy\TenantContext;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -81,7 +81,7 @@ class ClaimResource extends ModuleResource
                     ->options(fn (): array => Category::query()->active()->orderBy('sort')->get()->pluck('name', 'id')->all())
                     ->live()
                     ->required(),
-                TextInput::make('amount')->label(__('expenses.fields.amount'))->numeric()->minValue(0.01)->step(0.01)->prefix(fn (): string => Country::currency())
+                TextInput::make('amount')->label(__('expenses.fields.amount'))->numeric()->minValue(0.01)->step(0.01)->prefix(fn (): string => Money::symbol())
                     ->required(fn (Get $get): bool => ! static::mileage($get('category_id')))
                     ->hidden(fn (Get $get): bool => static::mileage($get('category_id'))),
                 TextInput::make('km')->label(__('expenses.fields.km'))->numeric()->minValue(0.1)->step(0.1)->suffix('km')
@@ -120,9 +120,11 @@ class ClaimResource extends ModuleResource
         return $table
             ->defaultSort('spent_on', 'desc')
             ->columns([
-                TextColumn::make('spent_on')->label(__('expenses.fields.spent_on'))->date(__('app.date_format'))->sortable(),
-                TextColumn::make('user.name')->label(__('expenses.fields.person'))->searchable()->visible($manager),
-                TextColumn::make('description')->label(__('expenses.fields.description'))->weight('bold')->searchable()->limit(60)->wrap()
+                // Who spent it goes under the date (one column less), so the row fits a 1280 px laptop with Approve/Reject.
+                TextColumn::make('spent_on')->label(__('expenses.fields.spent_on'))->date(__('app.date_format'))->sortable()
+                    ->description(fn (Claim $record): ?string => $manager() ? $record->user?->name : null),
+                TextColumn::make('user.name')->label(__('expenses.fields.person'))->searchable()->visible($manager)->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('description')->label(__('expenses.fields.description'))->weight('bold')->searchable()->limit(80)->wrap()->grow()
                     ->description(fn (Claim $record): string => collect([$record->category?->name, $record->workOrder?->label(), $record->vehicle?->displayName()])->filter()->implode(' · ')),
                 TextColumn::make('amount_cents')->label(__('expenses.fields.amount'))
                     ->formatStateUsing(fn (int $state, Claim $record): string => app(ExpenseService::class)->money($state, $record->currency))
@@ -130,8 +132,11 @@ class ClaimResource extends ModuleResource
                     ->description(fn (Claim $record): ?string => $record->overLimit() ? __('expenses.claims.over_limit') : ($record->km ? number_format($record->km, 1, ',', '.').' km' : null)),
                 TextColumn::make('status')->label(__('expenses.fields.status'))->badge()
                     ->formatStateUsing(fn (string $state): string => __('expenses.statuses.'.$state))
-                    ->color(fn (string $state): string => match ($state) { Claim::PENDING => 'warning', Claim::APPROVED => 'info', Claim::PAID => 'success', default => 'danger' })
-                    ->description(fn (Claim $record): ?string => $record->decision_note),
+                    ->color(fn (string $state): string => match ($state) {
+                        Claim::PENDING => 'warning', Claim::APPROVED => 'info', Claim::PAID => 'success', default => 'danger'
+                    })
+                    ->description(fn (Claim $record): ?string => $record->decision_note ? \Illuminate\Support\Str::limit($record->decision_note, 40) : null)
+                    ->wrap(),
             ])
             ->filters([
                 SelectFilter::make('status')->label(__('expenses.fields.status'))->options(collect(Claim::STATUSES)->mapWithKeys(fn (string $status): array => [$status => __('expenses.statuses.'.$status)])->all()),
@@ -159,6 +164,9 @@ class ClaimResource extends ModuleResource
                 Action::make('reject')
                     ->label(__('expenses.claims.reject'))
                     ->icon(Heroicon::OutlinedXMark)
+                    // Icon only (the name on hover): Approve stays written out, and the row fits.
+                    ->iconButton()
+                    ->tooltip(__('expenses.claims.reject'))
                     ->color('danger')
                     ->visible(fn (Claim $record): bool => $record->status === Claim::PENDING && $can())
                     ->schema([Textarea::make('note')->label(__('expenses.fields.reason'))->required()->maxLength(255)->rows(2)])

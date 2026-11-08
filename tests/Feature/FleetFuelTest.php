@@ -93,6 +93,8 @@ class FleetFuelTest extends TestCase
 
         // Station page (no login): typed with dash and lower case, it is found; wrong code is refused.
         auth()->logout();
+        // The station attendant's phone is in Portuguese (pages without login follow the phone's language).
+        $this->withHeader('Accept-Language', 'pt-BR,pt;q=0.9');
         $this->get($this->company->url('/posto'))->assertOk()->assertSee(__('fleet.station.title'));
         $this->post($this->company->url('/posto'), ['code' => strtolower(FuelService::formatCode($fuelUp->code))])
             ->assertOk()->assertSee(__('fleet.station.valid'))->assertSee('CAR1A11')->assertSee('Gasolina / Etanol');

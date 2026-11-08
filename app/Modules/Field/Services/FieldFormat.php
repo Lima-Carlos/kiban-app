@@ -3,7 +3,7 @@
 namespace App\Modules\Field\Services;
 
 use App\Modules\Field\Models\FieldSetting;
-use Illuminate\Support\Number;
+use App\Support\Money;
 
 /**
  * How Kiban Campo shows money and times: in the company's currency and the person's language.
@@ -16,7 +16,7 @@ class FieldFormat
             return '—';
         }
 
-        return (string) Number::currency($cents / 100, FieldSetting::current()->currency, str_replace('_', '-', app()->getLocale()));
+        return Money::format($cents, FieldSetting::current()->currency);
     }
 
     /** "35 m", "2,5 kg", "3" (units are not written). */
