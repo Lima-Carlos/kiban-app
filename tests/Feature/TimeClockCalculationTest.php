@@ -48,6 +48,9 @@ class TimeClockCalculationTest extends TestCase
     {
         parent::setUp();
 
+        // A fixed day before the company (and its license) is created: the tests go back and forth in November 2026,
+        // and a license issued on the real date would not yet be valid on the days visited.
+        $this->travelTo(CarbonImmutable::parse('2026-11-04 12:00', self::TZ));
         $this->company = $this->tenant('instaladora', ['ponto' => []]);
         $this->owner = $this->signIn($this->company);
         $this->office = Workplace::create(['name' => 'Escritório', 'timezone' => self::TZ]);

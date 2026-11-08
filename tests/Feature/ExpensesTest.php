@@ -127,6 +127,25 @@ class ExpensesTest extends TestCase
         $this->assertSame(1, Category::query()->where('key', 'lodging')->count());
     }
 
+    public function test_ready_categories_follow_the_language_of_who_looks(): void
+    {
+        $toll = Category::query()->where('key', 'toll')->sole();
+        $this->assertNull($toll->getRawOriginal('name'));
+
+        app()->setLocale('es');
+        $this->assertSame(__('expenses.defaults.toll', [], 'es'), $toll->refresh()->name);
+        app()->setLocale('pt_BR');
+        $this->assertSame(__('expenses.defaults.toll', [], 'pt_BR'), $toll->refresh()->name);
+
+        // Saving it unchanged (in any language) keeps it translated; a real rename stays as typed.
+        $toll->update(['name' => __('expenses.defaults.toll', [], 'en'), 'limit_cents' => 3000]);
+        $this->assertNull($toll->refresh()->getRawOriginal('name'));
+        $toll->update(['name' => 'Pedágio da BR-116']);
+        app()->setLocale('en');
+        $this->assertSame('Pedágio da BR-116', $toll->refresh()->name);
+        app()->setLocale('pt_BR');
+    }
+
     public function test_an_approved_toll_of_a_vehicle_goes_to_the_frota(): void
     {
         $vehicle = Vehicle::create(['plate' => 'RRR1R11', 'brand' => 'Fiat', 'model' => 'Strada', 'type' => 'car', 'fuel_type' => 'flex']);

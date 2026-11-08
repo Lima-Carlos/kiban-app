@@ -78,7 +78,7 @@ class ClaimResource extends ModuleResource
             ->components([
                 DatePicker::make('spent_on')->label(__('expenses.fields.spent_on'))->default(now()->toDateString())->maxDate(now())->required(),
                 Select::make('category_id')->label(__('expenses.fields.category'))
-                    ->options(fn (): array => Category::query()->active()->orderBy('sort')->pluck('name', 'id')->all())
+                    ->options(fn (): array => Category::query()->active()->orderBy('sort')->get()->pluck('name', 'id')->all())
                     ->live()
                     ->required(),
                 TextInput::make('amount')->label(__('expenses.fields.amount'))->numeric()->minValue(0.01)->step(0.01)->prefix(fn (): string => Country::currency())
@@ -122,7 +122,7 @@ class ClaimResource extends ModuleResource
             ->columns([
                 TextColumn::make('spent_on')->label(__('expenses.fields.spent_on'))->date(__('app.date_format'))->sortable(),
                 TextColumn::make('user.name')->label(__('expenses.fields.person'))->searchable()->visible($manager),
-                TextColumn::make('description')->label(__('expenses.fields.description'))->weight('bold')->searchable()->limit(50)
+                TextColumn::make('description')->label(__('expenses.fields.description'))->weight('bold')->searchable()->limit(60)->wrap()
                     ->description(fn (Claim $record): string => collect([$record->category?->name, $record->workOrder?->label(), $record->vehicle?->displayName()])->filter()->implode(' · ')),
                 TextColumn::make('amount_cents')->label(__('expenses.fields.amount'))
                     ->formatStateUsing(fn (int $state, Claim $record): string => app(ExpenseService::class)->money($state, $record->currency))
@@ -135,12 +135,15 @@ class ClaimResource extends ModuleResource
             ])
             ->filters([
                 SelectFilter::make('status')->label(__('expenses.fields.status'))->options(collect(Claim::STATUSES)->mapWithKeys(fn (string $status): array => [$status => __('expenses.statuses.'.$status)])->all()),
-                SelectFilter::make('category_id')->label(__('expenses.fields.category'))->options(fn (): array => Category::query()->orderBy('sort')->pluck('name', 'id')->all()),
+                SelectFilter::make('category_id')->label(__('expenses.fields.category'))->options(fn (): array => Category::query()->orderBy('sort')->get()->pluck('name', 'id')->all()),
             ])
             ->recordActions([
                 Action::make('receipt')
                     ->label(__('expenses.claims.see_receipt'))
                     ->icon(Heroicon::OutlinedPaperClip)
+                    // Icon only (with the name on hover), so the row fits a 1280 px laptop next to Approve/Reject.
+                    ->iconButton()
+                    ->tooltip(__('expenses.claims.see_receipt'))
                     ->color('gray')
                     ->visible(fn (Claim $record): bool => filled($record->receipt_path))
                     ->url(fn (Claim $record): string => Storage::disk('local')->temporaryUrl($record->receipt_path, now()->addMinutes(10)))
@@ -160,7 +163,7 @@ class ClaimResource extends ModuleResource
                     ->visible(fn (Claim $record): bool => $record->status === Claim::PENDING && $can())
                     ->schema([Textarea::make('note')->label(__('expenses.fields.reason'))->required()->maxLength(255)->rows(2)])
                     ->action(fn (Claim $record, array $data) => static::run(fn () => app(ExpenseService::class)->reject($record, auth()->user(), (string) $data['note']), __('expenses.claims.rejected'))),
-                DeleteAction::make(),
+                DeleteAction::make()->iconButton()->tooltip(__('filament-actions::delete.single.label')),
             ])
             ->emptyStateHeading(__('expenses.claims.empty'))
             ->emptyStateDescription(__('expenses.claims.empty_help'));

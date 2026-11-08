@@ -4,7 +4,7 @@ Primeira versão (03/11/2026). Código do produto no Core: `despesas` (en: Expen
 
 ## O que tem
 - **Despesas**: cada pessoa lança o que pagou pela empresa (data, categoria, valor, o que foi) com a **foto do recibo**, tirada na hora pelo celular. Opcional: a OS do Campo e o veículo da Frota.
-- **Categorias** prontas: pedágio, estacionamento, combustível, alimentação, hospedagem, táxi/aplicativo, material comprado, km com carro próprio e outros. O gestor muda o nome, o **valor máximo** (acima dele a despesa aparece em destaque, mas não é bloqueada) e se o recibo é obrigatório.
+- **Categorias** prontas: pedágio, estacionamento, combustível, alimentação, hospedagem, táxi/aplicativo, material comprado, km com carro próprio e outros. Elas aparecem no idioma de cada pessoa até o gestor trocar o nome. O gestor muda o nome, o **valor máximo** (acima dele a despesa aparece em destaque, mas não é bloqueada) e se o recibo é obrigatório.
 - **Aprovar ou recusar**: só o gestor das despesas. A recusa pede o motivo, que a pessoa vê no sino.
 - **Reembolsos**: as despesas aprovadas somadas por pessoa. Depois do Pix, "Marcar como pago" e a pessoa recebe o aviso. Planilha do mês para o contador.
 - **Ligação com a Frota**: despesa aprovada com veículo, numa categoria ligada à Frota (pedágio, estacionamento, outros), entra nos gastos do veículo e no custo por km.
@@ -18,4 +18,4 @@ Dono e administradores aprovam e pagam (função "Gestor das despesas"). Todos o
 Pessoas que lançam despesas (`people`).
 
 ## Arquivos
-`app/Modules/Expenses/` (módulo, modelos, `ExpenseService` com todas as regras, políticas, telas), `resources/views/expenses/payments.blade.php`, `lang/*/expenses.php`, `tests/Feature/ExpensesTest.php` e a migração `2026_11_15_100000_create_expense_claim_tables.php`.
+`app/Modules/Expenses/` (módulo, modelos, `ExpenseService` com todas as regras, políticas, telas), `resources/views/expenses/payments.blade.php`, `lang/*/expenses.php`, `tests/Feature/ExpensesTest.php` e as migrações `2026_11_15_100000_create_expense_claim_tables.php`, `2026_11_15_120000_add_mileage_to_expense_claims.php` e `2026_11_15_150000_translate_ready_expense_categories.php` (as categorias prontas ficam sem nome próprio e aparecem traduzidas).

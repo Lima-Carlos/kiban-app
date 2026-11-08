@@ -36,7 +36,7 @@ class ExpenseService
 
         foreach (Category::DEFAULTS as $key => [$receipt, $fleet]) {
             if (! in_array($key, $existing, true)) {
-                Category::query()->create(['key' => $key, 'name' => __('expenses.defaults.'.$key), 'receipt_required' => $receipt, 'fleet_category' => $fleet, 'sort' => ++$sort]);
+                Category::query()->create(['key' => $key, 'receipt_required' => $receipt, 'fleet_category' => $fleet, 'sort' => ++$sort]);
             }
         }
     }
