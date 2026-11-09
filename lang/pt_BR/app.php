@@ -331,4 +331,16 @@ return [
         'line' => 'Linha :line: :message',
         'too_many' => 'A planilha passou de :max linhas. Divida em arquivos menores.',
     ],
+    'export' => [
+        'action' => 'Baixar todos os dados',
+        'help' => 'Preparamos um arquivo .zip com todos os dados da empresa em todos os sistemas: uma planilha para cada tipo de cadastro (abre no Excel) e as fotos, recibos, assinaturas e anexos. Os dados são seus: você pode baixar quando quiser. Quando ficar pronto, o link chega no sino e vale por 7 dias.',
+        'submit' => 'Preparar o arquivo',
+        'started' => 'Estamos preparando o arquivo. O link chega no sino em alguns minutos.',
+        'ready_title' => 'Seus dados estão prontos para baixar',
+        'ready_body' => 'O arquivo com todos os dados da empresa fica disponível por :days dias.',
+        'readme_title' => 'Dados de :company no Kiban Core, gerados em :date.',
+        'readme_sheets' => 'Planilhas (CSV com ";", abrem no Excel), com a quantidade de linhas:',
+        'readme_files' => 'Pasta "arquivos": :count arquivos (fotos, recibos, assinaturas, anexos e PDFs).',
+        'readme_secrets' => 'Por segurança, códigos de acesso, PINs e senhas não vão no arquivo.',
+    ],
 ];

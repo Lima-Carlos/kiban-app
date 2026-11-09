@@ -331,4 +331,16 @@ return [
         'line' => 'Line :line: :message',
         'too_many' => 'The spreadsheet has more than :max lines. Split it into smaller files.',
     ],
+    'export' => [
+        'action' => 'Download all data',
+        'help' => 'We prepare a .zip file with all the company data in all systems: one spreadsheet for each kind of record (opens in Excel) and the photos, receipts, signatures and attachments. The data is yours: download it whenever you want. When it is ready, the link arrives in the bell and works for 7 days.',
+        'submit' => 'Prepare the file',
+        'started' => 'We are preparing the file. The link arrives in the bell in a few minutes.',
+        'ready_title' => 'Your data is ready to download',
+        'ready_body' => 'The file with all the company data is available for :days days.',
+        'readme_title' => 'Data of :company in Kiban Core, generated on :date.',
+        'readme_sheets' => 'Spreadsheets (CSV with ";", open in Excel), with the number of lines:',
+        'readme_files' => 'Folder "arquivos": :count files (photos, receipts, signatures, attachments and PDFs).',
+        'readme_secrets' => 'For safety, access codes, PINs and passwords are not in the file.',
+    ],
 ];

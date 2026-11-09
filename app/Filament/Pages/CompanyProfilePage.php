@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Jobs\ExportCompanyData;
 use App\Models\CompanyProfile;
 use App\Tenancy\TenantContext;
 use BackedEnum;
@@ -48,6 +49,26 @@ class CompanyProfilePage extends Page
     public static function getNavigationLabel(): string
     {
         return __('app.company_profile.title');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            // "Download everything": all the company's data in one file (the customer owns the data).
+            Action::make('exportAll')
+                ->label(__('app.export.action'))
+                ->icon(Heroicon::OutlinedArchiveBoxArrowDown)
+                ->color('gray')
+                ->authorize(fn (): bool => static::canAccess())
+                ->requiresConfirmation()
+                ->modalHeading(__('app.export.action'))
+                ->modalDescription(__('app.export.help'))
+                ->modalSubmitActionLabel(__('app.export.submit'))
+                ->action(function (): void {
+                    ExportCompanyData::dispatch(app(TenantContext::class)->get()->getKey(), (int) auth()->id());
+                    Notification::make()->success()->title(__('app.export.started'))->send();
+                }),
+        ];
     }
 
     public function getTitle(): string

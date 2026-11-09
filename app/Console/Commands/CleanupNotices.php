@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Exports\CompanyExport;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -21,6 +22,8 @@ class CleanupNotices extends Command
     {
         $notices = DB::table('notifications')->where('created_at', '<', now()->subDays(self::KEEP_DAYS))->delete();
         DB::table('notice_log')->where('created_at', '<', now()->subYear())->delete();
+        // The "download everything" files last a week.
+        app(CompanyExport::class)->cleanup();
 
         $this->components->info(__('app.notices.cleaned', ['count' => $notices]));
 

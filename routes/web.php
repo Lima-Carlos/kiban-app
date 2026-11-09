@@ -4,6 +4,7 @@ use App\Filament\Pages\ConnectionsPage;
 use App\Http\Controllers\Agenda\BookingController;
 use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
+use App\Http\Controllers\CompanyExportController;
 use App\Http\Controllers\ConnectionsController;
 use App\Http\Controllers\Field\OrderReportController;
 use App\Http\Controllers\Field\OrderSyncController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\PersonDocumentFileController;
 use App\Http\Controllers\PhoneAlertController;
+use App\Http\Controllers\Pmoc\EquipmentPublicController;
 use App\Http\Controllers\TimeClock\KioskController;
 use App\Http\Controllers\TimeClock\PhoneQueueController;
 use App\Http\Controllers\TimeClock\ReceiptController;
@@ -62,8 +64,8 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
 
     // Agenda: the company's public booking page and the client's link (confirm, reschedule, cancel). No login; few tries per minute.
     // PMOC: the page of the QR label stuck on the equipment (no login; long random link).
-    Route::get('/pmoc/{token}', [\App\Http\Controllers\Pmoc\EquipmentPublicController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('pmoc.public');
-    Route::post('/pmoc/{token}', [\App\Http\Controllers\Pmoc\EquipmentPublicController::class, 'ask'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:5,10')->name('pmoc.public.ask');
+    Route::get('/pmoc/{token}', [EquipmentPublicController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('pmoc.public');
+    Route::post('/pmoc/{token}', [EquipmentPublicController::class, 'ask'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:5,10')->name('pmoc.public.ask');
 
     Route::get('/agendar', [BookingController::class, 'show'])->name('agenda.booking');
     Route::post('/agendar', [BookingController::class, 'store'])->middleware('throttle:6,1')->name('agenda.booking.store');
@@ -80,6 +82,8 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
         // Sheets of QR labels to print (PMOC equipment and serialized units): each QR opens the item's card.
         Route::get('/etiquetas/pmoc/{plan}', [LabelController::class, 'pmoc'])->whereNumber('plan')->name('labels.pmoc');
         Route::get('/etiquetas/comodato', [LabelController::class, 'units'])->name('labels.units');
+        // "Download everything" of the company (owner and administrators).
+        Route::get('/empresa/exportacao/{file}', CompanyExportController::class)->name('company.export');
 
         Route::post('/licenca/atualizar', LicenseRefreshController::class)->middleware('throttle:20,1')->name('license.sync');
 
