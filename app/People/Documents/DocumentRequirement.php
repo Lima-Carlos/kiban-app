@@ -47,10 +47,24 @@ class DocumentRequirement extends Model
     public function targetLabel(): string
     {
         return match ($this->scope) {
-            self::TEAM => __('documents.trainings.requirements.team_label', ['team' => $this->team?->name ?? '—']),
+            self::TEAM => static::teamLabel($this->team?->name),
             self::ROLE => static::roleLabel((string) $this->module, (string) $this->role),
             default => __('documents.trainings.requirements.everyone'),
         };
+    }
+
+    /** "Equipe Instalação"; a team already named "Equipe de campo" keeps its name (never "Equipe Equipe de campo"). */
+    public static function teamLabel(?string $name): string
+    {
+        if ($name === null || $name === '') {
+            return __('documents.trainings.requirements.team_label', ['team' => '—']);
+        }
+
+        $word = mb_strtolower(__('documents.trainings.requirements.team'));
+
+        return str_starts_with(mb_strtolower($name), $word)
+            ? $name
+            : __('documents.trainings.requirements.team_label', ['team' => $name]);
     }
 
     /** "Campo: Técnico". */

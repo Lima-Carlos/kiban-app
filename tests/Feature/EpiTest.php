@@ -15,6 +15,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Field\Enums\FieldRole;
 use App\Modules\Field\Filament\ExecuteOrderPage;
+use App\Modules\Field\Filament\Orders\Pages\CreateOrder;
 use App\Modules\Field\Models\Customer;
 use App\Modules\Field\Models\FieldSetting;
 use App\Modules\Field\Models\ServiceType;
@@ -639,6 +640,14 @@ class EpiTest extends TestCase
             'technician_id' => $technician->getKey(), 'scheduled_at' => '2026-11-01 15:00:00',
         ], $this->owner);
         $this->assertSame($technician->getKey(), $order->technician_id);
+
+        // The same warning on the "New order" form: type first, then the technician.
+        $this->actingAs($this->owner);
+        Livewire::test(CreateOrder::class)
+            ->fillForm(['customer_id' => $customer->getKey()])
+            ->fillForm(['service_type_id' => $type->getKey()])
+            ->fillForm(['technician_id' => $technician->getKey()])
+            ->assertSee('Atenção: sem EPI registrado');
 
         $this->actingAs($technician);
         $this->get(ExecuteOrderPage::getUrl(['order' => $order->getKey()]))->assertOk()

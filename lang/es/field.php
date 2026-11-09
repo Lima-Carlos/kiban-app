@@ -571,8 +571,6 @@ return [
         'signer' => 'Nombre de quien firma',
         'clear' => 'Borrar',
         'save_signature' => 'Guardar firma',
-        'ask_km' => 'Pedir el km del vehículo al llegar',
-        'ask_km_help' => 'Activado, el técnico escribe el km al tocar "Llegué" y va a la Flota. Desactivado (lo normal), la Flota recibe el km por las cargas de combustible y las inspecciones.',
         'signature_help' => 'Escribe el nombre y pide al cliente que firme en el recuadro.',
         'finish' => 'Terminar servicio',
         'pause' => 'Dejar pendiente',
@@ -658,6 +656,8 @@ return [
         'pc' => 'pieza',
     ],
     'settings' => [
+        'ask_km' => 'Pedir el km del vehículo al llegar',
+        'ask_km_help' => 'Activado, el técnico escribe el km al tocar "Llegué" y va a la Flota. Desactivado (lo normal), la Flota recibe el km por las cargas de combustible y las inspecciones.',
         'title' => 'Configuración de Campo',
         'business' => 'Tu rubro',
         'business_help' => 'El sistema crea los tipos de servicio más comunes de tu rubro, con la lista del técnico, y los materiales. Después solo los ajustas. Elegir otro rubro más tarde solo agrega lo que falta.',

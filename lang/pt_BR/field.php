@@ -571,8 +571,6 @@ return [
         'signer' => 'Nome de quem assina',
         'clear' => 'Limpar',
         'save_signature' => 'Salvar assinatura',
-        'ask_km' => 'Pedir o km do veículo na chegada',
-        'ask_km_help' => 'Ligado, o técnico informa o km ao tocar em "Cheguei" e ele vai para a Frota. Desligado (o normal), a Frota recebe o km pelos abastecimentos e vistorias.',
         'signature_help' => 'Escreva o nome e peça para o cliente assinar no quadro.',
         'finish' => 'Concluir serviço',
         'pause' => 'Deixar pendente',
@@ -658,6 +656,8 @@ return [
         'pc' => 'peça',
     ],
     'settings' => [
+        'ask_km' => 'Pedir o km do veículo na chegada',
+        'ask_km_help' => 'Ligado, o técnico informa o km ao tocar em "Cheguei" e ele vai para a Frota. Desligado (o normal), a Frota recebe o km pelos abastecimentos e vistorias.',
         'title' => 'Configurações do Campo',
         'business' => 'O seu ramo',
         'business_help' => 'O sistema já cria os tipos de serviço mais comuns do seu ramo, com o roteiro do técnico, e os materiais. Depois, é só ajustar. Escolher outro ramo mais tarde só acrescenta o que falta.',

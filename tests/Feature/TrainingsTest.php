@@ -189,6 +189,10 @@ class TrainingsTest extends TestCase
         $this->assertFalse($service->isRequired(Person::forUser($this->owner), $this->type('nr10')));
         $this->assertTrue($service->isRequired($tito, $this->type('nr10')));
 
+        // A team already named "Equipe ..." is never "Equipe Equipe de campo".
+        $this->assertSame('Equipe de campo', DocumentRequirement::teamLabel('Equipe de campo'));
+        $this->assertSame('Equipe Instalação', DocumentRequirement::teamLabel('Instalação'));
+
         // The screen of the requirements lists them with the people and who is missing.
         Livewire::test(TrainingRequirementsPage::class)
             ->assertSee('Equipe Instalação')

@@ -571,8 +571,6 @@ return [
         'signer' => 'Name of who signs',
         'clear' => 'Clear',
         'save_signature' => 'Save signature',
-        'ask_km' => 'Ask for the vehicle km at arrival',
-        'ask_km_help' => 'On, the technician types the km when tapping "I arrived" and it goes to the Fleet. Off (the usual), the Fleet gets the km from fuel-ups and inspections.',
         'signature_help' => 'Write the name and ask the customer to sign on the pad.',
         'finish' => 'Finish service',
         'pause' => 'Put on hold',
@@ -658,6 +656,8 @@ return [
         'pc' => 'piece',
     ],
     'settings' => [
+        'ask_km' => 'Ask for the vehicle km at arrival',
+        'ask_km_help' => 'On, the technician types the km when tapping "I arrived" and it goes to the Fleet. Off (the usual), the Fleet gets the km from fuel-ups and inspections.',
         'title' => 'Field Settings',
         'business' => 'Your business',
         'business_help' => 'The system creates the most common types of service of your business, with the technician\'s checklist, and the materials. Then you just adjust them. Choosing another business later only adds what is missing.',
