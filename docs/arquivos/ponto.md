@@ -270,7 +270,7 @@ São usadas no cálculo das horas a partir da parte 4:
   - só depois que o mês termina: a partir do **meio-dia do dia 1º**, para o turno da noite do último dia ficar completo;
   - quem tem **correção esperando resposta** fica de fora até o gestor responder (a tela mostra o nome e o motivo);
   - num mês sem nenhum funcionário (ex.: todos entraram depois), o botão fica apagado, com a explicação "Ninguém trabalhou neste mês".
-- O botão **"Arquivo da fiscalização (AFD)"** (antes "Arquivo AFD (prévia)") explica o que é: o arquivo oficial das batidas que o fiscal do trabalho pode pedir. Ainda é uma prévia.
+- Os botões **"Arquivo da fiscalização (AFD)"**, **"Arquivo da jornada (AEJ)"** e **"Arquivo para a folha"** estão explicados mais abaixo.
 - **Fechar congela o mês:**
   - o sistema guarda uma **cópia de todos os dias e dos totais**, com um código (SHA-256) que mostra se alguém mexeu na cópia;
   - dali em diante, a tela e o PDF mostram sempre essa cópia, mesmo que as regras mudem depois;
@@ -294,18 +294,61 @@ São usadas no cálculo das horas a partir da parte 4:
   - **Dia a dia**.
 - As horas vão como **horas de verdade do Excel** (dá para somar). O banco de horas vai em **horas decimais** (ex.: −3,25), porque pode ser negativo.
 
-### Arquivo AFD (Brasil) — **prévia**
-- Botão **"Arquivo AFD (prévia)"** no Fechamento do mês, só para o gestor e só no perfil "Brasil (CLT)".
-- Segue a Portaria 671 (REP-P):
+### Arquivos oficiais AFD e AEJ (Brasil, Portaria 671), 09/11/2026
+- Dois botões no Fechamento do mês, só para o gestor e só no perfil "Brasil (CLT)": **"Arquivo da fiscalização (AFD)"** e **"Arquivo da jornada (AEJ)"**. São os arquivos que o fiscal do trabalho pode pedir.
+- **AFD** (leiaute **004**, de 31/07/2026; os leiautes estão em `docs/planejamento/leiautes-afd-aej.md`):
   - cabeçalho;
-  - uma linha por batida original, com o NSR, a data e hora com fuso, o CPF e a corrente SHA-256 (refeita desde a primeira batida da empresa);
-  - o rodapé.
-- **Ainda é uma prévia, a validar** com o leiaute oficial e o validador do Ministério antes de entregar a um fiscal. Faltam:
-  - os registros de mudança da empresa e dos funcionários (tipos 2 e 5);
-  - a **assinatura digital com certificado ICP-Brasil** (.p7s);
-  - o **AEJ**.
+  - empresa incluída ou alterada (tipo 2): gravado sozinho quando o CNPJ ou a razão social mudam em Configurações do ponto;
+  - funcionário incluído, alterado (nome ou CPF) ou excluído (tipo 5): gravado sozinho quando alguém passa a bater ponto, muda de nome ou CPF, ou para de bater ponto;
+  - cada batida (tipo 7), com o código SHA-256 encadeado. O código é **calculado e guardado na hora da batida** e também aparece no **comprovante**;
+  - rodapé com a contagem de cada tipo e a linha da assinatura.
+  - Empresa, funcionários e batidas usam a **mesma numeração (NSR)**. Por isso, a primeira batida da empresa pode ter o número 2 ou 3.
+  - Batida feita sem internet sai marcada como "off-line", com a hora em que foi feita e a hora em que chegou.
+- **AEJ** (leiaute **002**): a jornada calculada, igual ao espelho:
+  - o horário combinado de cada dia;
+  - as batidas em pares (entrada/saída);
+  - a batida esquecida que entrou por correção (com o motivo);
+  - a batida desconsiderada (com o motivo);
+  - as folgas (DSR), as faltas sem justificativa e o movimento do banco de horas;
+  - os relógios usados (este programa e cada relógio importado) e a identificação do programa.
+- **Ainda falta, para entregar como oficial:**
+  - a **assinatura digital** com o certificado ICP-Brasil da Kiban (arquivo `.p7s`);
+  - o **registro do programa no INPI**.
 
-  A tela avisa o que está faltando: CNPJ e razão social da empresa (em **Configurações do ponto → Empregador nos arquivos oficiais**), o registro do programa no INPI (providência da Kiban, no `.env`: `KIBAN_PONTO_INPI_REGISTRATION` e `KIBAN_PONTO_DEVELOPER_DOCUMENT`) e quem está sem CPF válido.
+  As duas dependem do CNPJ da Kiban (janeiro de 2027). Até lá, os arquivos servem para conferir.
+- A tela avisa o que está faltando:
+  - CNPJ e razão social da empresa (em **Configurações do ponto → Empregador nos arquivos oficiais**);
+  - o registro no INPI (no `.env`: `KIBAN_PONTO_INPI_REGISTRATION`, `KIBAN_PONTO_DEVELOPER_DOCUMENT`, `KIBAN_PONTO_DEVELOPER_NAME`, `KIBAN_PONTO_DEVELOPER_EMAIL`);
+  - quem está sem CPF válido.
+- O governo **não tem um validador oficial** desses arquivos. Alguns detalhes que o leiaute não diz (como a conta exata do SHA-256) seguem a prática do mercado; eles estão anotados no documento dos leiautes.
+
+### Arquivo para a folha do contador (09/11/2026)
+- Botão **"Arquivo para a folha"** no Fechamento do mês (gestor). A empresa escolhe o programa do contador e preenche **uma vez** o código de cada item na folha. Os itens são:
+  - horas extras;
+  - extras em folga ou feriado;
+  - adicional noturno;
+  - faltas em dias;
+  - atrasos e saídas antes da hora;
+  - banco de horas vencido.
+
+  Fica salvo, e cada mês é só baixar e mandar ao contador.
+- Programas:
+  - **Domínio** e **TOTVS RM Labore**, conferidos com o leiaute e o exemplo oficiais;
+  - **Alterdata**, **Fortes**, **Questor** e **Senior**: a tela avisa para conferir na primeira importação, porque falta um detalhe que só o contador que usa o programa confirma;
+  - **"Outro programa"**: uma planilha CSV simples.
+- O funcionário é achado pela **Matrícula** (o código dele no programa da folha). Quem está sem Matrícula fica fora do arquivo, e a tela mostra o nome.
+- As horas podem ir em horas decimais (1,50), horas e minutos (1,30) ou minutos (90), conforme o programa do contador.
+- Detalhes dos leiautes e as perguntas para cada contador: `docs/planejamento/leiautes-folha.md`.
+
+### Relógio de ponto que a empresa já tem (09/11/2026)
+- Em **Batidas**, o botão **"Importar do relógio de ponto"** (gestor, perfil "Brasil (CLT)") recebe o **arquivo AFD** de qualquer relógio certificado (cartão, digital ou rosto, de qualquer marca), porque todos usam o mesmo arquivo oficial.
+- Aceita os relógios novos (Portaria 671, funcionário pelo **CPF**) e os antigos (Portaria 1510, funcionário pelo **PIS**).
+- As batidas entram no espelho, nas horas extras, no banco de horas, no AEJ e no arquivo da folha, como as do celular.
+- O relógio é reconhecido pelo número de fabricação no arquivo. Na primeira vez, dá para escolher um nome (ex.: "Relógio da portaria").
+- **Pode enviar o mesmo arquivo de novo:** o que já entrou não repete. Ficam de fora (e a tela avisa):
+  - as batidas de quem não tem cadastro aqui;
+  - as batidas de um mês já fechado.
+- Essas batidas **não têm comprovante do sistema** (o próprio relógio imprime o dele) e **não entram no AFD deste programa** (elas estão no AFD do relógio).
 
 ### Avisos (sino, nunca por e-mail) e quadro "Atenção"
 - **Rotina de hora em hora** (`kiban:timeclock`, aos 20 minutos de cada hora), cada aviso uma vez só:
@@ -328,13 +371,26 @@ São usadas no cálculo das horas a partir da parte 4:
   - `MonthClosing` (fechar, congelar, assinar, discordar, reabrir);
   - `TimesheetDocument` (o mês: cópia congelada ou cálculo, e o PDF);
   - `TimeClockExporter` (planilha do contador);
-  - `AfdFile` (AFD, prévia);
+  - `AfdFile` (AFD), `AfdLog` (registros da empresa e dos funcionários no AFD), `AejFile` (AEJ);
   - `TimeClockNotices` (avisos e "Atenção");
   - `TimeClockCleanup` (fotos antigas).
 - Telas: `app/Modules/TimeClock/Filament/ClosingsPage.php`; a `TimesheetPage` ganhou o PDF, "Assinar" e "Não concordo". PDF: `resources/views/timeclock/pdf/timesheet.blade.php`.
 - Rotina: `app/Console/Commands/RunTimeClockTasks.php` (agendada em `routes/console.php`).
 - CNPJ: `app/Rules/Cnpj.php`.
 - Testes: `tests/Feature/TimeClockClosingTest.php`.
+
+## Arquivos (AFD completo, AEJ, folha e relógios, 09/11/2026)
+- `database/migrations/2026_11_16_100000_create_tc_afd_records.php`: tabela `tc_afd_records` (empresa e funcionários no AFD), linha oficial e SHA-256 de cada batida (`afd_line`, `afd_hash`).
+- `database/migrations/2026_11_16_110000_add_payroll_to_tc_settings.php`: configuração do arquivo da folha (`tc_settings.payroll`).
+- `database/migrations/2026_11_16_120000_create_tc_clocks.php`: relógios (`tc_clocks`) e as batidas importadas (`clock_id`, `clock_nsr`).
+- `app/Modules/TimeClock/Afd/AfdLine.php`: monta as linhas oficiais do AFD (CRC-16, data e hora, CPF).
+- `app/Modules/TimeClock/Afd/AfdImport.php` e `AfdImportException.php`: lê o AFD de um relógio.
+- `app/Modules/TimeClock/Models/AfdRecord.php` e `Clock.php`.
+- `app/Modules/TimeClock/Services/AfdLog.php`: grava empresa e funcionários no AFD (ligado em `TimeClockModule::boot()`).
+- `app/Modules/TimeClock/Services/AejFile.php`: o AEJ.
+- `app/Modules/TimeClock/Payroll/PayrollExport.php`: o arquivo da folha nos formatos dos programas.
+- Telas: botões no `ClosingsPage` e o "Importar do relógio de ponto" em `Filament/Punches/Pages/ListPunches.php`.
+- Testes: `tests/Feature/TimeClockAfdTest.php`, `TimeClockPayrollTest.php`, `TimeClockImportTest.php`.
 
 ## Parte 6 (P6): painel do Ponto
 

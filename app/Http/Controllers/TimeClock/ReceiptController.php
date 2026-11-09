@@ -17,7 +17,8 @@ class ReceiptController extends Controller
 {
     public function show(int $punch, ReceiptService $receipts): View
     {
-        $record = Punch::query()->findOrFail($punch);
+        // Punches imported from a time clock have the receipt printed by the clock itself.
+        $record = Punch::query()->whereNotNull('nsr')->findOrFail($punch);
 
         return view('timeclock.receipt', $receipts->data($record) + [
             'pdfUrl' => URL::signedRoute('timeclock.receipt.pdf', ['punch' => $record->getKey()], absolute: false),
@@ -26,7 +27,8 @@ class ReceiptController extends Controller
 
     public function pdf(int $punch, ReceiptService $receipts): Response
     {
-        $record = Punch::query()->findOrFail($punch);
+        // Punches imported from a time clock have the receipt printed by the clock itself.
+        $record = Punch::query()->whereNotNull('nsr')->findOrFail($punch);
 
         return response($receipts->pdf($record), 200, [
             'Content-Type' => 'application/pdf',

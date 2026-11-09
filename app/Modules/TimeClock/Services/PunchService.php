@@ -180,7 +180,7 @@ class PunchService
         // The employer and employee records of the AFD take numbers of the same sequence.
         $records = AfdRecord::query()->pluck('nsr')->flip();
 
-        foreach (Punch::query()->orderBy('nsr')->cursor() as $punch) {
+        foreach (Punch::query()->whereNotNull('nsr')->orderBy('nsr')->cursor() as $punch) {
             while ($records->has($expectedNsr)) {
                 $expectedNsr++;
             }

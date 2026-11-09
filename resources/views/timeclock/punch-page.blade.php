@@ -288,7 +288,11 @@
         @forelse ($this->recentPunches() as $punch)
             <div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(127,127,127,.15);font-size:14px">
                 <span>{{ ucfirst($punch->localTime()->translatedFormat(__('timeclock.holidays.day_month_weekday_format'))) }} · <strong>{{ $punch->localTime()->format('H:i') }}</strong></span>
-                <a href="{{ $this->receiptUrl($punch) }}" target="_blank" style="color:#044299">{{ __('timeclock.receipt.short') }} #{{ $punch->nsr }}</a>
+                @if ($punch->nsr !== null)
+                    <a href="{{ $this->receiptUrl($punch) }}" target="_blank" style="color:#044299">{{ __('timeclock.receipt.short') }} #{{ $punch->nsr }}</a>
+                @else
+                    <span style="opacity:.7">{{ __('timeclock.punches.sources.clock') }}</span>
+                @endif
             </div>
         @empty
             <p style="opacity:.7">{{ __('timeclock.punches.none') }}</p>

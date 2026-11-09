@@ -44,6 +44,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 use Livewire\Attributes\Url;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -120,6 +121,16 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
         $this->month = preg_match('/^\d{4}-\d{2}$/', (string) $this->month) ? $this->month : now()->subMonthNoOverflow()->format('Y-m');
     }
 
+    /**
+     * Texts of a window, one paragraph each (escaped).
+     *
+     * @param  array<int, string>  $texts
+     */
+    protected function paragraphs(array $texts): HtmlString
+    {
+        return new HtmlString(collect($texts)->filter()->map(fn (string $text): string => e($text))->implode('<br><br>'));
+    }
+
     public function start(): CarbonImmutable
     {
         return CarbonImmutable::parse($this->month.'-01');
@@ -175,7 +186,7 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                 ->visible(fn (): bool => static::canManage())
                 ->tooltip(__('timeclock.payroll.what'))
                 ->modalHeading(__('timeclock.payroll.title'))
-                ->modalDescription(fn (): string => collect([__('timeclock.payroll.what'), __('timeclock.payroll.registration_help'), ...app(PayrollExport::class)->warnings($this->start())])->implode("\n\n"))
+                ->modalDescription(fn (): HtmlString => $this->paragraphs([__('timeclock.payroll.what'), __('timeclock.payroll.registration_help'), ...app(PayrollExport::class)->warnings($this->start())]))
                 ->modalSubmitActionLabel(__('timeclock.payroll.save_download'))
                 ->fillForm(fn (): array => app(PayrollExport::class)->config())
                 ->schema([
@@ -219,7 +230,7 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                 ->visible(fn (): bool => static::canManage() && TimeClockSetting::current()->isBrazil())
                 ->tooltip(__('timeclock.afd.what'))
                 ->modalHeading(__('timeclock.afd.title'))
-                ->modalDescription(fn (): string => collect([__('timeclock.afd.what'), __('timeclock.afd.preview'), ...app(AfdFile::class)->warnings($this->start(), $this->start()->endOfMonth())])->implode("\n\n"))
+                ->modalDescription(fn (): HtmlString => $this->paragraphs([__('timeclock.afd.what'), __('timeclock.afd.preview'), ...app(AfdFile::class)->warnings($this->start(), $this->start()->endOfMonth())]))
                 ->modalSubmitActionLabel(__('timeclock.afd.download'))
                 ->action(function (): StreamedResponse {
                     abort_unless(static::canManage(), 403);
@@ -235,7 +246,7 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                 ->visible(fn (): bool => static::canManage() && TimeClockSetting::current()->isBrazil())
                 ->tooltip(__('timeclock.aej.what'))
                 ->modalHeading(__('timeclock.aej.title'))
-                ->modalDescription(fn (): string => collect([__('timeclock.aej.what'), __('timeclock.afd.preview'), ...app(AfdFile::class)->warnings($this->start(), $this->start()->endOfMonth())])->implode("\n\n"))
+                ->modalDescription(fn (): HtmlString => $this->paragraphs([__('timeclock.aej.what'), __('timeclock.afd.preview'), ...app(AfdFile::class)->warnings($this->start(), $this->start()->endOfMonth())]))
                 ->modalSubmitActionLabel(__('timeclock.aej.download'))
                 ->action(function (): StreamedResponse {
                     abort_unless(static::canManage(), 403);

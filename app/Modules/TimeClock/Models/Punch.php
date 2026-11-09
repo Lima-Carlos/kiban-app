@@ -24,6 +24,9 @@ class Punch extends Model
 
     public const KIOSK = 'kiosk';
 
+    /** Brazil: imported from the AFD of a time clock the company already has (AfdImport). */
+    public const CLOCK = 'clock';
+
     public const OUTSIDE_RADIUS = 'outside_radius';
 
     public const NO_LOCATION = 'no_location';
@@ -44,6 +47,7 @@ class Punch extends Model
     {
         return [
             'nsr' => 'integer',
+            'clock_nsr' => 'integer',
             'punched_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'latitude' => 'float',
@@ -80,6 +84,14 @@ class Punch extends Model
     public function kiosk(): BelongsTo
     {
         return $this->belongsTo(Kiosk::class);
+    }
+
+    /**
+     * @return BelongsTo<Clock, $this>
+     */
+    public function clock(): BelongsTo
+    {
+        return $this->belongsTo(Clock::class);
     }
 
     /**

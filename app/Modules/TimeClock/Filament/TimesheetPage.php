@@ -26,7 +26,6 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
@@ -325,7 +324,7 @@ class TimesheetPage extends Page
             ->whereBetween('punched_at', [$day->subHours(12)->utc(), $day->addHours(36)->utc()])
             ->orderBy('punched_at')
             ->get()
-            ->mapWithKeys(fn (Punch $punch): array => [$punch->getKey() => $punch->localTime()->translatedFormat(__('app.date_format')).' '.$punch->localTime()->format('H:i').' · #'.$punch->nsr])
+            ->mapWithKeys(fn (Punch $punch): array => [$punch->getKey() => $punch->localTime()->translatedFormat(__('app.date_format')).' '.$punch->localTime()->format('H:i').' · #'.($punch->nsr ?? $punch->clock_nsr)])
             ->all();
     }
 }

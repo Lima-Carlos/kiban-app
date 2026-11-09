@@ -72,7 +72,7 @@ class PunchResource extends ModuleResource
                 TextColumn::make('punched_at')
                     ->label(__('timeclock.punches.when'))
                     ->state(fn (Punch $record): string => $record->localTime()->translatedFormat(__('app.date_format')).' '.$record->localTime()->format('H:i'))
-                    ->description(fn (Punch $record): string => '#'.$record->nsr)
+                    ->description(fn (Punch $record): string => '#'.($record->nsr ?? $record->clock_nsr))
                     ->sortable(),
                 TextColumn::make('employee.person.name')
                     ->label(__('timeclock.fields.name'))
@@ -80,7 +80,7 @@ class PunchResource extends ModuleResource
                     ->searchable(),
                 TextColumn::make('source')
                     ->label(__('timeclock.receipt.how'))
-                    ->formatStateUsing(fn (string $state, Punch $record): string => __('timeclock.punches.sources.'.$state).($record->kiosk ? ' · '.$record->kiosk->name : ''))
+                    ->formatStateUsing(fn (string $state, Punch $record): string => __('timeclock.punches.sources.'.$state).($record->kiosk ? ' · '.$record->kiosk->name : '').($record->clock ? ' · '.$record->clock->name : ''))
                     ->visibleFrom('md'),
                 TextColumn::make('distance_meters')
                     ->label(__('timeclock.punches.place'))

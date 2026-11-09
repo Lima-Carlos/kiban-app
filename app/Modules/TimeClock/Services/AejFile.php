@@ -4,6 +4,7 @@ namespace App\Modules\TimeClock\Services;
 
 use App\Modules\TimeClock\Afd\AfdLine;
 use App\Modules\TimeClock\Models\Adjustment;
+use App\Modules\TimeClock\Models\Clock;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Models\TimeClockSetting;
@@ -87,7 +88,11 @@ class AejFile
             }
         }
 
+        // 1 is this program (REP-P); then each clock whose punches were imported, with its type and number.
         $reps = [['02', 1, 3, AfdLine::inpi((string) config('kiban.timeclock.inpi_registration'))]];
+        foreach (Clock::query()->whereIn('id', array_keys($repIds))->get() as $clock) {
+            $reps[] = ['02', $repIds[$clock->getKey()], $clock->type, (string) preg_replace('/[^0-9A-Za-z]/', '', $clock->number)];
+        }
         $developer = AfdLine::document((string) config('kiban.timeclock.developer_document'));
 
         $records = [
@@ -152,7 +157,11 @@ class AejFile
      */
     protected function repId(?Punch $punch, array &$repIds): string
     {
-        return '1';
+        if ($punch?->clock_id === null) {
+            return '1';
+        }
+
+        return (string) ($repIds[$punch->clock_id] ??= count($repIds) + 2);
     }
 
     /** Free text without the separator and line breaks. */

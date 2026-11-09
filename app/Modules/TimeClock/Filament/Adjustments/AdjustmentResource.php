@@ -71,7 +71,7 @@ class AdjustmentResource extends ModuleResource
 
         return match ($record->type) {
             Adjustment::ADD_PUNCH => $record->punch_at?->setTimezone($tz)->format('H:i') ?? '',
-            Adjustment::IGNORE_PUNCH => $record->punch ? $record->punch->localTime()->format('H:i').' · #'.$record->punch->nsr : '',
+            Adjustment::IGNORE_PUNCH => $record->punch ? $record->punch->localTime()->format('H:i').' · #'.($record->punch->nsr ?? $record->punch->clock_nsr) : '',
             default => $record->minutes === null ? __('timeclock.timesheet.excused_day') : $record->minutes.' min',
         };
     }
