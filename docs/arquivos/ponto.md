@@ -322,6 +322,9 @@ São usadas no cálculo das horas a partir da parte 4:
   - quem está sem CPF válido.
 - O governo **não tem um validador oficial** desses arquivos. Alguns detalhes que o leiaute não diz (como a conta exata do SHA-256) seguem a prática do mercado; eles estão anotados no documento dos leiautes.
 
+### "Por que deu isso?" (09/11/2026)
+- Em cada dia do espelho, o link explica a conta do dia em frases simples (previsto, pares de batidas, tolerância, extra, atraso, falta, noturno, correções). Detalhes em `valor-e-diferenciais.md`.
+
 ### Arquivo para a folha do contador (09/11/2026)
 - Botão **"Arquivo para a folha"** no Fechamento do mês (gestor). A empresa escolhe o programa do contador e preenche **uma vez** o código de cada item na folha. Os itens são:
   - horas extras;
