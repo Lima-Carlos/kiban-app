@@ -66,6 +66,27 @@ class CoreClient
     }
 
     /**
+     * "Ask your system": the answer from the weekly numbers, null when the Core has it off or could not answer.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function ask(string $subdomain, array $payload): ?string
+    {
+        $response = $this->asSystem(fn (PendingRequest $http): Response => $http->post(
+            '/api/v1/tenants/'.rawurlencode($subdomain).'/ask',
+            $payload,
+        ));
+
+        if ($response->status() === 503) {
+            return null;
+        }
+
+        $this->ensureSuccessful($response);
+
+        return $response->json('answer');
+    }
+
+    /**
      * The weekly summary of the company, for the Core to e-mail to the owner and the administrators
      * (scope "onboarding", the same as the first steps).
      *

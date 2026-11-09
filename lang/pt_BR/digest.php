@@ -42,4 +42,12 @@ return [
         'approved' => ':amount em despesas aprovadas.',
         'pending' => '{1} 1 despesa esperando aprovação.|[2,*] :count despesas esperando aprovação.',
     ],
+    'ask' => [
+        'title' => 'Pergunte ao seu Sistema',
+        'help' => 'Escreva uma pergunta com as suas palavras sobre os números da empresa (horas extras, faltas, combustível, serviços...). A resposta usa os números das últimas 6 semanas de todos os sistemas.',
+        'placeholder' => 'Ex.: Quantas horas extras tivemos nas últimas semanas? O gasto com combustível subiu?',
+        'submit' => 'Perguntar',
+        'unavailable' => 'Não foi possível responder agora. Tente de novo mais tarde, ou veja o Resumo da Semana.',
+        'footer' => 'Resposta escrita por inteligência artificial a partir dos números do sistema. Confira nas telas antes de decidir.',
+    ],
 ];

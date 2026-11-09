@@ -67,6 +67,10 @@ return [
     |
     */
 
+    // "Ask your system" (owner and administrators; answered by Claude through the Core). Ready but off: turn on
+    // here and in the Core (Assistente do dono → "Pergunte ao seu sistema").
+    'ask_enabled' => (bool) env('KIBAN_ASK_ENABLED', false),
+
     'timeclock' => [
         'developer_document' => preg_replace('/\D/', '', (string) env('KIBAN_PONTO_DEVELOPER_DOCUMENT', '')),
         'inpi_registration' => (string) env('KIBAN_PONTO_INPI_REGISTRATION', ''),

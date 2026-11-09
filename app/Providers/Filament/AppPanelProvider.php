@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\AccessProfilesPage;
+use App\Filament\Pages\AskPage;
 use App\Filament\Pages\CompanyProfilePage;
 use App\Filament\Pages\ConnectionsPage;
 use App\Filament\Pages\DocumentsPage;
@@ -70,6 +71,7 @@ class AppPanelProvider extends PanelProvider
                 CompanyProfilePage::class,
                 ConnectionsPage::class,
                 WeeklyDigestPage::class,
+                AskPage::class,
                 DocumentsPage::class,
                 DocumentTypesPage::class,
                 PersonDocumentsPage::class,

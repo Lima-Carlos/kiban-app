@@ -289,6 +289,10 @@ abstract class TestCase extends BaseTestCase
                 return Http::response(['completed' => false]);
             }
 
+            if (preg_match('#^/api/v1/tenants/([^/]+)/ask$#', $path)) {
+                return Http::response(['enabled' => true, 'answer' => 'Foram 2:00 de horas extras na semana passada.']);
+            }
+
             if (preg_match('#^/api/v1/tenants/([^/]+)/digest$#', $path)) {
                 return Http::response(['sent' => 1]);
             }

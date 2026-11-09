@@ -42,4 +42,12 @@ return [
         'approved' => ':amount in approved expenses.',
         'pending' => '{1} 1 expense waiting for approval.|[2,*] :count expenses waiting for approval.',
     ],
+    'ask' => [
+        'title' => 'Ask your System',
+        'help' => 'Type a question in your own words about the company numbers (overtime, absences, fuel, services...). The answer uses the numbers of the last 6 weeks of all systems.',
+        'placeholder' => 'E.g. How much overtime did we have in the last weeks? Did fuel spending go up?',
+        'submit' => 'Ask',
+        'unavailable' => 'It could not be answered now. Try again later, or see the Weekly Summary.',
+        'footer' => 'Answer written by artificial intelligence from the system numbers. Check the screens before deciding.',
+    ],
 ];
