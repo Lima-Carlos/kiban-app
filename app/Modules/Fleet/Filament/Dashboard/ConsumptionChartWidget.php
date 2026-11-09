@@ -27,6 +27,18 @@ class ConsumptionChartWidget extends ChartWidget
         return 'line';
     }
 
+    /**
+     * Numbers in the page language with one decimal: an English browser on a Brazilian page wrote 10,37 km/l
+     * as "10.370", which reads as ten thousand.
+     */
+    protected function getOptions(): array
+    {
+        return [
+            'locale' => str_replace('_', '-', app()->getLocale()),
+            'scales' => ['y' => ['ticks' => ['precision' => 1]]],
+        ];
+    }
+
     protected function getData(): array
     {
         $series = app(FleetReports::class)->monthly($this->months(), $this->vehicleId());

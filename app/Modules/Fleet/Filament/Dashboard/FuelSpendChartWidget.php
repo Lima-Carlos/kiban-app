@@ -27,7 +27,8 @@ class FuelSpendChartWidget extends ChartWidget
 
     protected function getOptions(): array
     {
-        return ['scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]]];
+        // Numbers in the page language ("1.800" in Brazil, "1,800" in English), not the browser's.
+        return ['locale' => str_replace('_', '-', app()->getLocale()), 'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]]];
     }
 
     /**
