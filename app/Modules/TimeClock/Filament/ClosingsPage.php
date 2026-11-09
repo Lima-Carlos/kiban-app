@@ -8,6 +8,7 @@ use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\TimeClockSetting;
+use App\Modules\TimeClock\Services\AejFile;
 use App\Modules\TimeClock\Services\AfdFile;
 use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
@@ -176,6 +177,22 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                     [$from, $to] = [$this->start(), $this->start()->endOfMonth()];
 
                     return response()->streamDownload(fn () => print ($afd->contents($from, $to)), $afd->fileName($from, $to), ['Content-Type' => 'text/plain; charset=ISO-8859-1']);
+                }),
+            Action::make('aej')
+                ->label(__('timeclock.aej.download'))
+                ->icon(Heroicon::OutlinedDocumentText)
+                ->color('gray')
+                ->visible(fn (): bool => static::canManage() && TimeClockSetting::current()->isBrazil())
+                ->tooltip(__('timeclock.aej.what'))
+                ->modalHeading(__('timeclock.aej.title'))
+                ->modalDescription(fn (): string => collect([__('timeclock.aej.what'), __('timeclock.afd.preview'), ...app(AfdFile::class)->warnings($this->start(), $this->start()->endOfMonth())])->implode("\n\n"))
+                ->modalSubmitActionLabel(__('timeclock.aej.download'))
+                ->action(function (): StreamedResponse {
+                    abort_unless(static::canManage(), 403);
+                    $aej = app(AejFile::class);
+                    [$from, $to] = [$this->start(), $this->start()->endOfMonth()];
+
+                    return response()->streamDownload(fn () => print ($aej->contents($from, $to)), $aej->fileName($from, $to), ['Content-Type' => 'text/plain; charset=ISO-8859-1']);
                 }),
             Action::make('closeAll')
                 ->label(__('timeclock.closing.close_all'))

@@ -311,7 +311,7 @@ class TimeClockClosingTest extends TestCase
 
         $this->actingAs($this->owner);
         $this->get($this->company->url('/ponto/fechamento'))->assertOk()->assertSee('Rui');
-        Livewire::test(ClosingsPage::class, ['month' => '2026-11'])->assertActionVisible('closeAll')->assertActionVisible('afd');
+        Livewire::test(ClosingsPage::class, ['month' => '2026-11'])->assertActionVisible('closeAll')->assertActionVisible('afd')->assertActionVisible('aej');
         // The current month cannot be closed yet.
         Livewire::test(ClosingsPage::class, ['month' => '2026-12'])->assertActionHidden('closeAll')->assertSee(__('timeclock.closing.not_over'));
     }

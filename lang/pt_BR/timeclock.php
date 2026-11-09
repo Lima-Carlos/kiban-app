@@ -622,12 +622,17 @@ return [
     ],
     'afd' => [
         'download' => 'Arquivo da fiscalização (AFD)',
-        'what' => 'O arquivo oficial das batidas que o fiscal do trabalho pode pedir. Ainda é uma prévia.',
+        'what' => 'O arquivo oficial das batidas que o fiscal do trabalho pode pedir.',
         'title' => 'Arquivo AFD (Portaria 671)',
-        'preview' => 'PRÉVIA: este arquivo ainda precisa ser conferido com o leiaute oficial e o validador do Ministério do Trabalho antes de ser entregue a um fiscal. Ainda faltam a assinatura digital com certificado e o arquivo AEJ.',
+        'preview' => 'Ainda faltam a assinatura digital com certificado e o registro do programa no INPI, que a Kiban faz depois de ter o CNPJ. Até lá, use o arquivo para conferir; não entregue a um fiscal como arquivo oficial.',
         'missing_employer' => 'Falta o CNPJ e a razão social do empregador em Configurações do ponto.',
         'missing_inpi' => 'Falta o número de registro do programa no INPI (providência da Kiban).',
         'missing_cpf' => '{1} 1 funcionário com batidas está sem CPF válido.|[2,*] :count funcionários com batidas estão sem CPF válido.',
+    ],
+    'aej' => [
+        'download' => 'Arquivo da jornada (AEJ)',
+        'what' => 'O arquivo oficial da jornada calculada: horário combinado, batidas com as correções e o motivo de cada uma, faltas, folgas e banco de horas. A fiscalização pode pedir junto com o AFD.',
+        'title' => 'Arquivo AEJ (Portaria 671)',
     ],
     'attention' => [
         'pending' => '{1} 1 correção esperando sua resposta|[2,*] :count correções esperando sua resposta',

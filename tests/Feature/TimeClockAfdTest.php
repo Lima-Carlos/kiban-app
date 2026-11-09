@@ -12,6 +12,8 @@ use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
+use App\Modules\TimeClock\Services\AdjustmentService;
+use App\Modules\TimeClock\Services\AejFile;
 use App\Modules\TimeClock\Services\AfdFile;
 use App\Modules\TimeClock\Services\PunchService;
 use App\Modules\TimeClock\Services\ReceiptService;
@@ -143,6 +145,42 @@ class TimeClockAfdTest extends TestCase
         // The receipt shows the SHA-256.
         $this->assertSame($second->afd_hash, app(ReceiptService::class)->data($second)['punch']->afd_hash);
         $this->get(app(ReceiptService::class)->url($second))->assertOk()->assertSee($second->afd_hash);
+    }
+
+    public function test_the_working_time_file(): void
+    {
+        TimeClockSetting::current()->forceFill(['employer_document_type' => 'cnpj', 'employer_document' => '11222333000181', 'employer_name' => 'Instaladora Ltda'])->save();
+        $rui = $this->employee();
+        foreach (['2026-11-03 08:00', '2026-11-03 08:02', '2026-11-03 12:00', '2026-11-03 13:00'] as $moment) {
+            $this->travelTo(CarbonImmutable::parse($moment, self::TZ));
+            app(PunchService::class)->punch($rui, ['photo_path' => 'x.jpg']);
+        }
+        $this->travelTo(CarbonImmutable::parse('2026-11-05 10:00', self::TZ));
+        $double = Punch::query()->orderBy('nsr')->skip(1)->first();
+        app(AdjustmentService::class)->record($rui, ['date' => '2026-11-03', 'type' => 'ignore_punch', 'punch_id' => $double->id, 'reason' => 'Bateu duas vezes'], $this->owner);
+        app(AdjustmentService::class)->record($rui, ['date' => '2026-11-03', 'type' => 'add_punch', 'time' => '18:00', 'reason' => 'Esqueceu a saída'], $this->owner);
+
+        $day = CarbonImmutable::parse('2026-11-01');
+        $text = mb_convert_encoding(app(AejFile::class)->contents($day, CarbonImmutable::parse('2026-11-04')), 'UTF-8', 'ISO-8859-1');
+        $lines = preg_split('/\R/', rtrim($text));
+
+        $this->assertStringStartsWith('01|1|11222333000181|||Instaladora Ltda|2026-11-01|2026-11-04|', $lines[0]);
+        $this->assertStringEndsWith('|002', $lines[0]);
+        $this->assertContains('02|1|3|', $lines);
+        $this->assertContains('03|1|52998224725|Rui', $lines);
+        $this->assertContains('04|H01|540|0800|1200|1300|1800', $lines);
+        // Nov 3: the punches in pairs, the forgotten exit added with the reason, the double punch left out.
+        $this->assertContains('05|1|2026-11-03T08:00:00-0300|1|E|1|O|H01|', $lines);
+        $this->assertContains('05|1|2026-11-03T12:00:00-0300|1|S|1|O||', $lines);
+        $this->assertContains('05|1|2026-11-03T13:00:00-0300|1|E|2|O||', $lines);
+        $this->assertContains('05|1|2026-11-03T18:00:00-0300||S|2|I||Esqueceu a saída', $lines);
+        $this->assertContains('05|1|2026-11-03T08:02:00-0300|1|D|0|O||Bateu duas vezes', $lines);
+        // Sunday the 1st is a rest day (the 2nd is a holiday); Wednesday the 4th has no punch: an unjustified absence.
+        $this->assertContains('07|1|1|2026-11-01||', $lines);
+        $this->assertContains('07|1|2|2026-11-04||', $lines);
+        $this->assertStringStartsWith('08|Kiban Core Ponto|', $lines[count($lines) - 3]);
+        $this->assertSame('99|1|1|1|1|5|0|2|1', $lines[count($lines) - 2]);
+        $this->assertSame('ASSINATURA_DIGITAL_EM_ARQUIVO_P7S', rtrim(end($lines)));
     }
 
     public function test_outside_brazil_there_are_no_afd_records(): void

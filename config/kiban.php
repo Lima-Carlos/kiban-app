@@ -2,12 +2,12 @@
 
 use App\Modules\Agenda\AgendaModule;
 use App\Modules\Demo\DemoModule;
-use App\Modules\Pmoc\PmocModule;
-use App\Modules\Rotina\RotinaModule;
 use App\Modules\Expenses\ExpensesModule;
-use App\Modules\Stock\StockModule;
 use App\Modules\Field\FieldModule;
 use App\Modules\Fleet\FleetModule;
+use App\Modules\Pmoc\PmocModule;
+use App\Modules\Rotina\RotinaModule;
+use App\Modules\Stock\StockModule;
 use App\Modules\TimeClock\TimeClockModule;
 
 return [
@@ -70,6 +70,11 @@ return [
     'timeclock' => [
         'developer_document' => preg_replace('/\D/', '', (string) env('KIBAN_PONTO_DEVELOPER_DOCUMENT', '')),
         'inpi_registration' => (string) env('KIBAN_PONTO_INPI_REGISTRATION', ''),
+        // AEJ, record 08 (identification of the time-keeping program and its developer).
+        'program_name' => 'Kiban Core Ponto',
+        'program_version' => '1.0',
+        'developer_name' => (string) env('KIBAN_PONTO_DEVELOPER_NAME', 'Kiban'),
+        'developer_email' => (string) env('KIBAN_PONTO_DEVELOPER_EMAIL', ''),
     ],
 
     /*

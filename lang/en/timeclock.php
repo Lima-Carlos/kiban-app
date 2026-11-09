@@ -622,12 +622,17 @@ return [
     ],
     'afd' => [
         'download' => 'Labor inspection file (AFD)',
-        'what' => 'The official file of the punches that a labor inspector may ask for. It is still a preview.',
+        'what' => 'The official file of the punches that a labor inspector may ask for.',
         'title' => 'AFD file (Portaria 671)',
-        'preview' => 'PREVIEW: this file still has to be checked against the official layout and the validator of the Ministry of Labor before it is handed to an inspector. The digital signature with a certificate and the AEJ file are still missing.',
+        'preview' => 'The digital signature with a certificate and the INPI registration of the program are still missing; Kiban does both once it has its CNPJ. Until then, use the file to check; do not hand it to an inspector as an official file.',
         'missing_employer' => 'The employer\'s CNPJ and legal name are missing in Time clock settings.',
         'missing_inpi' => 'The INPI registration number of the program is missing (Kiban\'s task).',
         'missing_cpf' => '{1} 1 employee with punches has no valid CPF.|[2,*] :count employees with punches have no valid CPF.',
+    ],
+    'aej' => [
+        'download' => 'Working time file (AEJ)',
+        'what' => 'The official file of the calculated working time: contract schedule, punches with the corrections and the reason for each, absences, days off and hour bank. Inspectors may ask for it together with the AFD.',
+        'title' => 'AEJ file (Portaria 671)',
     ],
     'attention' => [
         'pending' => '{1} 1 correction waiting for your answer|[2,*] :count corrections waiting for your answer',

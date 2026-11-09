@@ -622,12 +622,17 @@ return [
     ],
     'afd' => [
         'download' => 'Archivo para la inspección (AFD)',
-        'what' => 'El archivo oficial de las marcaciones que el inspector de trabajo puede pedir. Todavía es una vista previa.',
+        'what' => 'El archivo oficial de las marcaciones que el inspector de trabajo puede pedir.',
         'title' => 'Archivo AFD (Portaria 671, Brasil)',
-        'preview' => 'VISTA PREVIA: este archivo aún debe revisarse con el formato oficial y el validador del Ministerio de Trabajo de Brasil antes de entregarlo a un inspector. Faltan la firma digital con certificado y el archivo AEJ.',
+        'preview' => 'Aún faltan la firma digital con certificado y el registro del programa en el INPI, que Kiban hace cuando tenga su CNPJ. Hasta entonces, use el archivo para revisar; no lo entregue a un inspector como archivo oficial.',
         'missing_employer' => 'Faltan el CNPJ y la razón social del empleador en Configuración de asistencia.',
         'missing_inpi' => 'Falta el número de registro del programa en el INPI (tarea de Kiban).',
         'missing_cpf' => '{1} 1 empleado con marcaciones no tiene CPF válido.|[2,*] :count empleados con marcaciones no tienen CPF válido.',
+    ],
+    'aej' => [
+        'download' => 'Archivo de la jornada (AEJ)',
+        'what' => 'El archivo oficial de la jornada calculada: horario pactado, marcaciones con las correcciones y el motivo de cada una, faltas, descansos y banco de horas. La inspección puede pedirlo junto con el AFD.',
+        'title' => 'Archivo AEJ (Portaria 671, Brasil)',
     ],
     'attention' => [
         'pending' => '{1} 1 corrección esperando tu respuesta|[2,*] :count correcciones esperando tu respuesta',
