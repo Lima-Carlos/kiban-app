@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\CentralController;
 use App\Http\Controllers\CompanyExportController;
 use App\Http\Controllers\ConnectionsController;
+use App\Http\Controllers\Field\CustomerPortalController;
 use App\Http\Controllers\Field\OrderReportController;
 use App\Http\Controllers\Field\OrderSyncController;
 use App\Http\Controllers\Field\QuoteLinkController;
@@ -66,6 +67,9 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     // PMOC: the page of the QR label stuck on the equipment (no login; long random link).
     Route::get('/pmoc/{token}', [EquipmentPublicController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->name('pmoc.public');
     Route::post('/pmoc/{token}', [EquipmentPublicController::class, 'ask'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:5,10')->name('pmoc.public.ask');
+
+    // The end customer's page: quotes, visits, reports and PMOC equipment in one link (CustomerPortal).
+    Route::get('/cliente/{token}', [CustomerPortalController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:30,1')->name('field.portal');
 
     Route::get('/agendar', [BookingController::class, 'show'])->name('agenda.booking');
     Route::post('/agendar', [BookingController::class, 'store'])->middleware('throttle:6,1')->name('agenda.booking.store');
