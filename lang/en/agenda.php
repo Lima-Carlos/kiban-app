@@ -245,6 +245,8 @@ return [
     ],
 
     'reminders' => [
+        'auto_off' => 'Automatic WhatsApp is off: reminders go by the button on the Reminders page.',
+        'auto_sent' => 'Reminders sent by WhatsApp: :count.',
         'title' => 'Remind for tomorrow',
         'page_title' => 'Remind for Tomorrow',
         'help' => ':count appointments · :sent reminders sent. Tap the button: WhatsApp opens with the message ready (no cost).',

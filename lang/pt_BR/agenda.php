@@ -245,6 +245,8 @@ return [
     ],
 
     'reminders' => [
+        'auto_off' => 'WhatsApp automático desligado: os lembretes saem pelo botão da tela Lembretes.',
+        'auto_sent' => 'Lembretes enviados pelo WhatsApp: :count.',
         'title' => 'Lembrar amanhã',
         'page_title' => 'Lembrar Amanhã',
         'help' => ':count agendamentos · :sent lembretes enviados. Toque no botão: o WhatsApp abre com a mensagem pronta (sem custo).',

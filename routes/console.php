@@ -18,6 +18,9 @@ Schedule::command('kiban:timeclock')->hourlyAt(20)->withoutOverlapping();
 // Weekly summary of all systems: Monday 7 h in each company's time zone (checked every hour).
 Schedule::command('kiban:weekly-digest')->hourlyAt(5)->withoutOverlapping();
 
+// Automatic WhatsApp reminders of the Agenda (only when the WhatsApp API is on; otherwise it does nothing).
+Schedule::command('kiban:agenda-reminders')->hourlyAt(40)->withoutOverlapping();
+
 // Marco Civil: access records older than the retention period (at least 6 months) are removed.
 Schedule::command('model:prune', ['--model' => [AccessLog::class]])->dailyAt('03:45');
 

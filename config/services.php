@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    // Automatic WhatsApp (official Cloud API of Meta). Ready but off; see App\Messaging\WhatsAppCloud.
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'version' => env('WHATSAPP_GRAPH_VERSION', 'v21.0'),
+        // Names of the templates approved in the Meta panel.
+        'templates' => [
+            'agenda_reminder' => env('WHATSAPP_TEMPLATE_AGENDA_REMINDER', 'kiban_lembrete_agenda'),
+        ],
+    ],
 ];

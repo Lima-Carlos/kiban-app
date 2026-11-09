@@ -71,6 +71,9 @@ return [
     // here and in the Core (Assistente do dono → "Pergunte ao seu sistema").
     'ask_enabled' => (bool) env('KIBAN_ASK_ENABLED', false),
 
+    // Automatic WhatsApp messages (Meta Cloud API, paid per message). Ready but off; see App\Messaging\WhatsAppCloud.
+    'whatsapp_auto' => (bool) env('KIBAN_WHATSAPP_AUTO', false),
+
     'timeclock' => [
         'developer_document' => preg_replace('/\D/', '', (string) env('KIBAN_PONTO_DEVELOPER_DOCUMENT', '')),
         'inpi_registration' => (string) env('KIBAN_PONTO_INPI_REGISTRATION', ''),

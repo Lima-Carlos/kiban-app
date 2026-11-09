@@ -245,6 +245,8 @@ return [
     ],
 
     'reminders' => [
+        'auto_off' => 'WhatsApp automático desactivado: los recordatorios salen por el botón de la página Recordatorios.',
+        'auto_sent' => 'Recordatorios enviados por WhatsApp: :count.',
         'title' => 'Recordar mañana',
         'page_title' => 'Recordar mañana',
         'help' => ':count citas · :sent recordatorios enviados. Toca el botón: WhatsApp se abre con el mensaje listo (sin costo).',
