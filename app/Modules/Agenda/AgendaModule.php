@@ -2,6 +2,7 @@
 
 namespace App\Modules\Agenda;
 
+use App\Digest\ModuleWeek;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Agenda\Enums\AgendaRole;
@@ -35,6 +36,7 @@ use App\Modules\Agenda\Services\AgendaReports;
 use App\Modules\Module;
 use App\Modules\Step;
 use App\People\Person;
+use Carbon\CarbonImmutable;
 
 /**
  * Kiban Core Agenda ("Kiban Core Appointments" in English): online appointments, first sector pet shops (bath and
@@ -203,5 +205,11 @@ class AgendaModule extends Module
             Package::class => PackagePolicy::class,
             ClientPackage::class => ClientPackagePolicy::class,
         ];
+    }
+
+    /** The week in numbers for the owner's weekly summary. */
+    public function weeklySummary(Tenant $tenant, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return app(ModuleWeek::class)->agenda($from, $to);
     }
 }

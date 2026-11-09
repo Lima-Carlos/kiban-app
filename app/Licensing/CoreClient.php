@@ -66,6 +66,22 @@ class CoreClient
     }
 
     /**
+     * The weekly summary of the company, for the Core to e-mail to the owner and the administrators
+     * (scope "onboarding", the same as the first steps).
+     *
+     * @param  array<string, mixed>  $digest
+     */
+    public function sendDigest(string $subdomain, array $digest): void
+    {
+        $response = $this->asSystem(fn (PendingRequest $http): Response => $http->post(
+            '/api/v1/tenants/'.rawurlencode($subdomain).'/digest',
+            $digest,
+        ));
+
+        $this->ensureSuccessful($response);
+    }
+
+    /**
      * People of the company in the Core (name, e-mail, mobile, role, status: invited / active / blocked).
      *
      * @return array<int, array<string, mixed>>

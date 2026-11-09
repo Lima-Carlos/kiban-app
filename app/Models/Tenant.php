@@ -31,6 +31,7 @@ class Tenant extends Model
             'license_expires_at' => 'datetime',
             'license_failed_at' => 'datetime',
             'onboarding_reported' => 'array',
+            'weekly_digest_email' => 'boolean',
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Modules\TimeClock;
 
+use App\Digest\ModuleWeek;
 use App\Filament\Pages\PeoplePage;
 use App\Models\Tenant;
 use App\Models\User;
@@ -274,5 +275,11 @@ class TimeClockModule extends Module
             Adjustment::class => AdjustmentPolicy::class,
             Kiosk::class => KioskPolicy::class,
         ];
+    }
+
+    /** The week in numbers for the owner's weekly summary. */
+    public function weeklySummary(Tenant $tenant, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return app(ModuleWeek::class)->timeClock($from, $to);
     }
 }

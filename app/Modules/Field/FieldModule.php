@@ -2,6 +2,7 @@
 
 namespace App\Modules\Field;
 
+use App\Digest\ModuleWeek;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Field\Enums\FieldRole;
@@ -34,6 +35,7 @@ use App\Modules\Module;
 use App\Modules\Step;
 use App\People\Documents\TrainingService;
 use App\People\Person;
+use Carbon\CarbonImmutable;
 
 /**
  * Kiban Campo (Kiban Field in English): work orders for teams in the field. Part 1: the customers and their
@@ -204,5 +206,11 @@ class FieldModule extends Module
             WorkOrder::class => WorkOrderPolicy::class,
             Quote::class => QuotePolicy::class,
         ];
+    }
+
+    /** The week in numbers for the owner's weekly summary. */
+    public function weeklySummary(Tenant $tenant, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return app(ModuleWeek::class)->field($from, $to);
     }
 }

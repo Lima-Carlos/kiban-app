@@ -5,6 +5,7 @@ namespace App\Modules;
 use App\Models\Tenant;
 use App\Models\User;
 use App\People\Person;
+use Carbon\CarbonImmutable;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
 
@@ -87,6 +88,17 @@ abstract class Module
      * @return array<int, array{text: string, url: ?string, color: string}>
      */
     public function attention(User $user): array
+    {
+        return [];
+    }
+
+    /**
+     * The week in numbers for the owner's weekly summary (e.g. "12:30 of overtime", "R$ 1.240 of fuel").
+     * Only numbers and short facts, never personal data beyond what the managers already see.
+     *
+     * @return array<int, string>
+     */
+    public function weeklySummary(Tenant $tenant, CarbonImmutable $from, CarbonImmutable $to): array
     {
         return [];
     }

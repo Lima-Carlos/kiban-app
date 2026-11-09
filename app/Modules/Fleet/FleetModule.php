@@ -2,6 +2,7 @@
 
 namespace App\Modules\Fleet;
 
+use App\Digest\ModuleWeek;
 use App\Filament\Pages\PeoplePage;
 use App\Models\Tenant;
 use App\Models\User;
@@ -67,6 +68,7 @@ use App\Modules\Module;
 use App\Modules\Step;
 use App\People\Person;
 use App\Tenancy\TenantContext;
+use Carbon\CarbonImmutable;
 
 /**
  * Kiban Frota: vehicles with the odometer always up to date, oil changes and revisions, documents,
@@ -293,5 +295,11 @@ class FleetModule extends Module
             Inspection::class => InspectionPolicy::class,
             ChecklistItem::class => ChecklistItemPolicy::class,
         ];
+    }
+
+    /** The week in numbers for the owner's weekly summary. */
+    public function weeklySummary(Tenant $tenant, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return app(ModuleWeek::class)->fleet($from, $to);
     }
 }

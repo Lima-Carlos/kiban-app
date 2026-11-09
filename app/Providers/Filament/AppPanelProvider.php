@@ -18,6 +18,7 @@ use App\Filament\Pages\PersonEpiPage;
 use App\Filament\Pages\TeamsPage;
 use App\Filament\Pages\TrainingRequirementsPage;
 use App\Filament\Pages\TrainingsPage;
+use App\Filament\Pages\WeeklyDigestPage;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\RecordAccess;
@@ -68,6 +69,7 @@ class AppPanelProvider extends PanelProvider
                 TeamsPage::class,
                 CompanyProfilePage::class,
                 ConnectionsPage::class,
+                WeeklyDigestPage::class,
                 DocumentsPage::class,
                 DocumentTypesPage::class,
                 PersonDocumentsPage::class,
@@ -118,7 +120,7 @@ class AppPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.trial-banner'))
             // "Your invoice is due in 3 days / today / overdue" (owner/administrators).
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.payment-banner'))
-            // "Step 2 of 9 · Back · Next step" above a company first step opened from the start list.
+            // "Step 2 of 9 Â· Back Â· Next step" above a company first step opened from the start list.
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.step-guide'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.install-hint'))
             ->renderHook(PanelsRenderHook::CONTENT_START, fn () => view('filament.license-notice'))

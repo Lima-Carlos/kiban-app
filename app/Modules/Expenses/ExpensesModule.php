@@ -2,6 +2,7 @@
 
 namespace App\Modules\Expenses;
 
+use App\Digest\ModuleWeek;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Expenses\Filament\Categories\CategoryResource;
@@ -14,6 +15,7 @@ use App\Modules\Expenses\Policies\ClaimPolicy;
 use App\Modules\Expenses\Services\ExpenseAccess;
 use App\Modules\Module;
 use App\Modules\Step;
+use Carbon\CarbonImmutable;
 
 /**
  * Kiban Core Despesas ("Expenses"): the team claims what they paid for the company (toll, parking, meal, hotel,
@@ -111,5 +113,11 @@ class ExpensesModule extends Module
     public function policies(): array
     {
         return [Claim::class => ClaimPolicy::class, Category::class => CategoryPolicy::class];
+    }
+
+    /** The week in numbers for the owner's weekly summary. */
+    public function weeklySummary(Tenant $tenant, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return app(ModuleWeek::class)->expenses($from, $to);
     }
 }
