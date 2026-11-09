@@ -8,6 +8,7 @@ use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\TimeClockSetting;
+use App\Modules\TimeClock\Payroll\PayrollExport;
 use App\Modules\TimeClock\Services\AejFile;
 use App\Modules\TimeClock\Services\AfdFile;
 use App\Modules\TimeClock\Services\MonthClosing;
@@ -23,11 +24,16 @@ use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
@@ -161,6 +167,50 @@ class ClosingsPage extends Page implements HasActions, HasSchemas, HasTable
                     $path = app(TimeClockExporter::class)->month($this->start());
 
                     return response()->download($path, basename(preg_replace('/-[A-Za-z0-9]{6}\.xlsx$/', '.xlsx', $path)))->deleteFileAfterSend();
+                }),
+            Action::make('payroll')
+                ->label(__('timeclock.payroll.download'))
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->visible(fn (): bool => static::canManage())
+                ->tooltip(__('timeclock.payroll.what'))
+                ->modalHeading(__('timeclock.payroll.title'))
+                ->modalDescription(fn (): string => collect([__('timeclock.payroll.what'), __('timeclock.payroll.registration_help'), ...app(PayrollExport::class)->warnings($this->start())])->implode("\n\n"))
+                ->modalSubmitActionLabel(__('timeclock.payroll.save_download'))
+                ->fillForm(fn (): array => app(PayrollExport::class)->config())
+                ->schema([
+                    Select::make('system')
+                        ->label(__('timeclock.payroll.system'))
+                        ->options(collect(PayrollExport::SYSTEMS)->mapWithKeys(fn (string $system): array => [$system => __('timeclock.payroll.systems.'.$system)])->all())
+                        ->required()
+                        ->live()
+                        ->afterStateUpdated(fn (?string $state, Set $set) => $state !== null ? $set('hours', PayrollExport::DEFAULT_HOURS[$state]) : null),
+                    TextInput::make('company_code')
+                        ->label(__('timeclock.payroll.company_code'))
+                        ->helperText(__('timeclock.payroll.company_code_help'))
+                        ->maxLength(20)
+                        ->visible(fn (Get $get): bool => in_array($get('system'), ['dominio', 'alterdata', 'fortes', 'senior'], true)),
+                    Select::make('hours')
+                        ->label(__('timeclock.payroll.hours'))
+                        ->options(collect(PayrollExport::HOUR_FORMATS)->mapWithKeys(fn (string $format): array => [$format => __('timeclock.payroll.hour_formats.'.$format)])->all())
+                        ->required()
+                        ->visible(fn (Get $get): bool => $get('system') !== 'rm' && $get('system') !== 'questor'),
+                    TextInput::make('senior_codcal')->label(__('timeclock.payroll.senior_codcal'))->maxLength(5)->visible(fn (Get $get): bool => $get('system') === 'senior'),
+                    TextInput::make('senior_tabeve')->label(__('timeclock.payroll.senior_tabeve'))->maxLength(3)->visible(fn (Get $get): bool => $get('system') === 'senior'),
+                    TextInput::make('rm_pay_day')->label(__('timeclock.payroll.rm_pay_day'))->numeric()->minValue(1)->maxValue(28)->visible(fn (Get $get): bool => $get('system') === 'rm'),
+                    TextInput::make('alterdata_process')->label(__('timeclock.payroll.alterdata_process'))->maxLength(1)->visible(fn (Get $get): bool => $get('system') === 'alterdata'),
+                    Section::make(__('timeclock.payroll.codes'))
+                        ->description(__('timeclock.payroll.codes_help'))
+                        ->schema(collect(PayrollExport::EVENTS)->map(fn (string $event) => TextInput::make('codes.'.$event)->label(__('timeclock.payroll.events.'.$event))->maxLength(16))->all())
+                        ->columns(2),
+                ])
+                ->action(function (array $data): StreamedResponse {
+                    abort_unless(static::canManage(), 403);
+                    $export = app(PayrollExport::class);
+                    $export->save($data);
+                    $month = $this->start();
+
+                    return response()->streamDownload(fn () => print ($export->contents($month)), $export->fileName($month), ['Content-Type' => 'text/plain; charset=Windows-1252']);
                 }),
             Action::make('afd')
                 ->label(__('timeclock.afd.download'))

@@ -60,6 +60,7 @@ class TimeClockSetting extends Model
             'allow_punch_without_photo' => 'boolean',
             'photo_on_phone' => 'boolean',
             'photo_on_kiosk' => 'boolean',
+            'payroll' => 'array',
         ];
     }
 
