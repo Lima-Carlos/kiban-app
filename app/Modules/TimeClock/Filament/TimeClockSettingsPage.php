@@ -18,7 +18,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -88,6 +87,7 @@ class TimeClockSettingsPage extends Page
             'photo_on_phone' => (bool) $settings->photo_on_phone,
             'photo_on_kiosk' => (bool) $settings->photo_on_kiosk,
             'privacy_contact' => $settings->privacy_contact,
+            'auto_close_day' => $settings->auto_close_day,
         ]);
     }
 
@@ -131,7 +131,9 @@ class TimeClockSettingsPage extends Page
                             }),
                     ]),
                 Section::make(__('timeclock.settings.calculation'))
-                    ->description(fn (Get $get): string => match ($this->profile($get)) { LaborProfile::BrazilClt => __('timeclock.settings.calculation_help_br'), LaborProfile::MexicoLft => __('timeclock.settings.calculation_help_mx'), default => __('timeclock.settings.calculation_help') })
+                    ->description(fn (Get $get): string => match ($this->profile($get)) {
+                        LaborProfile::BrazilClt => __('timeclock.settings.calculation_help_br'), LaborProfile::MexicoLft => __('timeclock.settings.calculation_help_mx'), default => __('timeclock.settings.calculation_help')
+                    })
                     ->columns(['default' => 1, 'sm' => 2])
                     ->components([
                         $this->percent('overtime_percent', 'overtime_percent'),
@@ -189,6 +191,15 @@ class TimeClockSettingsPage extends Page
                             ->placeholder(__('timeclock.settings.privacy_contact_placeholder'))
                             ->helperText(__('timeclock.settings.privacy_contact_help'))
                             ->maxLength(150),
+                    ]),
+                Section::make(__('timeclock.settings.closing'))
+                    ->description(__('timeclock.settings.closing_help'))
+                    ->components([
+                        Select::make('auto_close_day')
+                            ->label(__('timeclock.settings.auto_close_day'))
+                            ->placeholder(__('timeclock.settings.auto_close_off'))
+                            ->options(collect(range(1, 10))->mapWithKeys(fn (int $day): array => [$day => __('timeclock.settings.auto_close_option', ['day' => $day])])->all())
+                            ->helperText(__('timeclock.settings.auto_close_help')),
                     ]),
                 Section::make(__('timeclock.settings.employer'))
                     ->description(__('timeclock.settings.employer_help'))
@@ -282,6 +293,7 @@ class TimeClockSettingsPage extends Page
             'photo_on_phone' => (bool) ($state['photo_on_phone'] ?? true),
             'photo_on_kiosk' => (bool) ($state['photo_on_kiosk'] ?? true),
             'privacy_contact' => filled($state['privacy_contact'] ?? null) ? trim((string) $state['privacy_contact']) : null,
+            'auto_close_day' => filled($state['auto_close_day'] ?? null) ? max(1, min(10, (int) $state['auto_close_day'])) : null,
         ]);
 
         if ($state['labor_profile'] === LaborProfile::BrazilClt->value) {

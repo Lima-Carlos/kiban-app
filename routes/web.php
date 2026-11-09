@@ -21,6 +21,7 @@ use App\Http\Controllers\Pmoc\EquipmentPublicController;
 use App\Http\Controllers\TimeClock\KioskController;
 use App\Http\Controllers\TimeClock\PhoneQueueController;
 use App\Http\Controllers\TimeClock\ReceiptController;
+use App\Http\Controllers\TimeClock\SignController;
 use App\Http\Controllers\TrainingRecordController;
 use App\Http\Middleware\EnsureLicense;
 use App\Http\Middleware\RevalidateMembership;
@@ -53,6 +54,11 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
     Route::post('/relogio/pin', [KioskController::class, 'pin'])->name('timeclock.kiosk.pin');
     Route::post('/relogio/bater', [KioskController::class, 'punch'])->name('timeclock.kiosk.punch');
     Route::post('/relogio/ciente', [KioskController::class, 'acknowledge'])->name('timeclock.kiosk.acknowledge');
+
+    // Ponto: the employee signs the month's time sheet without a login (long random link sent by WhatsApp).
+    Route::get('/ponto/espelho/{token}', [SignController::class, 'show'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:30,1')->name('timeclock.sign');
+    Route::get('/ponto/espelho/{token}/pdf', [SignController::class, 'pdf'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:10,1')->name('timeclock.sign.pdf');
+    Route::post('/ponto/espelho/{token}', [SignController::class, 'answer'])->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:10,1')->name('timeclock.sign.answer');
 
     // Campo: the report of a done work order for the customer (signed link, no login) and its PDF.
     Route::get('/os/{order}/relatorio', [OrderReportController::class, 'show'])->middleware('signed')->whereNumber('order')->name('field.report');

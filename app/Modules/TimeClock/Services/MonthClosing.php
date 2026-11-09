@@ -4,12 +4,15 @@ namespace App\Modules\TimeClock\Services;
 
 use App\Models\User;
 use App\Modules\TimeClock\Enums\TimeClockRole;
+use App\Modules\TimeClock\Filament\ClosingsPage;
 use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Models\Adjustment;
 use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\Employee;
+use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Notices\Notice;
 use App\Notices\Notifier;
+use App\People\PeopleService;
 use App\People\PersonRuleException;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
@@ -18,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * The closing of the month, per employee:
@@ -98,7 +102,7 @@ class MonthClosing
         return $pending > 0 ? trans_choice('timeclock.closing.errors.pending', $pending, ['count' => $pending]) : null;
     }
 
-    public function close(Employee $employee, CarbonInterface $month, User $by): Closing
+    public function close(Employee $employee, CarbonInterface $month, ?User $by): Closing
     {
         $start = CarbonImmutable::parse($month->format('Y-m-01'));
 
@@ -121,8 +125,9 @@ class MonthClosing
                     'totals' => $totals,
                     'bank' => $bank,
                     'snapshot_hash' => $this->hash($snapshot, $totals, $bank),
-                    'closed_by' => $by->getKey(),
+                    'closed_by' => $by?->getKey(),
                     'closed_at' => now(),
+                    'sign_token' => Str::random(48),
                 ])->save();
 
                 return $closing;
@@ -148,7 +153,7 @@ class MonthClosing
      *
      * @return array{closed: int, skipped: array<string, string>}
      */
-    public function closeAll(CarbonInterface $month, User $by): array
+    public function closeAll(CarbonInterface $month, ?User $by): array
     {
         $result = ['closed' => 0, 'skipped' => []];
 
@@ -168,7 +173,7 @@ class MonthClosing
         return $result;
     }
 
-    public function reopen(Closing $closing, User $by, string $reason): void
+    public function reopen(Closing $closing, User $by, string $reason, bool $notify = true): void
     {
         if ($closing->reopened_at !== null) {
             throw new PersonRuleException(__('timeclock.closing.errors.already_reopened'));
@@ -184,6 +189,10 @@ class MonthClosing
 
         $closing->forceFill(['reopened_by' => $by->getKey(), 'reopened_at' => now(), 'reopen_reason' => trim($reason)])->save();
 
+        if (! $notify) {
+            return;
+        }
+
         $this->notifier->send([$closing->employee->person?->user], $this->notice(
             'timeclock.notices.closing_reopened',
             ['month' => fn (): string => $this->monthLabel($closing->month)],
@@ -194,30 +203,197 @@ class MonthClosing
         ), except: $by);
     }
 
-    /** The employee signs their own time sheet. */
+    /** The employee signs their own time sheet (logged in, in "My time clock"). */
     public function sign(Closing $closing, User $by, ?string $ip, ?string $device): void
     {
         $this->assertOwn($closing, $by);
+        $this->signAs($closing, $by, 'login', $ip, $device);
+    }
 
-        if ($closing->isSigned()) {
-            throw new PersonRuleException(__('timeclock.closing.errors.signed'));
-        }
-
-        $at = now();
-        $closing->forceFill([
-            'signed_by' => $by->getKey(),
-            'signed_at' => $at,
-            'signature_ip' => $ip,
-            'signature_device' => $device !== null ? mb_substr($device, 0, 255) : null,
-            'signature_hash' => hash('sha256', implode('|', [$closing->snapshot_hash, $by->getKey(), $at->toIso8601String(), (string) $ip])),
-        ])->save();
+    /** The employee signs by the link sent to them (no login; the identity was checked by the PIN or the document). */
+    public function signByLink(Closing $closing, ?string $ip, ?string $device): void
+    {
+        $this->assertLink($closing);
+        $this->signAs($closing, null, 'link', $ip, $device);
     }
 
     /** The employee does not agree: the managers hear about it (they may reopen and correct). */
     public function dispute(Closing $closing, User $by, string $reason): void
     {
         $this->assertOwn($closing, $by);
+        $this->disputeAs($closing, $by, $reason);
+    }
 
+    public function disputeByLink(Closing $closing, string $reason): void
+    {
+        $this->assertLink($closing);
+        $this->disputeAs($closing, null, $reason);
+    }
+
+    /**
+     * "Recalculate": a closed month that was not signed yet is closed again with the calculation of now (new rules,
+     * a schedule fixed...). The old closing stays in the history; the employee gets the new time sheet to sign.
+     */
+    public function recalculate(Closing $closing, User $by): Closing
+    {
+        $employee = $closing->employee;
+        $month = CarbonImmutable::parse($closing->month->format('Y-m-01'));
+
+        $this->reopen($closing, $by, __('timeclock.closing.recalculate_reason'), notify: false);
+
+        return $this->close($employee, $month, $by);
+    }
+
+    /**
+     * Closed months still waiting for the signature (not signed, no disagreement).
+     *
+     * @return EloquentCollection<int, Closing>
+     */
+    public function waitingSignature(CarbonInterface $month): EloquentCollection
+    {
+        return Closing::query()->current()->with('employee.person')
+            ->whereDate('month', $month->format('Y-m-01'))
+            ->whereNull('signed_at')->whereNull('disputed_at')
+            ->get()
+            ->sortBy(fn (Closing $closing): string => mb_strtolower((string) $closing->employee?->person?->name))
+            ->values();
+    }
+
+    /**
+     * Reminds who has not signed: a bell notice for who has a login; the others get the link by WhatsApp (screen).
+     *
+     * @param  iterable<int, Closing>  $closings
+     */
+    public function remind(iterable $closings, User $by): int
+    {
+        $sent = 0;
+
+        foreach ($closings as $closing) {
+            if ($closing->isSigned() || $closing->disputed_at !== null || $closing->reopened_at !== null) {
+                continue;
+            }
+
+            $user = $closing->employee?->person?->user;
+
+            if ($user !== null) {
+                $this->notifier->send([$user], $this->notice(
+                    'timeclock.notices.closing_reminder',
+                    ['month' => fn (): string => $this->monthLabel($closing->month)],
+                    'timeclock.notices.closing_ready_body',
+                    [],
+                    $this->url($closing->employee, $closing->month, own: true),
+                    'heroicon-o-bell-alert',
+                ), except: $by);
+                $sent++;
+            }
+
+            $closing->forceFill(['reminded_at' => now()])->save();
+        }
+
+        return $sent;
+    }
+
+    /** The link to sign without a login (made on the first use for the months closed before it existed). */
+    public function signUrl(Closing $closing): string
+    {
+        if (blank($closing->sign_token)) {
+            $closing->forceFill(['sign_token' => Str::random(48)])->save();
+        }
+
+        return route('timeclock.sign', ['token' => $closing->sign_token]);
+    }
+
+    /** The ready WhatsApp message with the link (free: the manager taps it and sends from their own phone). */
+    public function whatsappUrl(Closing $closing): ?string
+    {
+        $phone = $closing->employee?->person?->phone;
+
+        if (blank($phone)) {
+            return null;
+        }
+
+        return PeopleService::whatsappUrl($phone, __('timeclock.closing.whatsapp_message', [
+            'name' => Str::before((string) $closing->employee->person->name, ' '),
+            'month' => $this->monthLabel($closing->month),
+            'link' => $this->signUrl($closing),
+        ]));
+    }
+
+    /** How the link page checks that it is the employee: the tablet PIN, else the last 4 digits of the document. */
+    public function identityCheck(Closing $closing): ?string
+    {
+        $employee = $closing->employee;
+
+        return match (true) {
+            $employee?->hasPin() === true && $employee->is_active => 'pin',
+            strlen((string) preg_replace('/\D/', '', (string) $employee?->person?->document)) >= 4 => 'document',
+            default => null,
+        };
+    }
+
+    public function identityMatches(Closing $closing, string $answer): bool
+    {
+        $answer = (string) preg_replace('/\D/', '', $answer);
+
+        return match ($this->identityCheck($closing)) {
+            'pin' => app(KioskService::class)->employeeByPin($answer)?->is($closing->employee) === true,
+            'document' => $answer !== '' && hash_equals(substr((string) preg_replace('/\D/', '', (string) $closing->employee->person->document), -4), $answer),
+            default => true,
+        };
+    }
+
+    /**
+     * The company chose a day to close the month by itself (Settings of the time clock): from that day on, the
+     * month that ended is closed once; who has a correction waiting stays out and the managers get the list.
+     *
+     * @return array{closed: int, skipped: array<string, string>}|null
+     */
+    public function autoClose(CarbonInterface $today): ?array
+    {
+        $day = TimeClockSetting::current()->auto_close_day;
+        $month = CarbonImmutable::parse($today->format('Y-m-01'))->subMonth();
+
+        if ($day === null || $today->day < $day || ! $this->canClose($month, $today->getTimezone()->getName())
+            || $this->employeesOf($month)->isEmpty()
+            || ! $this->notifier->firstTime($this->context->get()->getKey(), 'timeclock.autoclose.'.$month->format('Y-m'))) {
+            return null;
+        }
+
+        $result = $this->closeAll($month, null);
+
+        $this->notifier->send($this->access->people([TimeClockRole::Manager]), $this->notice(
+            'timeclock.notices.auto_closed',
+            ['month' => fn (): string => $this->monthLabel($month), 'count' => $result['closed']],
+            $result['skipped'] === [] ? null : 'timeclock.notices.auto_closed_skipped',
+            ['names' => implode(', ', array_keys($result['skipped']))],
+            ClosingsPage::getUrl(['month' => $month->format('Y-m')]),
+            'heroicon-o-lock-closed',
+            $result['skipped'] === [] ? 'success' : 'warning',
+        ));
+
+        return $result;
+    }
+
+    protected function signAs(Closing $closing, ?User $by, string $method, ?string $ip, ?string $device): void
+    {
+        if ($closing->isSigned()) {
+            throw new PersonRuleException(__('timeclock.closing.errors.signed'));
+        }
+
+        $at = now();
+        $who = $by !== null ? (string) $by->getKey() : 'employee:'.$closing->employee_id;
+        $closing->forceFill([
+            'signed_by' => $by?->getKey(),
+            'signed_at' => $at,
+            'signature_method' => $method,
+            'signature_ip' => $ip,
+            'signature_device' => $device !== null ? mb_substr($device, 0, 255) : null,
+            'signature_hash' => hash('sha256', implode('|', [$closing->snapshot_hash, $who, $at->toIso8601String(), (string) $ip])),
+        ])->save();
+    }
+
+    protected function disputeAs(Closing $closing, ?User $by, string $reason): void
+    {
         if ($closing->isSigned()) {
             throw new PersonRuleException(__('timeclock.closing.errors.signed'));
         }
@@ -237,6 +413,13 @@ class MonthClosing
             'heroicon-o-hand-raised',
             'warning',
         ), except: $by);
+    }
+
+    protected function assertLink(Closing $closing): void
+    {
+        if ($closing->reopened_at !== null) {
+            throw new PersonRuleException(__('timeclock.closing.errors.not_yours'));
+        }
     }
 
     /**

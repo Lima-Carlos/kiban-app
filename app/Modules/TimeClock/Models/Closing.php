@@ -39,6 +39,7 @@ class Closing extends Model
             'signed_at' => 'datetime',
             'disputed_at' => 'datetime',
             'reopened_at' => 'datetime',
+            'reminded_at' => 'datetime',
         ];
     }
 

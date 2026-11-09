@@ -10,6 +10,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
+use RuntimeException;
+use ZipArchive;
 
 /**
  * The month of an employee: the frozen copy when the month is closed, otherwise the calculation of now
@@ -72,6 +74,42 @@ class TimesheetDocument
     public function pdf(Employee $employee, CarbonInterface $month): string
     {
         return Pdf::setOption('isFontSubsettingEnabled', true)->loadView('timeclock.pdf.timesheet', $this->data($employee, $month))->setPaper('a4', 'landscape')->output();
+    }
+
+    /**
+     * The time sheets (PDF) of many employees in one .zip file (to keep or to send to the accountant). Returns the
+     * path of a temporary file, deleted after the download.
+     *
+     * @param  iterable<int, Employee>  $employees
+     */
+    public function zip(iterable $employees, CarbonInterface $month): string
+    {
+        $base = (string) tempnam(sys_get_temp_dir(), 'espelhos');
+        @unlink($base);
+        $path = $base.'.zip';
+        $zip = new ZipArchive;
+
+        if ($zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new RuntimeException('Could not create the zip file.');
+        }
+
+        $names = [];
+
+        foreach ($employees as $employee) {
+            $name = $this->fileName($employee, $month);
+            // Two people with the same name: the second file gets a number.
+            $names[$name] = ($names[$name] ?? 0) + 1;
+            $zip->addFromString($names[$name] > 1 ? Str::beforeLast($name, '.pdf').'-'.$names[$name].'.pdf' : $name, $this->pdf($employee, $month));
+        }
+
+        $zip->close();
+
+        return $path;
+    }
+
+    public function zipName(CarbonInterface $month): string
+    {
+        return Str::slug(__('timeclock.closing.zip_file', ['month' => $month->format('Y-m')])).'.zip';
     }
 
     public function fileName(Employee $employee, CarbonInterface $month): string

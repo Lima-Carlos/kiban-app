@@ -288,6 +288,48 @@ São usadas no cálculo das horas a partir da parte 4:
 
   Mês ainda aberto sai marcado como **"Prévia"**. Sem assinatura eletrônica, o PDF traz as linhas para assinar no papel (para quem não tem login).
 
+### Fechamento, parte 2 (09/11/2026, pedido do dono)
+- **Botão "Arquivos"**: junta a planilha, o arquivo para a folha, o AFD, o AEJ e o novo **"Espelhos de todos (PDF)"**: um arquivo .zip com o espelho de cada funcionário do mês.
+- **Marcar pessoas na lista** (caixinhas) e "Abrir ações":
+  - fechar o mês;
+  - recalcular;
+  - reabrir (com motivo);
+  - cobrar assinaturas;
+  - baixar os espelhos.
+- **Filtro por situação**: aberto, esperando assinatura, assinado, não concorda.
+- **Coluna "Batidas faltando"**: os dias com batida faltando, para conferir antes de fechar.
+- **"Recalcular os fechados"**:
+  - os meses abertos já são calculados na hora;
+  - os fechados e **ainda não assinados** são fechados de novo com as regras e os horários de agora (ex.: depois de mudar a tolerância);
+  - o fechamento anterior fica no histórico, com o motivo "Recalculado pelo gestor";
+  - os assinados nunca mudam.
+- **"Cobrar assinaturas"** (com o número de pendentes): mostra quem ainda não assinou.
+  - Quem tem login recebe o aviso no sino ("Avisar no sino").
+  - Quem não tem login recebe o link pelo **WhatsApp**: o gestor toca no botão e envia do próprio celular, de graça.
+  - Também dá para copiar o link. A data da última cobrança aparece ao lado.
+- **"Link para assinar"** em cada pessoa com o mês fechado e não assinado.
+- **Assinatura sem login** (`/ponto/espelho/{link}`):
+  - um link longo e aleatório, criado ao fechar;
+  - a pessoa vê os totais, os dias e o PDF, e assina ou diz que não concorda;
+  - para confirmar que é ela, digita o **PIN do tablet** ou, sem PIN, os **4 últimos números do documento** (CPF);
+  - depois de 5 erros, o link trava por 15 minutos;
+  - ficam registrados a data, a hora, o IP e o aparelho, e o PDF diz "Assinado pelo link enviado ao funcionário";
+  - se o mês for reaberto, o link avisa que virá um novo.
+  - **Para o advogado:** confirmar se essa assinatura (link + PIN ou 4 dígitos do CPF) basta como "assinatura eletrônica" do espelho. Na dúvida, o PDF continua com as linhas para assinar no papel.
+- **Fechar o mês sozinho** (Configurações do ponto → Fechamento do mês):
+  - a empresa escolhe um dia (1 a 10) do mês seguinte;
+  - a rotina de cada hora fecha o mês de todos uma vez só;
+  - quem tem correção esperando fica de fora, e os gestores recebem o aviso no sino com os nomes;
+  - o PDF mostra "fechamento automático" no lugar de quem fechou.
+- Arquivos:
+  - `MonthClosing` (`signByLink`, `disputeByLink`, `recalculate`, `remind`, `signUrl`, `whatsappUrl`, `identityCheck`, `autoClose`);
+  - `TimesheetDocument::zip`;
+  - `app/Http/Controllers/TimeClock/SignController.php` e `resources/views/timeclock/sign.blade.php` (a página do link);
+  - `resources/views/timeclock/closing-remind.blade.php` (a janela de cobrança);
+  - a migração `2026_11_18_100000_add_sign_link_to_tc_closings` (`sign_token`, `signature_method`, `reminded_at` e `auto_close_day`).
+
+  Teste: `tests/Feature/TimeClockClosingRoundTwoTest.php`.
+
 ### Planilha para o contador (Excel)
 - Botão no Fechamento do mês. Duas abas:
   - **Resumo do mês**, uma linha por funcionário: documento, PIS, cargo, local, situação, previsto, trabalhado, extras (com o %), extras de folga e feriado, atrasos, faltas, abonos, noturno, dias com batida faltando e o banco de horas;

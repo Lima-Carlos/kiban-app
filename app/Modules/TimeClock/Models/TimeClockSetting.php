@@ -57,6 +57,7 @@ class TimeClockSetting extends Model
             'hour_bank_months' => 'integer',
             'optional_holidays' => 'array',
             'last_nsr' => 'integer',
+            'auto_close_day' => 'integer',
             'allow_punch_without_photo' => 'boolean',
             'photo_on_phone' => 'boolean',
             'photo_on_kiosk' => 'boolean',

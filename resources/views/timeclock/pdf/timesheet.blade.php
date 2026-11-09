@@ -114,9 +114,10 @@
 
     @if ($closing !== null)
         <p>
-            {{ __('timeclock.closing.pdf_closed', ['date' => $closing->closed_at->timezone($generatedAt->getTimezone())->translatedFormat(__('app.datetime_format')), 'name' => $closing->closer?->name ?? '—']) }}<br>
+            {{ __('timeclock.closing.pdf_closed', ['date' => $closing->closed_at->timezone($generatedAt->getTimezone())->translatedFormat(__('app.datetime_format')), 'name' => $closing->closer?->name ?? __('timeclock.closing.auto_closer')]) }}<br>
             @if ($closing->signed_at)
                 <strong>{{ __('timeclock.closing.pdf_signed', ['name' => $closing->signer?->name ?? $person?->name, 'date' => $closing->signed_at->timezone($generatedAt->getTimezone())->translatedFormat(__('app.datetime_format')), 'ip' => $closing->signature_ip ?? '—']) }}</strong><br>
+                @if ($closing->signature_method === 'link'){{ __('timeclock.closing.pdf_by_link') }}<br>@endif
                 <span class="code">{{ __('timeclock.closing.pdf_signature_code') }}: {{ $closing->signature_hash }}</span><br>
             @elseif ($closing->disputed_at)
                 <strong>{{ __('timeclock.closing.pdf_disputed', ['date' => $closing->disputed_at->timezone($generatedAt->getTimezone())->translatedFormat(__('app.date_format'))]) }}</strong> {{ $closing->dispute_reason }}<br>
