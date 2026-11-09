@@ -2,7 +2,9 @@
 
 namespace App\Modules\Fleet\Filament\Vehicles\Pages;
 
+use App\Filament\Support\ImportActions;
 use App\Modules\Fleet\Filament\Vehicles\VehicleResource;
+use App\Modules\Fleet\Services\VehicleImporter;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
@@ -23,6 +25,7 @@ class ListVehicles extends ListRecords
     {
         return [
             CreateAction::make(),
+            ImportActions::make(VehicleImporter::class, 'fleet.import', fn (): bool => VehicleResource::canCreate()),
         ];
     }
 }

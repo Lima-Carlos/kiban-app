@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Access\AccessManager;
+use App\Filament\Support\ImportActions;
 use App\Licensing\CoreUnavailableException;
 use App\Licensing\CoreValidationException;
 use App\Models\AccessProfile;
@@ -18,6 +19,7 @@ use App\People\Documents\PersonDocumentService;
 use App\People\Epi\EpiService;
 use App\People\PeopleService;
 use App\People\Person;
+use App\People\PersonImporter;
 use App\People\PersonRuleException;
 use App\Rules\Cpf;
 use App\Support\Country;
@@ -183,6 +185,7 @@ class PeoplePage extends Page implements HasActions, HasSchemas, HasTable
                     $this->statuses = app(PeopleService::class)->statuses($this->tenant());
                     AccessNotice::send($this->tenant(), $result['user'], $result['invitation_url']);
                 }),
+            ImportActions::make(PersonImporter::class, 'app.people.import', fn (): bool => static::canAccess() && $this->tenantCanWrite()),
             Action::make('teams')
                 ->label(__('app.teams.title'))
                 ->icon(Heroicon::OutlinedUserGroup)
