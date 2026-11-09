@@ -65,7 +65,7 @@ class TimeClockOfflineTest extends TestCase
         // The phone's clock is 1 minute late: the server's time wins.
         $this->send(['id' => $id, 'taken_at' => now()->subMinute()->getTimestampMs()])
             ->assertOk()
-            ->assertJson(['status' => 'ok', 'time' => '11:00', 'nsr' => 1, 'offline' => false]);
+            ->assertJson(['status' => 'ok', 'time' => '11:00', 'nsr' => 2, 'offline' => false]);
 
         $punch = Punch::sole();
         $this->assertSame('2026-10-28 14:00:00', $punch->punched_at->toDateTimeString());
@@ -74,7 +74,7 @@ class TimeClockOfflineTest extends TestCase
 
         // The answer was lost and the phone sends it again: the same punch, not a new one.
         $this->travel(5)->minutes();
-        $this->send(['id' => $id])->assertJson(['status' => 'ok', 'nsr' => 1]);
+        $this->send(['id' => $id])->assertJson(['status' => 'ok', 'nsr' => 2]);
         $this->assertSame(1, Punch::count());
     }
 

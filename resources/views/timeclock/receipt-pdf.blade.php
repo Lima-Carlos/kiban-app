@@ -39,6 +39,10 @@
     <div class="line"></div>
     <div class="center label">{{ __('timeclock.receipt.code') }}</div>
     <div class="center code">{{ $code }}</div>
+    @if ($punch->afd_hash)
+        <div class="center label" style="margin-top:6px">{{ __('timeclock.receipt.hash') }}</div>
+        <div class="center code" style="font-size:7px;font-weight:normal">{{ substr($punch->afd_hash, 0, 32) }}<br>{{ substr($punch->afd_hash, 32) }}</div>
+    @endif
     <div class="line"></div>
     <div class="center label">Kiban Core Ponto</div>
 </body>

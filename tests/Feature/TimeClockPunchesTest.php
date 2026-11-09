@@ -83,7 +83,7 @@ class TimeClockPunchesTest extends TestCase
             ->assertNotified();
 
         $punch = Punch::sole();
-        $this->assertSame(1, $punch->nsr);
+        $this->assertSame(2, $punch->nsr); // number 1 is the AFD record of the employee (type 5)
         $this->assertSame(Punch::PHONE, $punch->source);
         $this->assertSame($user->id, $punch->user_id);
         $this->assertSame([], $punch->flags);
@@ -101,8 +101,8 @@ class TimeClockPunchesTest extends TestCase
         Livewire::test(PunchPage::class)->call('punch', null, -22.9068, -43.1729, 20.0);
         $this->travel(2)->minutes();
         Livewire::test(PunchPage::class)->call('punch', $this->selfie(), null, null, null);
-        $this->assertSame([Punch::OUTSIDE_RADIUS, Punch::NO_PHOTO], Punch::query()->where('nsr', 2)->sole()->flags);
-        $this->assertSame([Punch::NO_LOCATION], Punch::query()->where('nsr', 3)->sole()->flags);
+        $this->assertSame([Punch::OUTSIDE_RADIUS, Punch::NO_PHOTO], Punch::query()->where('nsr', 3)->sole()->flags);
+        $this->assertSame([Punch::NO_LOCATION], Punch::query()->where('nsr', 4)->sole()->flags);
 
         // The chain of hashes is whole; the page shows today's punches and the Home has the button.
         $this->assertNull(app(PunchService::class)->brokenLink());
@@ -143,7 +143,7 @@ class TimeClockPunchesTest extends TestCase
             'clocks_in' => true, 'admitted_on' => '2026-10-01', 'workplace_id' => $place->id, 'schedule_id' => $schedule->id,
         ]], $owner, false)['person'];
         $theirs = app(PunchService::class)->punch(Employee::query()->where('person_id', $person->id)->sole(), ['photo_path' => 'b.jpg']);
-        $this->assertSame(1, $theirs->nsr);
+        $this->assertSame(2, $theirs->nsr);
         $this->assertSame(1, Punch::count());
     }
 

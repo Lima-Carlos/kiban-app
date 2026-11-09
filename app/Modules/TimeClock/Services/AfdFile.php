@@ -2,9 +2,10 @@
 
 namespace App\Modules\TimeClock\Services;
 
+use App\Modules\TimeClock\Afd\AfdLine;
+use App\Modules\TimeClock\Models\AfdRecord;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Models\TimeClockSetting;
-use App\People\Person;
 use App\Rules\Cpf;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -12,23 +13,16 @@ use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Brazil: the punches file (AFD, Portaria MTP 671/2021, REP-P) of a period.
+ * Brazil: the punches file (AFD, Portaria MTP 671/2021, REP-P, layout 004) of a period: header (type 1), the
+ * employer (2) and employee (5) records and the punches (7, with the SHA-256 kept when each punch was made), in
+ * the order of their numbers (NSR), the trailer (9) and the signature line.
  *
- * PREVIEW, still to be validated against the official layout and the validator of the Ministry: it follows the
- * header (type 1), the punch records of a REP-P (type 7, with the SHA-256 chain) and the trailer (type 9).
- * Not included yet: the records of employer and employee changes (types 2 and 5) and the digital signature
- * (.p7s, needs the company's ICP-Brasil certificate). Only the original punches go in the AFD; corrections
- * belong to the AEJ (not generated yet).
+ * Still missing for the official delivery: the digital signature (.p7s, with Kiban's ICP-Brasil certificate)
+ * and the INPI registration of the program; both wait for the company's CNPJ. Punches imported from another
+ * clock (AfdImport) are not in this file: they are in the AFD of that clock, and in the AEJ.
  */
 class AfdFile
 {
-    public const LAYOUT_VERSION = '003';
-
-    /** Collector of the punch: 01 = mobile app, 02 = browser. */
-    public const COLLECTOR_APP = '01';
-
-    public const COLLECTOR_BROWSER = '02';
-
     /**
      * What is missing for a complete file (shown to the manager before the download).
      *
@@ -47,7 +41,7 @@ class AfdFile
             $warnings[] = __('timeclock.afd.missing_inpi');
         }
 
-        $withoutCpf = $this->punches($from, $to)->get()->pluck('employee')->unique('id')
+        $withoutCpf = $this->punches($from, $to)->with('employee.person')->get()->pluck('employee')->unique('id')
             ->filter(fn ($employee): bool => ! Cpf::isValid((string) $employee?->person?->document))
             ->count();
 
@@ -62,91 +56,57 @@ class AfdFile
     public function contents(CarbonInterface $from, CarbonInterface $to): string
     {
         $settings = TimeClockSetting::current();
-        $now = CarbonImmutable::now();
-        $lines = [$this->header($settings, $from, $to, $now)];
-        $count = 0;
+        $tz = FilamentTimezone::get();
+        $counts = [];
 
-        // The official chain covers every punch of the company from the first one, so it is recalculated from
-        // the start and only the period is written.
-        $previous = '';
+        $lines = $this->punches($from, $to)->get()
+            ->map(fn (Punch $punch): array => ['nsr' => $punch->nsr, 'type' => 7, 'line' => ($punch->afd_line ?? '').$punch->afd_hash])
+            ->concat(AfdRecord::query()
+                ->whereBetween('recorded_at', [$this->start($from, $tz)->utc(), $this->start($to, $tz)->addDay()->utc()])
+                ->get()
+                ->map(fn (AfdRecord $record): array => ['nsr' => $record->nsr, 'type' => $record->type, 'line' => $record->line]))
+            ->sortBy('nsr')
+            ->each(function (array $record) use (&$counts): void {
+                $counts[$record['type']] = ($counts[$record['type']] ?? 0) + 1;
+            })
+            ->pluck('line')
+            ->all();
 
-        Punch::query()->with('employee.person')->orderBy('nsr')->chunk(500, function ($punches) use (&$lines, &$count, &$previous, $from, $to): void {
-            foreach ($punches as $punch) {
-                $local = $punch->localTime();
-                $record = $this->nsr($punch->nsr).'7'.$this->dateTime($local).$this->cpf($punch->employee?->person)
-                    .$this->dateTime($punch->created_at?->setTimezone($punch->timezone) ?? $local)
-                    .($punch->source === Punch::KIOSK ? self::COLLECTOR_BROWSER : self::COLLECTOR_APP)
-                    .'0';
-                $previous = hash('sha256', $record.$previous);
+        $all = [
+            AfdLine::header((string) $settings->employer_document_type, (string) $settings->employer_document, (string) $settings->employer_name,
+                (string) config('kiban.timeclock.inpi_registration'), $from, $to, CarbonImmutable::now($tz), (string) config('kiban.timeclock.developer_document')),
+            ...$lines,
+            AfdLine::trailer($counts),
+            AfdLine::signature(),
+        ];
 
-                if ($local->toDateString() >= $from->toDateString() && $local->toDateString() <= $to->toDateString()) {
-                    $lines[] = $record.$previous;
-                    $count++;
-                }
-            }
-        });
-
-        $lines[] = '999999999'.str_repeat('0', 9 * 5).str_pad((string) $count, 9, '0', STR_PAD_LEFT).'9';
-        $lines[] = 'ASSINATURA_DIGITAL_EM_ARQUIVO_P7S';
-
-        return mb_convert_encoding(implode("\r\n", $lines)."\r\n", 'ISO-8859-1', 'UTF-8');
+        return AfdLine::latin1(implode("\r\n", $all)."\r\n");
     }
 
+    /** "AFD" + INPI number + employer CNPJ/CPF + "REP_P" (official name). */
     public function fileName(CarbonInterface $from, CarbonInterface $to): string
     {
-        return 'AFD-PREVIA-'.$from->format('Ymd').'-'.$to->format('Ymd').'.txt';
-    }
+        $settings = TimeClockSetting::current();
 
-    protected function header(TimeClockSetting $settings, CarbonInterface $from, CarbonInterface $to, CarbonImmutable $now): string
-    {
-        $developer = (string) config('kiban.timeclock.developer_document');
-
-        return '000000000'.'1'
-            .($settings->employer_document_type === 'cpf' ? '2' : '1')
-            .str_pad((string) $settings->employer_document, 14, '0', STR_PAD_LEFT)
-            .str_repeat(' ', 14)
-            .$this->text((string) $settings->employer_name, 150)
-            .$this->text((string) config('kiban.timeclock.inpi_registration'), 17)
-            .$from->format('Y-m-d')
-            .$to->format('Y-m-d')
-            .$this->dateTime($now->setTimezone(FilamentTimezone::get()))
-            .self::LAYOUT_VERSION
-            .(strlen($developer) === 11 ? '2' : '1')
-            .str_pad($developer, 14, '0', STR_PAD_LEFT)
-            .str_repeat(' ', 30);
+        return 'AFD'.AfdLine::inpi((string) config('kiban.timeclock.inpi_registration')).AfdLine::document((string) $settings->employer_document)
+            .'REP_P_'.$from->format('Ymd').'-'.$to->format('Ymd').'.txt';
     }
 
     /**
+     * The company's own punches whose local date is in the period (imported ones are in the other clock's AFD).
+     *
      * @return Builder<Punch>
      */
-    protected function punches(CarbonInterface $from, CarbonInterface $to)
+    protected function punches(CarbonInterface $from, CarbonInterface $to): Builder
     {
-        return Punch::query()->with('employee.person')
-            ->whereBetween('punched_at', [CarbonImmutable::parse($from->toDateString())->subDay()->utc(), CarbonImmutable::parse($to->toDateString())->addDays(2)->utc()]);
+        // The local date of the punch is in the official line itself (positions 11 to 20).
+        return Punch::query()->whereNotNull('afd_line')
+            ->whereBetween('punched_at', [CarbonImmutable::parse($from->toDateString())->subDay()->utc(), CarbonImmutable::parse($to->toDateString())->addDays(2)->utc()])
+            ->whereRaw('substr(afd_line, 11, 10) between ? and ?', [$from->toDateString(), $to->toDateString()]);
     }
 
-    protected function nsr(int $nsr): string
+    protected function start(CarbonInterface $date, string $tz): CarbonImmutable
     {
-        return str_pad((string) $nsr, 9, '0', STR_PAD_LEFT);
-    }
-
-    /** "2026-11-03T08:00:00-0300" (24 characters). */
-    protected function dateTime(CarbonInterface $at): string
-    {
-        return $at->format('Y-m-d\TH:i:sO');
-    }
-
-    protected function cpf(?Person $person): string
-    {
-        $cpf = Cpf::isValid((string) $person?->document) ? (string) $person->document : '';
-
-        return str_pad($cpf, 12, '0', STR_PAD_LEFT);
-    }
-
-    protected function text(string $value, int $length): string
-    {
-        $value = mb_substr(trim($value), 0, $length);
-
-        return $value.str_repeat(' ', $length - mb_strlen($value));
+        return CarbonImmutable::parse($date->toDateString(), $tz);
     }
 }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Access\AccessManager;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Modules\TimeClock\Afd\AfdLine;
 use App\Modules\TimeClock\Filament\ClosingsPage;
 use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Models\Adjustment;
@@ -225,14 +226,17 @@ class TimeClockClosingTest extends TestCase
         $this->assertNotContains(__('timeclock.afd.missing_employer'), app(AfdFile::class)->warnings($from, $to));
 
         $lines = explode("\r\n", trim(app(AfdFile::class)->contents($from, $to)));
-        $this->assertSame(298, strlen($lines[0]));
+        $this->assertSame(302, strlen($lines[0]));
         $this->assertStringStartsWith('000000000'.'1'.'1'.'11222333000181', $lines[0]);
+        $this->assertSame('004', substr($lines[0], 250, 3));
+        $this->assertSame(AfdLine::crc(substr($lines[0], 0, 298)), substr($lines[0], 298));
         $records = array_values(array_filter($lines, fn (string $line): bool => strlen($line) === 137 && $line[9] === '7'));
         $this->assertCount(4, $records); // the punch of October stays out
-        $this->assertSame('000000002', substr($records[0], 0, 9));
         $this->assertSame('2026-11-03T08:00:00-0300', substr($records[0], 10, 24));
         $this->assertSame('052998224725', substr($records[0], 34, 12));
-        $this->assertSame('999999999'.str_repeat('0', 45).'000000004'.'9', $lines[count($lines) - 2]);
+        $trailer = $lines[count($lines) - 2];
+        $this->assertSame(64, strlen($trailer));
+        $this->assertSame('000000004', substr($trailer, 54, 9));
         $this->assertSame('ASSINATURA_DIGITAL_EM_ARQUIVO_P7S', end($lines));
         // The chain: each record carries the SHA-256 of itself plus the previous hash.
         $this->assertSame(hash('sha256', substr($records[1], 0, 73).substr($records[0], 73)), substr($records[1], 73));

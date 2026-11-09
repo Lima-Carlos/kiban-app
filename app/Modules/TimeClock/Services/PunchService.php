@@ -3,6 +3,8 @@
 namespace App\Modules\TimeClock\Services;
 
 use App\Models\User;
+use App\Modules\TimeClock\Afd\AfdLine;
+use App\Modules\TimeClock\Models\AfdRecord;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Kiosk;
 use App\Modules\TimeClock\Models\Punch;
@@ -119,13 +121,18 @@ class PunchService
             $settings = TimeClockSetting::query()->lockForUpdate()->first() ?? TimeClockSetting::current();
             $nsr = (int) $settings->last_nsr + 1;
             $hash = static::chainHash((string) $settings->last_punch_hash, $nsr, $punchedAt->toIso8601ZuluString(), (int) $employee->getKey());
+            $timezone = $workplace?->timezone ?? FilamentTimezone::get();
+            // Brazil: the official line (AFD type 7) and its SHA-256, chained to the previous punch.
+            $afdLine = AfdLine::punch($nsr, $punchedAt->setTimezone($timezone), $employee->person?->document, CarbonImmutable::now($timezone),
+                $kiosk ? AfdLine::COLLECTOR_BROWSER : AfdLine::COLLECTOR_APP, in_array(Punch::OFFLINE, $flags, true));
+            $afdHash = AfdLine::punchHash($afdLine, $settings->last_afd_hash);
 
             $punch = new Punch;
             $punch->forceFill([
                 'employee_id' => $employee->getKey(),
                 'nsr' => $nsr,
                 'punched_at' => $punchedAt,
-                'timezone' => $workplace?->timezone ?? FilamentTimezone::get(),
+                'timezone' => $timezone,
                 'source' => $kiosk ? Punch::KIOSK : Punch::PHONE,
                 'kiosk_id' => $kiosk?->getKey(),
                 'user_id' => $user?->getKey(),
@@ -141,9 +148,11 @@ class PunchService
                 'port' => $this->fromVisit() ? ClientPort::of() : null,
                 'hash' => $hash,
                 'client_id' => $clientId,
+                'afd_line' => $afdLine,
+                'afd_hash' => $afdHash,
             ])->save();
 
-            $settings->forceFill(['last_nsr' => $nsr, 'last_punch_hash' => $hash])->save();
+            $settings->forceFill(['last_nsr' => $nsr, 'last_punch_hash' => $hash, 'last_afd_hash' => $afdHash])->save();
 
             return $punch;
         });
@@ -168,8 +177,14 @@ class PunchService
     {
         $previous = '';
         $expectedNsr = 1;
+        // The employer and employee records of the AFD take numbers of the same sequence.
+        $records = AfdRecord::query()->pluck('nsr')->flip();
 
         foreach (Punch::query()->orderBy('nsr')->cursor() as $punch) {
+            while ($records->has($expectedNsr)) {
+                $expectedNsr++;
+            }
+
             $hash = static::chainHash($previous, $punch->nsr, $punch->punched_at->toIso8601ZuluString(), (int) $punch->employee_id);
 
             if ($punch->nsr !== $expectedNsr || $punch->hash !== $hash) {

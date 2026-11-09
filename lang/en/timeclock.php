@@ -364,6 +364,7 @@ return [
         'how' => 'Recorded by',
         'location' => 'Location',
         'code' => 'Verification code',
+        'hash' => 'Hash code (SHA-256)',
         'download' => 'Download the receipt (PDF)',
         'help' => 'Keep this receipt. The verification code confirms it came from the system.',
         'open' => 'See receipt',

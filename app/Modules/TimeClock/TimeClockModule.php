@@ -9,12 +9,12 @@ use App\Modules\Module;
 use App\Modules\Step;
 use App\Modules\TimeClock\Enums\TimeClockRole;
 use App\Modules\TimeClock\Filament\Adjustments\AdjustmentResource;
+use App\Modules\TimeClock\Filament\Cities\CityResource;
 use App\Modules\TimeClock\Filament\ClosingsPage;
 use App\Modules\TimeClock\Filament\Dashboard\MonthStatsWidget;
 use App\Modules\TimeClock\Filament\Dashboard\NowWidget;
 use App\Modules\TimeClock\Filament\Dashboard\TimeClockDashboard;
 use App\Modules\TimeClock\Filament\Employees\EmployeeResource;
-use App\Modules\TimeClock\Filament\Cities\CityResource;
 use App\Modules\TimeClock\Filament\Holidays\HolidayResource;
 use App\Modules\TimeClock\Filament\Holidays\NationalHolidaysWidget;
 use App\Modules\TimeClock\Filament\Kiosks\KioskResource;
@@ -25,8 +25,8 @@ use App\Modules\TimeClock\Filament\TimeClockSettingsPage;
 use App\Modules\TimeClock\Filament\TimesheetPage;
 use App\Modules\TimeClock\Filament\Workplaces\WorkplaceResource;
 use App\Modules\TimeClock\Models\Adjustment;
-use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\City;
+use App\Modules\TimeClock\Models\Closing;
 use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Holiday;
 use App\Modules\TimeClock\Models\Kiosk;
@@ -35,13 +35,14 @@ use App\Modules\TimeClock\Models\Schedule;
 use App\Modules\TimeClock\Models\TimeClockSetting;
 use App\Modules\TimeClock\Models\Workplace;
 use App\Modules\TimeClock\Policies\AdjustmentPolicy;
-use App\Modules\TimeClock\Policies\EmployeePolicy;
 use App\Modules\TimeClock\Policies\CityPolicy;
+use App\Modules\TimeClock\Policies\EmployeePolicy;
 use App\Modules\TimeClock\Policies\HolidayPolicy;
 use App\Modules\TimeClock\Policies\KioskPolicy;
 use App\Modules\TimeClock\Policies\PunchPolicy;
 use App\Modules\TimeClock\Policies\SchedulePolicy;
 use App\Modules\TimeClock\Policies\WorkplacePolicy;
+use App\Modules\TimeClock\Services\AfdLog;
 use App\Modules\TimeClock\Services\EmployeeService;
 use App\Modules\TimeClock\Services\ScheduleCalendar;
 use App\Modules\TimeClock\Services\TimeClockAccess;
@@ -251,6 +252,14 @@ class TimeClockModule extends Module
     public function personRoleLabel(Person $person): ?string
     {
         return app(TimeClockPeople::class)->roleLabel($person);
+    }
+
+    /** Brazil: the employer and employee records of the AFD are written when they change, whatever the screen. */
+    public function boot(): void
+    {
+        TimeClockSetting::saved(fn (TimeClockSetting $settings) => app(AfdLog::class)->employerSaved($settings));
+        Employee::saved(fn (Employee $employee) => app(AfdLog::class)->employeeSaved($employee));
+        Person::saved(fn (Person $person) => app(AfdLog::class)->personSaved($person));
     }
 
     public function policies(): array

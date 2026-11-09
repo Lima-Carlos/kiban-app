@@ -18,6 +18,9 @@
             <div><strong>{{ __('timeclock.fields.workplace') }}:</strong> {{ $workplace->name }}</div>
         @endif
         <div><strong>{{ __('timeclock.receipt.code') }}:</strong> <span style="font-family:monospace">{{ $code }}</span></div>
+        @if ($punch->afd_hash)
+            <div><strong>{{ __('timeclock.receipt.hash') }}:</strong> <span style="font-family:monospace;font-size:11px;word-break:break-all">{{ $punch->afd_hash }}</span></div>
+        @endif
     </div>
 
     <a class="button" href="{{ url($pdfUrl) }}">{{ __('timeclock.receipt.download') }}</a>

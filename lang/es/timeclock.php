@@ -364,6 +364,7 @@ return [
         'how' => 'Registrado por',
         'location' => 'Ubicación',
         'code' => 'Código de verificación',
+        'hash' => 'Código hash (SHA-256)',
         'download' => 'Descargar el comprobante (PDF)',
         'help' => 'Guarde este comprobante. El código de verificación confirma que salió del sistema.',
         'open' => 'Ver comprobante',
