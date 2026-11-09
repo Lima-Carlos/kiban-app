@@ -154,7 +154,7 @@
                             </div>
                         @endif
                         @if ($day['employed'] && $day['moment'] !== 'future')
-                            <div style="margin-top:8px">{{ ($this->adjustAction)(['date' => $key])->link()->size('sm') }}</div>
+                            <div style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap">{{ ($this->whyAction)(['date' => $key])->size('sm') }} {{ ($this->adjustAction)(['date' => $key])->link()->size('sm') }}</div>
                         @endif
                     </div>
                 @endforeach
@@ -221,7 +221,7 @@
                                 </td>
                                 <td style="{{ $cell }}">
                                     @if ($day['employed'] && $day['moment'] !== 'future')
-                                        {{ ($this->adjustAction)(['date' => $key]) }}
+                                        <div style="display:flex;flex-direction:column;gap:2px;white-space:nowrap">{{ ($this->whyAction)(['date' => $key])->size('sm') }} {{ ($this->adjustAction)(['date' => $key]) }}</div>
                                     @endif
                                 </td>
                             </tr>

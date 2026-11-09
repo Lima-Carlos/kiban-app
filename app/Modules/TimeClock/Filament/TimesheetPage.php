@@ -11,6 +11,7 @@ use App\Modules\TimeClock\Models\Employee;
 use App\Modules\TimeClock\Models\Punch;
 use App\Modules\TimeClock\Services\AdjustmentService;
 use App\Modules\TimeClock\Services\DayCalculator;
+use App\Modules\TimeClock\Services\DayExplainer;
 use App\Modules\TimeClock\Services\MonthClosing;
 use App\Modules\TimeClock\Services\PhotoNoticeService;
 use App\Modules\TimeClock\Services\TimeClockAccess;
@@ -34,6 +35,7 @@ use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Facades\FilamentTimezone;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\HtmlString;
 use Livewire\Attributes\Url;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -237,6 +239,26 @@ class TimesheetPage extends Page
     }
 
     /** "Correct" (manager, approved at once) or "Ask a correction" (the employee). */
+    /** "Why did it come out like this?": the day's calculation in plain sentences (read only, for everyone who sees the time sheet). */
+    public function whyAction(): Action
+    {
+        return Action::make('why')
+            ->label(__('timeclock.why.action'))
+            ->icon(Heroicon::OutlinedQuestionMarkCircle)
+            ->link()
+            ->color('gray')
+            ->modalHeading(fn (array $arguments): string => __('timeclock.why.title', ['date' => CarbonImmutable::parse($arguments['date'])->translatedFormat(__('app.date_format'))]))
+            ->modalContent(function (array $arguments): HtmlString {
+                $day = $this->monthData()['days'][$arguments['date']] ?? null;
+                $lines = $day === null ? [] : app(DayExplainer::class)->explain($day);
+
+                return new HtmlString('<ul style="display:flex;flex-direction:column;gap:8px;padding-left:18px;list-style:disc">'
+                    .collect($lines)->map(fn (string $line): string => '<li>'.e($line).'</li>')->implode('').'</ul>');
+            })
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel(__('timeclock.employees.close'));
+    }
+
     public function adjustAction(): Action
     {
         return Action::make('adjust')

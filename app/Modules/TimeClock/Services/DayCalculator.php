@@ -141,7 +141,7 @@ class DayCalculator
             'ignored' => $adjustments->where('type', Adjustment::IGNORE_PUNCH)->pluck('punch_id')->filter()->values()->all(),
             'adjustments' => $adjustments->values()->all(), 'pending' => $pending,
             'expected' => 0, 'worked' => 0, 'excused' => 0, 'extra' => 0, 'extra_rest' => 0, 'deficit' => 0,
-            'absence' => false, 'night' => 0, 'night_reduced' => 0, 'flags' => [], 'break_minutes' => null, 'rest_minutes' => null,
+            'absence' => false, 'night' => 0, 'night_reduced' => 0, 'flags' => [], 'break_minutes' => null, 'rest_minutes' => null, 'tolerance' => false,
         ];
 
         if (! $result['counts']) {
@@ -165,7 +165,8 @@ class DayCalculator
         }
 
         if ($type === 'work') {
-            $counted = $this->withinTolerance($date, $plan, $effective, $settings) ? $expected : $worked;
+            $result['tolerance'] = $this->withinTolerance($date, $plan, $effective, $settings);
+            $counted = $result['tolerance'] ? $expected : $worked;
             $balance = $counted + $excused - $expected;
             $result['extra'] = max(0, $balance);
             $result['deficit'] = $moment === 'past' || $balance > 0 ? max(0, -$balance) : 0;
