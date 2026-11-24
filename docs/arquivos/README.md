@@ -23,5 +23,6 @@ Cada parte do sistema tem uma explicação em português aqui.
 - [pmoc.md](pmoc.md): o Kiban Core PMOC (planos de manutenção preventiva, visitas que viram OS e o documento em PDF).
 - [estoque.md](estoque.md): o Kiban Core Estoque (materiais, estoque do técnico ligado ao Campo e comodato por número de série).
 - [despesas.md](despesas.md): o Kiban Core Despesas (reembolso de gastos com foto do recibo, aprovação, pagamento por pessoa e a ligação com a Frota).
+- [pedidos.md](pedidos.md): o Kiban Core Pedidos (nome provisório; pronto, ainda não vendido): pedidos por telefone e WhatsApp para quem vende comida, quadro da cozinha com comanda, entregas na ordem sugerida com o Google Maps, ritmo de cada cliente (verde, amarelo, vermelho), mapa de clientes e clientes sumidos com a mensagem pelo WhatsApp.
 - [dinheiro-e-idioma.md](dinheiro-e-idioma.md): valores em dinheiro iguais em todos os idiomas ("R$ 31,20") e o idioma das páginas sem login (segue o celular do cliente).
 - [valor-e-diferenciais.md](valor-e-diferenciais.md): os diferenciais de 09/11/2026: "Por que deu isso?" no espelho, Resumo da Semana, importar planilhas (colaboradores e veículos), Baixar todos os dados, Página do cliente final e o que ficou pronto mas desligado (Pergunte ao seu Sistema, WhatsApp automático).

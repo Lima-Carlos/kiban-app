@@ -15,6 +15,7 @@ use App\Http\Controllers\LabelController;
 use App\Http\Controllers\LicenseRefreshController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ManifestController;
+use App\Http\Controllers\Pedidos\TicketController;
 use App\Http\Controllers\PersonDocumentFileController;
 use App\Http\Controllers\PhoneAlertController;
 use App\Http\Controllers\Pmoc\EquipmentPublicController;
@@ -92,6 +93,8 @@ Route::middleware(['tenant', 'locale'])->group(function (): void {
         // Sheets of QR labels to print (PMOC equipment and serialized units): each QR opens the item's card.
         Route::get('/etiquetas/pmoc/{plan}', [LabelController::class, 'pmoc'])->whereNumber('plan')->name('labels.pmoc');
         Route::get('/etiquetas/comodato', [LabelController::class, 'units'])->name('labels.units');
+        // Pedidos: the kitchen ticket of an order (receipt printers or any printer).
+        Route::get('/pedidos/{order}/comanda', TicketController::class)->whereNumber('order')->name('pedidos.ticket');
         // "Download everything" of the company (owner and administrators).
         Route::get('/empresa/exportacao/{file}', CompanyExportController::class)->name('company.export');
 

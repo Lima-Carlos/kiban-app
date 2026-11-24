@@ -5,6 +5,7 @@ use App\Modules\Demo\DemoModule;
 use App\Modules\Expenses\ExpensesModule;
 use App\Modules\Field\FieldModule;
 use App\Modules\Fleet\FleetModule;
+use App\Modules\Pedidos\PedidosModule;
 use App\Modules\Pmoc\PmocModule;
 use App\Modules\Rotina\RotinaModule;
 use App\Modules\Stock\StockModule;
@@ -55,6 +56,7 @@ return [
         PmocModule::class,
         StockModule::class,
         ExpensesModule::class,
+        PedidosModule::class,
     ],
 
     /*

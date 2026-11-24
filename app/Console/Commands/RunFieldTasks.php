@@ -7,6 +7,7 @@ use App\Modules\Field\FieldModule;
 use App\Modules\Field\Models\Site;
 use App\Modules\Field\Services\AddressLocator;
 use App\Modules\Field\Services\DayWatch;
+use App\Modules\Pedidos\PedidosModule;
 use App\Tenancy\TenantContext;
 use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Console\Command;
@@ -65,7 +66,8 @@ class RunFieldTasks extends Command
         foreach ($waiting as $row) {
             $tenant = $tenants->get($row->tenant_id);
 
-            if ($tenant === null || ! $tenant->license()->hasModule(FieldModule::KEY)) {
+            // The Campo and the Pedidos (delivery addresses) use the points on the map.
+            if ($tenant === null || ! ($tenant->license()->hasModule(FieldModule::KEY) || $tenant->license()->hasModule(PedidosModule::KEY))) {
                 continue;
             }
 
