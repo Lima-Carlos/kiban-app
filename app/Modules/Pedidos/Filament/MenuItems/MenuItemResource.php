@@ -18,6 +18,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 /** The menu (manager): each item with its category, price and whether it is offered now. */
@@ -72,7 +73,7 @@ class MenuItemResource extends ModuleResource
     {
         return $table
             ->defaultSort(fn ($query) => $query->orderBy('category')->orderBy('sort')->orderBy('name'))
-            ->defaultGroup('category')
+            ->defaultGroup(Group::make('category')->label(__('pedidos.fields.category'))->titlePrefixedWithLabel(false))
             ->columns([
                 TextColumn::make('name')->label(__('pedidos.fields.item_name'))->weight('bold')->searchable(),
                 TextColumn::make('price_cents')->label(__('pedidos.fields.price'))->formatStateUsing(fn (?int $state): string => Money::format($state)),
