@@ -27,7 +27,7 @@ enum Rhythm: string implements HasColor, HasLabel
             self::OnRhythm => 'success',
             self::Late => 'warning',
             self::Stopped => 'danger',
-            self::New => 'gray',
+            self::New => 'info',
         };
     }
 
@@ -38,7 +38,7 @@ enum Rhythm: string implements HasColor, HasLabel
             self::OnRhythm => '#16a34a',
             self::Late => '#eab308',
             self::Stopped => '#dc2626',
-            self::New => '#9ca3af',
+            self::New => '#2563eb',
         };
     }
 }
