@@ -31,6 +31,7 @@
         <env name="KIBAN_CORE_INTERNAL_URL" value="http://core.test"/>
         <env name="KIBAN_CORE_CLIENT_ID" value="test-client"/>
         <env name="KIBAN_CORE_CLIENT_SECRET" value="test-secret"/>
+        <env name="KIBAN_REPORT_ERRORS" value="false"/>
         <env name="KIBAN_CORE_PUBLIC_KEY" value=""/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>

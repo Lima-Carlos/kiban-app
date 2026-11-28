@@ -103,6 +103,17 @@ class CoreClient
     }
 
     /**
+     * An error of this app, for the Core list "Erros do sistema" and the owner's Telegram (scope "onboarding",
+     * 28/11/2026). See CoreErrorReporter.
+     *
+     * @param  array{system: string, exception: string, message: string, location: string, url: ?string}  $error
+     */
+    public function reportError(array $error): void
+    {
+        $this->ensureSuccessful($this->asSystem(fn (PendingRequest $http): Response => $http->post('/api/v1/errors', $error)));
+    }
+
+    /**
      * People of the company in the Core (name, e-mail, mobile, role, status: invited / active / blocked).
      *
      * @return array<int, array<string, mixed>>

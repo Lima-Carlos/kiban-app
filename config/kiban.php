@@ -34,6 +34,8 @@ return [
         'public_key' => env('KIBAN_CORE_PUBLIC_KEY'),
         // Seconds to wait for the Core before carrying on without it.
         'timeout' => 5,
+        // Send the errors of this app to the Core list and the owner's Telegram (CoreErrorReporter). Off in the tests.
+        'report_errors' => (bool) env('KIBAN_REPORT_ERRORS', true),
     ],
 
     'license' => [

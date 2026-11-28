@@ -38,6 +38,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (): string => route('login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // The errors of the systems also go to the Kiban Core list and the owner's Telegram (28/11/2026).
+        $exceptions->report(fn (Throwable $exception) => app(\App\Licensing\CoreErrorReporter::class)->report($exception));
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
